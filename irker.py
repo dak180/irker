@@ -27,11 +27,7 @@ class Session():
             url = url[6:]
         parts = url.split(":", 1)
         if len(parts) == 2:
-            try:
-                self.port = int(parts[1])
-            except ValueError:
-                print "Error: Erroneous port."
-                sys.exit(1)
+            self.port = int(parts[1])
         else:
             self.port = 6667
         (self.server, self.channel) = parts[0].split("/", 1)
