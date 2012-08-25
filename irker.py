@@ -8,8 +8,13 @@ and relays to IRC channels.
 Requires Python 2.6.
 
 """
-import os, sys, json, irclib, getopt
+import os, sys, json, irclib, exceptions, getopt
 import threading, Queue
+
+class SessionException(exceptions.Exception):
+    def __init__(self, message):
+        exceptions.Exception.__init__(self)
+        self.message = message
 
 class Session():
     "IRC session and message queue processing."
@@ -22,12 +27,15 @@ class Session():
         self.thread.start()
         # The channel specification
         if not url.startswith("irc://") or url.count("/") != 3:
-            raise ValueError
+            raise SessionException("ill-formed IRC URL")
         else:
             url = url[6:]
         parts = url.split(":", 1)
         if len(parts) == 2:
-            self.port = int(parts[1])
+            try:
+                self.port = int(parts[1])
+            except ValuError:
+                raise SessionException("invalid port number")
         else:
             self.port = 6667
         (self.server, self.channel) = parts[0].split("/", 1)
