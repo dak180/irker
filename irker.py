@@ -5,17 +5,35 @@ irker - a simple IRC multiplexer daemon
 Takes JSON objects of the form {'channel':<channel-url>, 'message':<text>}
 and relays to IRC channels.
 
+Requires Python 2.6.
+
 """
 import os, sys, json, irclib, getopt
+import threading, Queue
 
-class Session:
+class Session():
     "IRC session and message queue processing."
     def __init__(self, channel):
         self.channel = channel
-        self.queue = []
+        self.queue = Queue.Queue()
+        self.thread = threading.Thread(target=self.dequeue)
+        self.thread.daemon = True
+        self.thread.start()
     def enqueue(self, message):
         "Enque a message for transmission."
-        self.queue.append(message)
+        self.queue.put(message)
+    def dequeue(self):
+        "Try to ship pending messages from the queue."
+        while True:
+            message = self.queue.get()
+            self.ship(self.channel, message)
+            self.queue.task_done()
+    def await(self):
+        "Block until processing of the queue is done."
+        self.queue.join()
+    def ship(self, channel, message):
+        "Ship a message to the channel."
+        print "%s: %s" % (channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -24,7 +42,7 @@ class Irker:
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
-    def run(self, ifp):
+    def run(self, ifp, await=True):
         "Accept JSON relay requests from specified stream."
         while True:
             inp = ifp.readline()
@@ -36,6 +54,9 @@ class Irker:
                 self.logerr("can't recognize JSON on input.")
                 break
             self.relay(request)
+        if await:
+            for session in self.sessions.values():
+                session.await()
     def relay(self, request):
         if "channel" not in request or "message" not in request:
             self.logerr("ill-formed reqest")
