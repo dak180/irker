@@ -41,7 +41,8 @@ class Session():
             self.port = 6667
         (self.servername, self.channel) = parts[0].split("/", 1)
         # Client setup
-        #self.ircserver.connect(self.servername, self.port, "irk"+str(Session.count))
+        #self.ircserver.connect(self.servername, self.port, self.name())
+        # Also must join the channel.
         Session.count += 1
     def enqueue(self, message):
         "Enque a message for transmission."
@@ -52,11 +53,15 @@ class Session():
             message = self.queue.get()
             self.ship(self.channel, message)
             self.queue.task_done()
+    def name(self):
+        "Generate a unique name for this session."
+        return "irk" + str(Session.count)
     def await(self):
         "Block until processing of the queue is done."
         self.queue.join()
     def ship(self, channel, message):
         "Ship a message to the channel."
+        # self.ircserver.privmsg(self.name(), message)
         print "%s: %s" % (channel, message)
 
 class Irker:
