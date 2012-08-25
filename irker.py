@@ -18,7 +18,8 @@ class SessionException(exceptions.Exception):
 
 class Session():
     "IRC session and message queue processing."
-    def __init__(self, url):
+    count = 1
+    def __init__(self, ircserver, url):
         self.url = url
         # The consumer thread
         self.queue = Queue.Queue()
@@ -38,9 +39,10 @@ class Session():
                 raise SessionException("invalid port number")
         else:
             self.port = 6667
-        (self.server, self.channel) = parts[0].split("/", 1)
+        (self.servername, self.channel) = parts[0].split("/", 1)
         # Client setup
-        self.client = irclib.SimpleIRCClient()
+        #self.ircserver.connect(self.servername, self.port, "irk"+str(Session.count))
+        Session.count += 1
     def enqueue(self, message):
         "Enque a message for transmission."
         self.queue.put(message)
@@ -60,6 +62,7 @@ class Session():
 class Irker:
     "Persistent IRC multiplexer."
     def __init__(self):
+        self.irc = irclib.IRC()
         self.sessions = {}
     def logerr(self, errmsg):
         "Log a processing error."
@@ -86,7 +89,7 @@ class Irker:
             channel = request['channel']
             message = request['message']
             if channel not in self.sessions:
-                self.sessions[channel] = Session(channel)
+                self.sessions[channel] = Session(self.irc.server(), channel)
             self.sessions[channel].enqueue(message)
 
 if __name__ == '__main__':
