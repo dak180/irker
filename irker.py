@@ -13,12 +13,30 @@ import threading, Queue
 
 class Session():
     "IRC session and message queue processing."
-    def __init__(self, channel):
-        self.channel = channel
+    def __init__(self, url):
+        self.url = url
+        # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
         self.thread.daemon = True
         self.thread.start()
+        # The channel specification
+        if not url.startswith("irc://") or url.count("/") != 3:
+            raise ValueError
+        else:
+            url = url[6:]
+        parts = url.split(":", 1)
+        if len(parts) == 2:
+            try:
+                self.port = int(parts[1])
+            except ValueError:
+                print "Error: Erroneous port."
+                sys.exit(1)
+        else:
+            self.port = 6667
+        (self.server, self.channel) = parts[0].split("/", 1)
+        # Client setup
+        self.client = irclib.SimpleIRCClient()
     def enqueue(self, message):
         "Enque a message for transmission."
         self.queue.put(message)
