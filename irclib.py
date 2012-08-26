@@ -187,6 +187,7 @@ class IRC(object):
 
         See documentation for IRC.__init__.
         """
+        self.debug(2, "process_data()")
         for s in sockets:
             for c in self.connections:
                 if s == c._get_socket():
@@ -218,6 +219,7 @@ class IRC(object):
         incoming data, if there are any.  If that seems boring, look
         at the process_forever method.
         """
+        self.debug(2, "process_once()")
         sockets = map(lambda x: x._get_socket(), self.connections)
         sockets = filter(lambda x: x != None, sockets)
         if sockets:
@@ -236,6 +238,7 @@ class IRC(object):
 
             timeout -- Parameter to pass to process_once.
         """
+        self.debug(1, "process_forever(timeout=%s)" % (timeout))
         while 1:
             self.process_once(timeout)
 
