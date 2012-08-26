@@ -24,6 +24,7 @@ class Session():
     "IRC session and message queue processing."
     count = 1
     def __init__(self, ircserver, url):
+        self.ircserver = ircserver
         self.url = url
         # The consumer thread
         self.queue = Queue.Queue()
@@ -65,23 +66,11 @@ class Irker:
     "Persistent IRC multiplexer."
     def __init__(self):
         self.irc = irclib.IRC()
-        self.irc.add_global_handler("welcome",
-                                    lambda c,e: self.__on_connect(c,e))
-        self.irc.add_global_handler("join",
-                                    lambda c,e: self.__on_join(c,e))
-        self.irc.add_global_handler("disconnect",
-                                    lambda c,e: self.__on_quit(c,e))
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.daemon = True
         thread.start()
         self.sessions = {}
-    def __on_connect(self, event):
-        pass
-    def __on_join(self, event):
-        pass
-    def __on_quit(self, event):
-        pass
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
