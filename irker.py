@@ -68,7 +68,7 @@ class Irker:
     "Persistent IRC multiplexer."
     def __init__(self, debuglevel=0):
         self.debuglevel = debuglevel
-        self.irc = irclib.IRC(self.debuglevel-1)
+        self.irc = irclib.IRC(debuglevel=self.debuglevel-1)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.daemon = True
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     debuglevel = 0
     (options, arguments) = getopt.getopt(sys.argv[1:], "-d:")
     for (opt, val) in options:
-        if opt == '-v':
+        if opt == '-d':
             debuglevel = int(val)
     irker = Irker(debuglevel=debuglevel)
     irker.run(sys.stdin)
