@@ -11,11 +11,10 @@ join/leave traffic.
 
 Requires Python 2.6.
 
-TO-DO: some servers have a limit of 20 channels per server connection.
-TO-DO: Register the port?
+TO-DO: Is there any way to cope is servers drop connections?
 TO-DO: Multiple irkers could try to use the same nick
-TO-DO: share connections among multiple sessions.
 TO-DO: time out session instances as well as sockets.
+TO-DO: Register the port?
 """
 # These things might need tuning
 
@@ -23,6 +22,7 @@ HOST = "localhost"
 PORT = 4747
 
 TTL = (3 * 60 * 60)	# Connection time to live in seconds
+CONNECT_MAX = 18	# Maximum connections per bot (freenet limit)
 
 # No user-serviceable parts below this line
 
@@ -36,7 +36,6 @@ class SessionException(exceptions.Exception):
 
 class Session():
     "IRC session and message queue processing."
-    count = 0
     def __init__(self, irker, url):
         self.irker = irker
         self.url = url
@@ -49,7 +48,6 @@ class Session():
         self.servername = host
         self.channel = parsed.path.lstrip('/')
         self.port = int(port)
-        Session.count += 1
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
@@ -69,8 +67,7 @@ class Session():
             # queue fills up again.
             if not self.server:
                 self.server = self.irker.allocate_server(self.servername,
-                                                         self.port,
-                                                         self.name())
+                                                         self.port)
                 self.irker.debug(1, "TTL bump (connection) at %s" % time.asctime())
                 self.last_active = time.time()
             elif self.queue.empty():
@@ -86,9 +83,6 @@ class Session():
                 self.last_active = time.time()
                 self.irker.debug(1, "TTL bump (transmission) at %s" % time.asctime())
                 self.queue.task_done()
-    def name(self):
-        "Generate a unique name for this session."
-        return "irker%03d" % Session.count
     def await(self):
         "Block until processing of all queued messages is done."
         self.queue.join()
@@ -103,6 +97,8 @@ class Irker:
         thread.daemon = True
         thread.start()
         self.sessions = {}
+        self.countmap = {}
+        self.servercount = 0
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
@@ -110,11 +106,19 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
-    def allocate_server(self, servername, port, nick):
+    def allocate_server(self, servername, port):
         "Allocate a new server instance."
-        newserver = self.irc.server()
-        newserver.connect(servername, port, nick)
-        return newserver
+        if not (servername, port) in self.countmap:
+            self.countmap[(servername, port)] = (CONNECT_MAX+1, None)
+        count = self.countmap[(servername, port)][0]
+        if count > CONNECT_MAX:
+            self.servercount += 1
+            newserver = self.irc.server()
+            newserver.connect(servername,
+                              port,
+                              "irker%03d" % self.servercount)
+            self.countmap[(servername, port)] = (1, newserver)
+        return self.countmap[(servername, port)][1]
     def handle(self, line):
         "Perform a JSON relay request."
         try:
