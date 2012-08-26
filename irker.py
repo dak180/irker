@@ -20,7 +20,7 @@ TO-DO: Multiple irkers could try to use the same nick
 HOST = "localhost"
 PORT = 4747
 
-TTL = 30	# Connection time to live in seconds
+TTL = (3 * 60 * 60)	# Connection time to live in seconds
 
 # No user-serviceable parts below this line
 
@@ -34,7 +34,7 @@ class SessionException(exceptions.Exception):
 
 class Session():
     "IRC session and message queue processing."
-    count = 1
+    count = 0
     def __init__(self, irker, url):
         self.irker = irker
         self.url = url
@@ -59,7 +59,7 @@ class Session():
     def dequeue(self):
         "Try to ship pending messages from the queue."
         while True:
-            # We want to by kind to the servers and not hold unused
+            # We want to be kind to the IRC servers and not hold unused
             # sockets open forever, so they have a time-to-live.  The
             # loop is coded this particular way so that we can drop
             # the actual server connection when its time-to-live
@@ -67,11 +67,13 @@ class Session():
             # queue fills up again.
             if not self.server:
                 self.server = self.irker.irc.server()
-                self.server.connect(self.servername, self.port, self.name())
+                self.irker.debug(1, "TTL bump (connection) at %s" % time.asctime())
                 self.last_active = time.time()
+                self.server.connect(self.servername, self.port, self.name())
             elif self.queue.empty():
                 if time.time() > self.last_active + TTL:
-                    self.server.part("#" + channel)
+                    self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
+                    self.server.part("#" + self.channel)
                     self.server = None
                     break
             else:
@@ -79,6 +81,7 @@ class Session():
                 self.server.join("#" + self.channel)
                 self.server.privmsg("#" + self.channel, message)
                 self.last_active = time.time()
+                self.irker.debug(1, "TTL bump (transmission) at %s" % time.asctime())
                 self.queue.task_done()
     def name(self):
         "Generate a unique name for this session."
@@ -142,6 +145,7 @@ if __name__ == '__main__':
     server = SocketServer.TCPServer((host, port), MyTCPHandler)
     try:
         server.serve_forever()
-    except keyboardInterrupt:
+    except KeyboardInterrupt:
         pass
 
+# end
