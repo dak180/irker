@@ -14,7 +14,7 @@ Requires Python 2.6.
 TO-DO: some servers have a limit of 20 channels per server connection.
 """
 import os, sys, json, irclib, exceptions, getopt, urlparse
-import threading, Queue
+import threading, Queue, SocketServer
 
 class SessionException(exceptions.Exception):
     def __init__(self, message):
@@ -60,8 +60,8 @@ class Session():
         self.queue.join()
     def ship(self, channel, message):
         "Ship a message to the channel."
-        self.server.join(channel)
-        self.server.privmsg(channel, message)
+        self.server.join("#" + channel)
+        self.server.privmsg("#" + channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -80,36 +80,40 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
-    def run(self, ifp, await=True):
-        "Accept JSON relay requests from specified stream."
-        while True:
-            inp = ifp.readline()
-            if not inp:
-                break
-            try:
-                request = json.loads(inp.strip())
-            except ValueError:
-                self.logerr("can't recognize JSON on input.")
-                break
-            self.relay(request)
-        if await:
-            for session in self.sessions.values():
-                session.await()
-    def relay(self, request):
-        if "channel" not in request or "message" not in request:
-            self.logerr("ill-formed reqest")
-        else:
-            channel = request['channel']
-            message = request['message']
-            if channel not in self.sessions:
-                self.sessions[channel] = Session(self, channel)
-            self.sessions[channel].enqueue(message)
+    def handle(self, line):
+        "Perform a JSON relay request."
+        try:
+            request = json.loads(line.strip())
+            if "channel" not in request or "message" not in request:
+                self.logerr("ill-formed reqest")
+            else:
+                channel = request['channel']
+                message = request['message']
+                if channel not in self.sessions:
+                    self.sessions[channel] = Session(self, channel)
+                self.sessions[channel].enqueue(message)
+        except ValueError:
+            self.logerr("can't recognize JSON on input.")
+    def terminate(self):
+        "Ship all pending messages before terminating."
+        for session in self.sessions.values():
+            session.await()
+
+class MyTCPHandler(SocketServer.BaseRequestHandler):
+    def handle(self):
+        # self.request is the TCP socket connected to the client
+        irker.handle(self.request.recv(1024).strip())
 
 if __name__ == '__main__':
     debuglevel = 0
-    (options, arguments) = getopt.getopt(sys.argv[1:], "-d:")
+    host = "localhost"
+    port = 4747
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:")
     for (opt, val) in options:
         if opt == '-d':
             debuglevel = int(val)
+        elif opt == '-p':
+            port = int(val)
     irker = Irker(debuglevel=debuglevel)
-    irker.run(sys.stdin)
+    server = SocketServer.TCPServer((host, port), MyTCPHandler)
+    server.serve_forever()
