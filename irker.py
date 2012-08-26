@@ -23,15 +23,15 @@ class SessionException(exceptions.Exception):
 class Session():
     "IRC session and message queue processing."
     count = 1
-    def __init__(self, ircserver, url):
-        self.ircserver = ircserver
+    def __init__(self, irc, url):
+        self.irc = irc
         self.url = url
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
         self.thread.daemon = True
         self.thread.start()
-        # Client setup
+        # Server connection setup
         parsed = urlparse.urlparse(url)
         host, sep, port = parsed.netloc.partition(':')
         if not port:
@@ -39,8 +39,8 @@ class Session():
         self.servername = host
         self.channel = parsed.path.lstrip('/')
         self.port = int(port)
-        #self.ircserver.connect(self.servername, self.port, self.name())
-        # Also must join the channel.
+        #self.server = self.irc.server()
+        #self.server.connect(self.servername, self.port, self.name())
         Session.count += 1
     def enqueue(self, message):
         "Enque a message for transmission."
@@ -59,8 +59,9 @@ class Session():
         self.queue.join()
     def ship(self, channel, message):
         "Ship a message to the channel."
-        # self.ircserver.privmsg(self.name(), message)
         print "%s: %s" % (channel, message)
+        # self.server.connection.join(chaannel)
+        # self.server.privmsg(channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
