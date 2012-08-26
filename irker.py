@@ -39,7 +39,8 @@ class Session():
         self.servername = host
         self.channel = parsed.path.lstrip('/')
         self.port = int(port)
-        #self.server = self.irc.server()
+        self.server = self.irc.server()
+        print "connecting: server=%s port=%s name=%s" % (self.servername, self.port, self.name())
         #self.server.connect(self.servername, self.port, self.name())
         Session.count += 1
     def enqueue(self, message):
@@ -60,8 +61,8 @@ class Session():
     def ship(self, channel, message):
         "Ship a message to the channel."
         print "%s: %s" % (channel, message)
-        # self.server.connection.join(chaannel)
-        # self.server.privmsg(channel, message)
+        #self.server.connection.join(chaannel)
+        #self.server.privmsg(channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -97,7 +98,7 @@ class Irker:
             channel = request['channel']
             message = request['message']
             if channel not in self.sessions:
-                self.sessions[channel] = Session(self.irc.server(), channel)
+                self.sessions[channel] = Session(self.irc, channel)
             self.sessions[channel].enqueue(message)
 
 if __name__ == '__main__':
