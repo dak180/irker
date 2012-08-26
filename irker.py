@@ -2,7 +2,7 @@
 """
 irker - a simple IRC multiplexer daemon
 
-Takes JSON objects of the form {'channel':<channel-url>, 'message':<text>}
+Takes JSON objects of the form {'channel':<channel-url>, 'privmsg':<text>}
 and relays messages to IRC channels.
 
 Run this as a daemon in order to maintain stateful connections to IRC
@@ -111,11 +111,11 @@ class Irker:
         "Perform a JSON relay request."
         try:
             request = json.loads(line.strip())
-            if "channel" not in request or "message" not in request:
+            if "channel" not in request or "privmsg" not in request:
                 self.logerr("ill-formed reqest")
             else:
                 channel = request['channel']
-                message = request['message']
+                message = request['privmsg']
                 if channel not in self.sessions:
                     self.sessions[channel] = Session(self, channel)
                 self.sessions[channel].enqueue(message)
