@@ -128,7 +128,8 @@ class Irker:
 
 class MyTCPHandler(SocketServer.StreamRequestHandler):
     def handle(self):
-        irker.handle(self.rfile.readline().strip())
+        while True:
+            irker.handle(self.rfile.readline().strip())
 
 if __name__ == '__main__':
     host = HOST
