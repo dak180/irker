@@ -40,7 +40,6 @@ class Session():
         self.channel = parsed.path.lstrip('/')
         self.port = int(port)
         self.server = self.irker.irc.server()
-        self.irker.debug(1, "connecting: server=%s port=%s name=%s" % (self.servername, self.port, self.name()))
         self.server.connect(self.servername, self.port, self.name())
         Session.count += 1
     def enqueue(self, message):

@@ -173,8 +173,6 @@ class IRC(object):
 
         self.add_global_handler("ping", _ping_ponger, -42)
 
-        self.debug(1, "IRC object created")
-
     def server(self):
         """Creates and returns a ServerConnection object."""
 
@@ -353,8 +351,8 @@ class IRC(object):
 
     def debug(self, level, errmsg):
         """Display debugging information."""
-        #if self.debuglevel >= level:
-        sys.stderr.write("irclib[%d]: %s\n" % (self.debuglevel, errmsg))
+        if self.debuglevel >= level:
+            sys.stderr.write("irclib[%d]: %s\n" % (self.debuglevel, errmsg))
 
     def _remove_connection(self, connection):
         """[Internal]"""
@@ -446,6 +444,7 @@ class ServerConnection(Connection):
 
     def __init__(self, irclibobj):
         super(ServerConnection, self).__init__(irclibobj)
+        self.irclibobj = irclibobj
         self.connected = 0  # Not connected yet.
         self.socket = None
         self.ssl = None
@@ -495,6 +494,10 @@ class ServerConnection(Connection):
         self.password = password
         self.localaddress = localaddress
         self.localport = localport
+
+        self.irclibobj.debug(1, "connect(server=%s, port=%s, nick=%s)" \
+                             % (self.server, self.port, self.nickname))
+
         self.localhost = socket.gethostname()
         if ipv6:
             self.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
