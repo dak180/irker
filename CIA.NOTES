@@ -1,0 +1,13 @@
+[08:02]	BearPerson	I think we actually got all (?) of the memory leaks in the existing implementation ironed out... Callbacks are hard.
+[08:08]	BearPerson	Fun things about the protocol controlling the bot server: It actually (intentionally) supports multiple "control channel" connections: one from the RPC/relay server, others whenever a web frontend needs to know the status of some channel, and potentially a raw local socket if an admin needs to tweak stuff
+[08:09]	BearPerson	(although for the latter, it was traditionally more useful to hook into the bot server via a remote python shell/eval system (I think "twisted manhole"), and break things that way
+[08:11]	BearPerson	In case this wasn't clear yet, LibCIA is all the old/twisted stuff (routing/RPC server, bot server, stats web) whereas apps/ (and templates/) is all of the new django web stuff, IIRC
+[08:17]	BearPerson	And the design issues that have traditionally plagued us (other than memory leaks) was queuing, particularly when we ran on tiny-RAM VMs
+[08:18]	BearPerson	if your processing momentarily can't keep up with input, and input buffers in RAM, pushing system into swap, slowing down processing... Not pretty
+[08:19]	BearPerson	Not always intentionally "buffering", but we ended up with 100 tiny "parse email and deliver via RPC" processes (that waited for the RPC reply before shutting down)
+[08:20]	BearPerson	also, having the RPC server attempt to parallel-process infinitely many requests at the same time turned out to be a bad idea
+[08:20]	BearPerson	of course, all of this would be solvable by a message bus system that buffers to disk if needed, and allows easy/fast submits
+[08:22]	BearPerson	(XMLRPC, it turns out, is surprisingly heavyweight for these things)
+[08:37]	BearPerson	TBH, I don't think the connecting-to-IRC part is the problem (the current bot server could be kept in service for a bit), we should first rewrite the core to use a proper message queue, and think about configuration management
+[08:38]	BearPerson	who pulls the messages off the queue? Who applies filters and formats the resulting output? Who gets updates whenever IRC notifications are added/removed and updates the bot server accordingly?
+[08:39]	BearPerson	eventually the bot server will probably be rewritten and rolled into that daemon, but for now we could keep the existing one as backend. We do need the mentioned stuff, though, unless someone wants to bridge the current implementation to a message queue
