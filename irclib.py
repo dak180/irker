@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 1999-2002  Joel Rosdahl
-# Portions Copyright © 2011 Jason R. Coombs
+# Portions Copyright 2011 Jason R. Coombs
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -72,6 +72,7 @@ import time
 import types
 import ssl as ssl_mod
 import datetime
+import sys
 
 try:
     import pkg_resources
@@ -132,7 +133,8 @@ class IRC(object):
 
     def __init__(self, fn_to_add_socket=None,
                  fn_to_remove_socket=None,
-                 fn_to_add_timeout=None):
+                 fn_to_add_timeout=None,
+                 debuglevel=0):
         """Constructor for IRC objects.
 
         Optional arguments are fn_to_add_socket, fn_to_remove_socket
@@ -164,11 +166,14 @@ class IRC(object):
             self.fn_to_remove_socket = None
 
         self.fn_to_add_timeout = fn_to_add_timeout
+        self.debuglevel = debuglevel
         self.connections = []
         self.handlers = {}
         self.delayed_commands = []  # list of DelayedCommands
 
         self.add_global_handler("ping", _ping_ponger, -42)
+
+        self.debug(1, "IRC object created")
 
     def server(self):
         """Creates and returns a ServerConnection object."""
@@ -345,6 +350,11 @@ class IRC(object):
         for handler in th:
             if handler[1](connection, event) == "NO MORE":
                 return
+
+    def debug(self, level, errmsg):
+        """Display debugging information."""
+        #if self.debuglevel >= level:
+        sys.stderr.write("irclib[%d]: %s\n" % (self.debuglevel, errmsg))
 
     def _remove_connection(self, connection):
         """[Internal]"""
