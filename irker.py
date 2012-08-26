@@ -59,7 +59,6 @@ class Session():
         self.queue.join()
     def ship(self, channel, message):
         "Ship a message to the channel."
-        self.irker.debug(1, "%s gets %s" % (channel, repr(message)))
         self.server.join(channel)
         self.server.privmsg(channel, message)
 
