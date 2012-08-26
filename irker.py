@@ -68,10 +68,11 @@ class Session():
             # expires, then reconnect and resume transmission if the
             # queue fills up again.
             if not self.server:
-                self.server = self.irker.irc.server()
+                self.server = self.irker.allocate_server(self.servername,
+                                                         self.port,
+                                                         self.name())
                 self.irker.debug(1, "TTL bump (connection) at %s" % time.asctime())
                 self.last_active = time.time()
-                self.server.connect(self.servername, self.port, self.name())
             elif self.queue.empty():
                 if time.time() > self.last_active + TTL:
                     self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
@@ -109,6 +110,11 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
+    def allocate_server(self, servername, port, nick):
+        "Allocate a new server instance."
+        newserver = self.irc.server()
+        newserver.connect(servername, port, nick)
+        return newserver
     def handle(self, line):
         "Perform a JSON relay request."
         try:
