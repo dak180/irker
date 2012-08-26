@@ -67,8 +67,8 @@ class Session():
 class Irker:
     "Persistent IRC multiplexer."
     def __init__(self, debuglevel=0):
-        self.debuglevel = 0
-        self.irc = irclib.IRC()
+        self.debuglevel = debuglevel
+        self.irc = irclib.IRC(self.debuglevel-1)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.daemon = True
@@ -79,8 +79,8 @@ class Irker:
         sys.stderr.write("irker: " + errmsg + "\n")
     def debug(self, level, errmsg):
         "Debugging information."
-        if level >= self.debuglevel:
-            sys.stderr.write("irker: " + errmsg + "\n")
+        if self.debuglevel >= level:
+            sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
     def run(self, ifp, await=True):
         "Accept JSON relay requests from specified stream."
         while True:
