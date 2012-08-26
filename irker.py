@@ -14,6 +14,8 @@ Requires Python 2.6.
 TO-DO: some servers have a limit of 20 channels per server connection.
 TO-DO: Register the port?
 TO-DO: Multiple irkers could try to use the same nick
+TO-DO: share connections among multiple sessions.
+TO-DO: time out session instances as well as sockets.
 """
 # These things might need tuning
 
