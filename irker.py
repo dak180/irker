@@ -3,7 +3,11 @@
 irker - a simple IRC multiplexer daemon
 
 Takes JSON objects of the form {'channel':<channel-url>, 'message':<text>}
-and relays to IRC channels.
+and relays messages to IRC channels.
+
+Run this as a daemon in order to maimntain stateful connections to IRC
+servers; this will allow it to respond to server pings and minimize
+join/leave traffic.
 
 Requires Python 2.6.
 
@@ -48,9 +52,9 @@ class Session():
             self.queue.task_done()
     def name(self):
         "Generate a unique name for this session."
-        return "irk" + str(Session.count)
+        return "irker" + str(Session.count)
     def await(self):
-        "Block until processing of the queue is done."
+        "Block until processing of all queued messages is done."
         self.queue.join()
     def ship(self, channel, message):
         "Ship a message to the channel."
@@ -61,7 +65,23 @@ class Irker:
     "Persistent IRC multiplexer."
     def __init__(self):
         self.irc = irclib.IRC()
+        self.irc.add_global_handler("welcome",
+                                    lambda c,e: self.__on_connect(c,e))
+        self.irc.add_global_handler("join",
+                                    lambda c,e: self.__on_join(c,e))
+        self.irc.add_global_handler("disconnect",
+                                    lambda c,e: self.__on_quit(c,e))
+        thread = threading.Thread(target=self.irc.process_forever)
+        self.irc._thread = thread
+        thread.daemon = True
+        thread.start()
         self.sessions = {}
+    def __on_connect(self, event):
+        pass
+    def __on_join(self, event):
+        pass
+    def __on_quit(self, event):
+        pass
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
