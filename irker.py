@@ -12,6 +12,7 @@ join/leave traffic.
 Requires Python 2.6.
 
 TO-DO: some servers have a limit of 20 channels per server connection.
+TO-DO: Register the port?
 """
 import os, sys, json, irclib, exceptions, getopt, urlparse
 import threading, Queue, SocketServer
@@ -54,7 +55,7 @@ class Session():
             self.queue.task_done()
     def name(self):
         "Generate a unique name for this session."
-        return "irker" + str(Session.count)
+        return "irker%03d" % Session.count
     def await(self):
         "Block until processing of all queued messages is done."
         self.queue.join()
