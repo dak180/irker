@@ -5,12 +5,13 @@ irker - a simple IRC multiplexer daemon
 Takes JSON objects of the form {'channel':<channel-url>, 'message':<text>}
 and relays messages to IRC channels.
 
-Run this as a daemon in order to maimntain stateful connections to IRC
+Run this as a daemon in order to maintain stateful connections to IRC
 servers; this will allow it to respond to server pings and minimize
 join/leave traffic.
 
 Requires Python 2.6.
 
+TO-DO: some servers have a limit of 20 channels per server connection.
 """
 import os, sys, json, irclib, exceptions, getopt, urlparse
 import threading, Queue
