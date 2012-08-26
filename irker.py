@@ -13,8 +13,18 @@ Requires Python 2.6.
 
 TO-DO: some servers have a limit of 20 channels per server connection.
 TO-DO: Register the port?
+TO-DO: Multiple irkers could try to use the same nick
 """
-import os, sys, json, irclib, exceptions, getopt, urlparse
+# These things might need tuning
+
+HOST = "localhost"
+PORT = 4747
+
+TTL = 30	# Connection time to live in seconds
+
+# No user-serviceable parts below this line
+
+import os, sys, json, irclib, exceptions, getopt, urlparse, time
 import threading, Queue, SocketServer
 
 class SessionException(exceptions.Exception):
@@ -28,11 +38,7 @@ class Session():
     def __init__(self, irker, url):
         self.irker = irker
         self.url = url
-        # The consumer thread
-        self.queue = Queue.Queue()
-        self.thread = threading.Thread(target=self.dequeue)
-        self.thread.daemon = True
-        self.thread.start()
+        self.server = None
         # Server connection setup
         parsed = urlparse.urlparse(url)
         host, sep, port = parsed.netloc.partition(':')
@@ -41,28 +47,45 @@ class Session():
         self.servername = host
         self.channel = parsed.path.lstrip('/')
         self.port = int(port)
-        self.server = self.irker.irc.server()
-        self.server.connect(self.servername, self.port, self.name())
         Session.count += 1
+        # The consumer thread
+        self.queue = Queue.Queue()
+        self.thread = threading.Thread(target=self.dequeue)
+        self.thread.daemon = True
+        self.thread.start()
     def enqueue(self, message):
         "Enque a message for transmission."
         self.queue.put(message)
     def dequeue(self):
         "Try to ship pending messages from the queue."
         while True:
-            message = self.queue.get()
-            self.ship(self.channel, message)
-            self.queue.task_done()
+            # We want to by kind to the servers and not hold unused
+            # sockets open forever, so they have a time-to-live.  The
+            # loop is coded this particular way so that we can drop
+            # the actual server connection when its time-to-live
+            # expires, then reconnect and resume transmission if the
+            # queue fills up again.
+            if not self.server:
+                self.server = self.irker.irc.server()
+                self.server.connect(self.servername, self.port, self.name())
+                self.last_active = time.time()
+            elif self.queue.empty():
+                if time.time() > self.last_active + TTL:
+                    self.server.part("#" + channel)
+                    self.server = None
+                    break
+            else:
+                message = self.queue.get()
+                self.server.join("#" + self.channel)
+                self.server.privmsg("#" + self.channel, message)
+                self.last_active = time.time()
+                self.queue.task_done()
     def name(self):
         "Generate a unique name for this session."
         return "irker%03d" % Session.count
     def await(self):
         "Block until processing of all queued messages is done."
         self.queue.join()
-    def ship(self, channel, message):
-        "Ship a message to the channel."
-        self.server.join("#" + channel)
-        self.server.privmsg("#" + channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -106,9 +129,9 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         irker.handle(self.request.recv(1024).strip())
 
 if __name__ == '__main__':
+    host = HOST
+    port = PORT
     debuglevel = 0
-    host = "localhost"
-    port = 4747
     (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:")
     for (opt, val) in options:
         if opt == '-d':
@@ -117,4 +140,8 @@ if __name__ == '__main__':
             port = int(val)
     irker = Irker(debuglevel=debuglevel)
     server = SocketServer.TCPServer((host, port), MyTCPHandler)
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except keyboardInterrupt:
+        pass
+
