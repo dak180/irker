@@ -126,10 +126,9 @@ class Irker:
         for session in self.sessions.values():
             session.await()
 
-class MyTCPHandler(SocketServer.BaseRequestHandler):
+class MyTCPHandler(SocketServer.StreamRequestHandler):
     def handle(self):
-        # self.request is the TCP socket connected to the client
-        irker.handle(self.request.recv(1024).strip())
+        irker.handle(self.rfile.readline().strip())
 
 if __name__ == '__main__':
     host = HOST
