@@ -12,6 +12,8 @@ join/leave traffic.
 Requires Python 2.6.
 
 TO-DO: Is there any way to cope if servers drop connections?
+TO-DO: Round-robin as in http://code.google.com/p/cia-vc/source/browse/trunk/cia/LibCIA/IRC/Network.py
+TO-DO: Cope with nick collision?
 TO-DO: Register the port?
 """
 # These things might need tuning
