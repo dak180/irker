@@ -136,6 +136,11 @@ class Irker:
                               port,
                               self.nickname(self.servercount))
             self.countmap[(servername, port)] = (1, newserver)
+            self.debug(1, "new server connection %d opened for %s:%s" % \
+                       (self.servercount, servername, port))
+        else:
+            self.debug(1, "reusing server connection for %s:%s" % \
+                       (servername, port))
         return self.countmap[(servername, port)][1]
     def close(self, servername, port):
         "Release a server instance and all sessions using it."
