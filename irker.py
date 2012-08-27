@@ -11,7 +11,6 @@ join/leave traffic.
 
 Requires Python 2.6.
 
-TO-DO: Is there any way to cope if servers drop connections?
 TO-DO: Register the port?
 """
 # These things might need tuning
@@ -19,9 +18,10 @@ TO-DO: Register the port?
 HOST = "localhost"
 PORT = 4747
 
-XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
-CONNECT_MAX = 18		# Maximum connections per bot (freenet limit)
 NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
+XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
+PING_TTL = (15 * 60)		# Time to live, seconds from last PING
+CONNECT_MAX = 18		# Maximum connections per bot (freenet limit)
 
 # No user-serviceable parts below this line
 
@@ -53,7 +53,8 @@ class Session():
         self.thread = threading.Thread(target=self.dequeue)
         self.thread.daemon = True
         self.thread.start()
-        self.last_active = None
+        self.last_xmit = time.time()
+        self.last_recv = time.time()       
     def enqueue(self, message):
         "Enque a message for transmission."
         self.queue.put(message)
@@ -72,7 +73,9 @@ class Session():
                 self.irker.debug(1, "XMIT_TTL bump (connection) at %s" % time.asctime())
                 self.last_xmit = time.time()
             elif self.queue.empty():
-                if time.time() > self.last_xmit + XMIT_TTL:
+                now = time.time()
+                if now > self.last_xmit + XMIT_TTL \
+                       or now > self.last_ping + PONG_TTL:
                     self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
                     self.irker.close(self.servername,
                                                  self.port)
@@ -99,6 +102,7 @@ class Irker:
         self.debuglevel = debuglevel
         self.namesuffix = namesuffix or socket.getfqdn().replace(".", "-")
         self.irc = irclib.IRC(debuglevel=self.debuglevel-1)
+        self.irc.add_global_handler("ping", lambda c, e: self._handle_ping(c,e))
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.daemon = True
@@ -139,6 +143,11 @@ class Irker:
             if (val.servername, val.port) == (servername, port):
                 self.sessions[servername].terminate()
                 del self.sessions[servername]
+    def _handle_ping(self, connection, event):
+        "PING arrived, bump the last-received time for the connection."
+        for (name, server) in self.sessions.items():
+            if name == connection.server:
+                server.last_ping = time.time()
     def handle(self, line):
         "Perform a JSON relay request."
         try:
