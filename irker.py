@@ -22,6 +22,7 @@ PORT = 4747
 
 TTL = (3 * 60 * 60)	# Connection time to live in seconds
 CONNECT_MAX = 18	# Maximum connections per bot (freenet limit)
+NAMESTYLE = "irker%03d"	# IRC nick template - must contain '%d'
 
 # No user-serviceable parts below this line
 
@@ -120,7 +121,7 @@ class Irker:
             newserver = self.irc.server()
             newserver.connect(servername,
                               port,
-                              "irker%03d" % self.servercount)
+                              NAMESTYLE % self.servercount)
             self.countmap[(servername, port)] = (1, newserver)
         return self.countmap[(servername, port)][1]
     def close(self, servername, port):
