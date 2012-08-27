@@ -10,7 +10,9 @@ Run this as a daemon in order to maintain stateful connections to IRC
 servers; this will allow it to respond to server pings and minimize
 join/leave traffic.
 
-Requires Python 2.6.
+Requires Python 2.6 and the irc.client library: see.
+
+http://sourceforge.net/projects/python-irclib
 
 TO-DO: Register the port?
 """
@@ -28,7 +30,7 @@ CONNECT_MAX = 18		# Maximum connections per bot (freenet limit)
 
 import sys, json, exceptions, getopt, urlparse, time, socket
 import threading, Queue, SocketServer
-import irclib
+import irc.client, logging
 
 class SessionException(exceptions.Exception):
     def __init__(self, message):
@@ -102,7 +104,7 @@ class Irker:
     def __init__(self, debuglevel=0, namesuffix=None):
         self.debuglevel = debuglevel
         self.namesuffix = namesuffix or socket.getfqdn().replace(".", "-")
-        self.irc = irclib.IRC(debuglevel=self.debuglevel-1)
+        self.irc = irc.client.IRC()
         self.irc.add_global_handler("ping", lambda c, e: self._handle_ping(c,e))
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
@@ -204,6 +206,8 @@ if __name__ == '__main__':
     for (opt, val) in options:
         if opt == '-d':
             debuglevel = int(val)
+            if debuglevel > 1:
+                logging.basicConfig(level=DEBUG)
         elif opt == '-p':
             port = int(val)
         elif opt == '-n':
