@@ -27,7 +27,7 @@ NAMESTYLE = "irker%03d"	# IRC nick template - must contain '%d'
 
 # No user-serviceable parts below this line
 
-import os, sys, json, exceptions, getopt, urlparse, time, socket
+import sys, json, exceptions, getopt, urlparse, time, socket
 import threading, Queue, SocketServer
 import irclib
 
@@ -44,7 +44,7 @@ class Session():
         self.server = None
         # Server connection setup
         parsed = urlparse.urlparse(url)
-        host, sep, port = parsed.netloc.partition(':')
+        host, _, port = parsed.netloc.partition(':')
         if not port:
             port = 6667
         self.servername = host
@@ -55,6 +55,7 @@ class Session():
         self.thread = threading.Thread(target=self.dequeue)
         self.thread.daemon = True
         self.thread.start()
+        self.last_active = None
     def enqueue(self, message):
         "Enque a message for transmission."
         self.queue.put(message)
@@ -136,7 +137,7 @@ class Irker:
     def close(self, servername, port):
         "Release a server instance and all sessions using it."
         del self.countmap[(servername, port)]
-        for (key, val) in self.sessions:
+        for val in self.sessions.values():
             if (val.servername, val.port) == (servername, port):
                 self.sessions[servername].terminate()
                 del self.sessions[servername]
