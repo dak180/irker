@@ -149,8 +149,8 @@ class Irker:
         del self.countmap[(servername, port)]
         for val in self.sessions.values():
             if (val.servername, val.port) == (servername, port):
-                self.sessions[servername].terminate()
-                del self.sessions[servername]
+                self.sessions[val.url].terminate()
+                del self.sessions[val.url]
     def _handle_ping(self, connection, event):
         "PING arrived, bump the last-received time for the connection."
         for (name, server) in self.sessions.items():
@@ -171,13 +171,13 @@ class Irker:
                 else:
                     if type(channels) == type(u""):
                         channels = [channels]
-                    for channel in channels:
-                        if type(channel) != type(u""):
+                    for url in channels:
+                        if type(url) != type(u""):
                             self.logerr("malformed request - unexpected type: %s" % repr(request))
                         else:
-                            if channel not in self.sessions:
-                                self.sessions[channel] = Session(self, channel)
-                            self.sessions[channel].enqueue(message)
+                            if url not in self.sessions:
+                                self.sessions[url] = Session(self, url)
+                            self.sessions[url].enqueue(message)
         except ValueError:
             self.logerr("can't recognize JSON on input: %s" % repr(line))
     def terminate(self):
