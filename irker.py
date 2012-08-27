@@ -13,7 +13,6 @@ Requires Python 2.6.
 
 TO-DO: Is there any way to cope if servers drop connections?
 TO-DO: Round-robin as in http://code.google.com/p/cia-vc/source/browse/trunk/cia/LibCIA/IRC/Network.py
-TO-DO: Cope with nick collision?
 TO-DO: Register the port?
 """
 # These things might need tuning
@@ -97,8 +96,9 @@ class Session():
 
 class Irker:
     "Persistent IRC multiplexer."
-    def __init__(self, debuglevel=0):
+    def __init__(self, debuglevel=0, namesuffix=None):
         self.debuglevel = debuglevel
+        self.namesuffix = namesuffix or socket.getfqdn().replace(".", "-")
         self.irc = irclib.IRC(debuglevel=self.debuglevel-1)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
@@ -107,7 +107,6 @@ class Irker:
         self.sessions = {}
         self.countmap = {}
         self.servercount = 0
-        self.hostname = socket.getfqdn()
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
@@ -117,10 +116,10 @@ class Irker:
             sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
     def nickname(self, n):
         "Return a name for the nth server connection."
-        # The purpose of including the FQDN is to ensure that the nicks
-        # of bots managed by instances running on different hosts can
-        # never collide.
-        return (NAMESTYLE % n) + "-" + self.hostname.replace(".", "-")
+        # The purpose of including the namme suffix (defaulting to the
+        # host's FQDN) is to ensure that the nicks of bots managed by
+        # instances running on different hosts can never collide.
+        return (NAMESTYLE % n) + "-" + self.namesuffix
     def open(self, servername, port):
         "Allocate a new server instance."
         if not (servername, port) in self.countmap:
@@ -168,14 +167,17 @@ class MyTCPHandler(SocketServer.StreamRequestHandler):
 if __name__ == '__main__':
     host = HOST
     port = PORT
+    namesuffix = None
     debuglevel = 0
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:")
     for (opt, val) in options:
         if opt == '-d':
             debuglevel = int(val)
         elif opt == '-p':
             port = int(val)
-    irker = Irker(debuglevel=debuglevel)
+        elif opt == '-n':
+            namesuffix = val
+    irker = Irker(debuglevel=debuglevel, namesuffix=namesuffix)
     server = SocketServer.TCPServer((host, port), MyTCPHandler)
     try:
         server.serve_forever()
