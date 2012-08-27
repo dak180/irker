@@ -159,17 +159,24 @@ class Irker:
         for session in self.sessions.values():
             session.await()
 
-class MyTCPHandler(SocketServer.StreamRequestHandler):
+class IrkerTCPHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         while True:
             irker.handle(self.rfile.readline().strip())
+
+class IrkerUDPHandler(SocketServer.BaseRequestHandler):
+    def handle(self):
+        data = self.request[0].strip()
+        #socket = self.request[1]
+        irker.handle(data)
 
 if __name__ == '__main__':
     host = HOST
     port = PORT
     namesuffix = None
     debuglevel = 0
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:")
+    tcp = False
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:t")
     for (opt, val) in options:
         if opt == '-d':
             debuglevel = int(val)
@@ -177,8 +184,13 @@ if __name__ == '__main__':
             port = int(val)
         elif opt == '-n':
             namesuffix = val
+        elif opt == '-t':
+            tcp = True
     irker = Irker(debuglevel=debuglevel, namesuffix=namesuffix)
-    server = SocketServer.TCPServer((host, port), MyTCPHandler)
+    if tcp:
+        server = SocketServer.TCPServer((host, port), IrkerTCPHandler)
+    else:
+        server = SocketServer.UDPServer((host, port), IrkerUDPHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
