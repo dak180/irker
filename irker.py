@@ -2,8 +2,9 @@
 """
 irker - a simple IRC multiplexer daemon
 
-Takes JSON objects of the form {'to':<irc-url>, 'privmsg':<text>}
-and relays messages to IRC channels.
+Listens for JSON objects of the form {'to':<irc-url>, 'privmsg':<text>}
+and relays messages to IRC channels. Each request must be followed by
+a newline.
 
 The <text> must be a string.  The value of the 'to' attribute can be a
 string containing an IRC URL (e.g. 'irc://chat.freenet.net/botwar') or
@@ -19,7 +20,8 @@ The -t option changes this, telling the daemon to use TCP instead.
 Other options: -p sets the listening port, -n sets the name suffix
 for the nicks that irker uses.  The default suffix is derived from the
 FQDN of the site on which irker is running; the intent is to avoid
-nick collisions by instances running on different sites.
+nick collisions by instances running on different sites. The -V
+option prints the program version and exits.
 
 Requires Python 2.6 and the irc.client library: see
 
@@ -40,6 +42,8 @@ CONNECT_MAX = 18		# Max channels open per socket (freenet limit)
 import sys, json, exceptions, getopt, urlparse, time, socket
 import threading, Queue, SocketServer
 import irc.client, logging
+
+version = "1.0"
 
 # Sketch of implementation:
 #
@@ -239,7 +243,7 @@ if __name__ == '__main__':
     namesuffix = None
     debuglevel = 0
     tcp = False
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:t")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:t:V")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglevel = int(val)
@@ -251,6 +255,9 @@ if __name__ == '__main__':
             namesuffix = val
         elif opt == '-t':	# Use TCP rather than UDP
             tcp = True
+        elif opt == '-V':	# Emit version and exit
+            sys.stdout.write("irker version %s\n" % version)
+            sys.exit(0)
     irker = Irker(debuglevel=debuglevel, namesuffix=namesuffix)
     if tcp:
         server = SocketServer.TCPServer((host, port), IrkerTCPHandler)
