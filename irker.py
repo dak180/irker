@@ -19,9 +19,9 @@ TO-DO: Register the port?
 HOST = "localhost"
 PORT = 4747
 
-TTL = (3 * 60 * 60)	# Connection time to live in seconds
-CONNECT_MAX = 18	# Maximum connections per bot (freenet limit)
-NAMESTYLE = "irker%03d"	# IRC nick template - must contain '%d'
+XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
+CONNECT_MAX = 18		# Maximum connections per bot (freenet limit)
+NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 
 # No user-serviceable parts below this line
 
@@ -69,10 +69,10 @@ class Session():
             if not self.server:
                 self.server = self.irker.open(self.servername,
                                                          self.port)
-                self.irker.debug(1, "TTL bump (connection) at %s" % time.asctime())
-                self.last_active = time.time()
+                self.irker.debug(1, "XMIT_TTL bump (connection) at %s" % time.asctime())
+                self.last_xmit = time.time()
             elif self.queue.empty():
-                if time.time() > self.last_active + TTL:
+                if time.time() > self.last_xmit + XMIT_TTL:
                     self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
                     self.irker.close(self.servername,
                                                  self.port)
@@ -82,8 +82,8 @@ class Session():
                 message = self.queue.get()
                 self.server.join("#" + self.channel)
                 self.server.privmsg("#" + self.channel, message)
-                self.last_active = time.time()
-                self.irker.debug(1, "TTL bump (transmission) at %s" % time.asctime())
+                self.last_xmit = time.time()
+                self.irker.debug(1, "XMIT_TTL bump (transmission) at %s" % time.asctime())
                 self.queue.task_done()
     def terminate(self):
         "Terminate this session"
