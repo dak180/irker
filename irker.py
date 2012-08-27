@@ -2,8 +2,9 @@
 """
 irker - a simple IRC multiplexer daemon
 
-Takes JSON objects of the form {'channel':<channel-url>, 'privmsg':<text>}
-and relays messages to IRC channels.
+Takes JSON objects of the form {'to':<channel-url>, 'privmsg':<text>}
+and relays messages to IRC channels.  The channel value can be a list of
+channels as well.
 
 Run this as a daemon in order to maintain stateful connections to IRC
 servers; this will allow it to respond to server pings and minimize
@@ -40,6 +41,8 @@ class Session():
         self.irker = irker
         self.url = url
         self.server = None
+        self.last_xmit = time.time()
+        self.last_ping = time.time()       
         # Server connection setup
         parsed = urlparse.urlparse(url)
         host, _, port = parsed.netloc.partition(':')
@@ -53,8 +56,6 @@ class Session():
         self.thread = threading.Thread(target=self.dequeue)
         self.thread.daemon = True
         self.thread.start()
-        self.last_xmit = time.time()
-        self.last_recv = time.time()       
     def enqueue(self, message):
         "Enque a message for transmission."
         self.queue.put(message)
@@ -75,7 +76,7 @@ class Session():
             elif self.queue.empty():
                 now = time.time()
                 if now > self.last_xmit + XMIT_TTL \
-                       or now > self.last_ping + PONG_TTL:
+                       or now > self.last_ping + PING_TTL:
                     self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
                     self.irker.close(self.servername,
                                                  self.port)
@@ -152,16 +153,26 @@ class Irker:
         "Perform a JSON relay request."
         try:
             request = json.loads(line.strip())
-            if "channel" not in request or "privmsg" not in request:
-                self.logerr("ill-formed reqest")
+            if "to" not in request or "privmsg" not in request:
+                self.logerr("malformed reqest - 'to' or 'privmsg' missing: %s" % repr(request))
             else:
-                channel = request['channel']
+                channels = request['to']
                 message = request['privmsg']
-                if channel not in self.sessions:
-                    self.sessions[channel] = Session(self, channel)
-                self.sessions[channel].enqueue(message)
+                if type(channels) not in (type([]), type(u"")) \
+                       or type(message) != type(u""):
+                    self.logerr("malformed request - unexpected types: %s" % repr(request))
+                else:
+                    if type(channels) == type(u""):
+                        channels = [channels]
+                    for channel in channels:
+                        if type(channel) != type(u""):
+                            self.logerr("malformed request - unexpected type: %s" % repr(request))
+                        else:
+                            if channel not in self.sessions:
+                                self.sessions[channel] = Session(self, channel)
+                            self.sessions[channel].enqueue(message)
         except ValueError:
-            self.logerr("can't recognize JSON on input.")
+            self.logerr("can't recognize JSON on input: %s" % repr(line))
     def terminate(self):
         "Ship all pending messages before terminating."
         for session in self.sessions.values():
