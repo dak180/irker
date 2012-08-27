@@ -2,35 +2,72 @@
 """
 irker - a simple IRC multiplexer daemon
 
-Takes JSON objects of the form {'to':<channel-url>, 'privmsg':<text>}
-and relays messages to IRC channels.  The channel value can be a list of
-channels as well.
+Takes JSON objects of the form {'to':<irc-url>, 'privmsg':<text>}
+and relays messages to IRC channels.
 
-Run this as a daemon in order to maintain stateful connections to IRC
-servers; this will allow it to respond to server pings and minimize
-join/leave traffic.
+The <text> must be a string.  The value of the 'to' attribute can be a
+string containing an IRC URL (e.g. 'irc://chat.freenet.net/botwar') or
+a list of such strings; in the latter case the message is broadcast to
+all listed channels.  Note that the channel portion of the URL will
+*not* have a leading '#' unless the channel name itself does.
 
-Requires Python 2.6 and the irc.client library: see.
+Message transmission is normally via UDP, optimizing for lowest
+latency and network load by avoiding TCP connection setup time; the
+cost is that delivery is not reliable in the face of packet loss.
+The -t option changes this, telling the daemon to use TCP instead.
+
+Other options: -p sets the listening port, -n sets the name suffix
+for the nicks that irker uses.  The default suffix is derived from the
+FQDN of the site on which irker is running; the intent is to avoid
+nick collisions by instances running on different sites.
+
+Requires Python 2.6 and the irc.client library: see
 
 http://sourceforge.net/projects/python-irclib
-
-TO-DO: Register the port?
 """
 # These things might need tuning
 
 HOST = "localhost"
-PORT = 4747
+PORT = 4747			# Overridden by -p option
 
 NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 PING_TTL = (15 * 60)		# Time to live, seconds from last PING
-CONNECT_MAX = 18		# Maximum connections per bot (freenet limit)
+CONNECT_MAX = 18		# Max channels open per socket (freenet limit)
 
 # No user-serviceable parts below this line
 
 import sys, json, exceptions, getopt, urlparse, time, socket
 import threading, Queue, SocketServer
 import irc.client, logging
+
+# Sketch of implementation:
+#
+# One Irker object manages multiple IRC sessions.  Each Session object
+# corresponds to a destination IRC URL that the daemon has seen and handles
+# traffic for one channel on one server.  There is never more than one
+# Session per given (server, channel) pair.
+#
+# Multiple sessions to the same IRC server may share the same
+# irc.client.ServerConnection object in order to cut down on open sockets,
+# but because many servers enforce a limit on channels open per incoming
+# socket, not *all* sessions on the same server necessarily do.
+#
+# Sessions are timed out and removed when either they haven't seen a
+# PING for a while (indicating that the server may be stalled or down)
+# or there has been no message traffic to them for a while.
+#
+# There are multiple threads. One accepts incoming traffic from all servers.
+# Each Session also has a consumer thread and a thread-safe message queue.
+# The program main appends messages to queues as JSON requests are received;
+# the consumer threads try to ship them to servers.  When a socket write
+# stalls, it only blocks an individual consumer thread; if it stalls long
+# enough, the session will be timed out.
+#
+# Message delivery is thus not reliable in the face of network stalls, but
+# this was considered acceptable because IRC (notoriously) has the same
+# problem - there is little point in delivery to a relay that is down or
+# unreliable.
 
 class SessionException(exceptions.Exception):
     def __init__(self, message):
@@ -204,15 +241,15 @@ if __name__ == '__main__':
     tcp = False
     (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:t")
     for (opt, val) in options:
-        if opt == '-d':
+        if opt == '-d':		# Enable debug/progress messages
             debuglevel = int(val)
             if debuglevel > 1:
                 logging.basicConfig(level=DEBUG)
-        elif opt == '-p':
+        elif opt == '-p':	# Set the listening port
             port = int(val)
-        elif opt == '-n':
+        elif opt == '-n':	# Set the name suffix for irker nicks
             namesuffix = val
-        elif opt == '-t':
+        elif opt == '-t':	# Use TCP rather than UDP
             tcp = True
     irker = Irker(debuglevel=debuglevel, namesuffix=namesuffix)
     if tcp:
