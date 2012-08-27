@@ -11,8 +11,7 @@ join/leave traffic.
 
 Requires Python 2.6.
 
-TO-DO: Is there any way to cope is servers drop connections?
-TO-DO: Multiple irkers could try to use the same nick
+TO-DO: Is there any way to cope if servers drop connections?
 TO-DO: Register the port?
 """
 # These things might need tuning
@@ -26,8 +25,9 @@ NAMESTYLE = "irker%03d"	# IRC nick template - must contain '%d'
 
 # No user-serviceable parts below this line
 
-import os, sys, json, irclib, exceptions, getopt, urlparse, time
+import os, sys, json, exceptions, getopt, urlparse, time, socket
 import threading, Queue, SocketServer
+import irclib
 
 class SessionException(exceptions.Exception):
     def __init__(self, message):
@@ -104,6 +104,7 @@ class Irker:
         self.sessions = {}
         self.countmap = {}
         self.servercount = 0
+        self.hostname = socket.getfqdn()
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
@@ -111,6 +112,12 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
+    def nickname(self, n):
+        "Return a name for the nth server connection."
+        # The purpose of including the FQDN is to ensure that the nicks
+        # of bots managed by instances running on different hosts can
+        # never collide.
+        return (NAMESTYLE % n) + "-" + self.hostname.replace(".", "-")
     def open(self, servername, port):
         "Allocate a new server instance."
         if not (servername, port) in self.countmap:
@@ -121,7 +128,7 @@ class Irker:
             newserver = self.irc.server()
             newserver.connect(servername,
                               port,
-                              NAMESTYLE % self.servercount)
+                              self.nickname(self.servercount))
             self.countmap[(servername, port)] = (1, newserver)
         return self.countmap[(servername, port)][1]
     def close(self, servername, port):
