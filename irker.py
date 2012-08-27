@@ -13,7 +13,6 @@ Requires Python 2.6.
 
 TO-DO: Is there any way to cope is servers drop connections?
 TO-DO: Multiple irkers could try to use the same nick
-TO-DO: time out session instances as well as sockets.
 TO-DO: Register the port?
 """
 # These things might need tuning
@@ -66,14 +65,15 @@ class Session():
             # expires, then reconnect and resume transmission if the
             # queue fills up again.
             if not self.server:
-                self.server = self.irker.allocate_server(self.servername,
+                self.server = self.irker.open(self.servername,
                                                          self.port)
                 self.irker.debug(1, "TTL bump (connection) at %s" % time.asctime())
                 self.last_active = time.time()
             elif self.queue.empty():
                 if time.time() > self.last_active + TTL:
                     self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
-                    self.server.part("#" + self.channel)
+                    self.irker.close(self.servername,
+                                                 self.port)
                     self.server = None
                     break
             else:
@@ -83,6 +83,10 @@ class Session():
                 self.last_active = time.time()
                 self.irker.debug(1, "TTL bump (transmission) at %s" % time.asctime())
                 self.queue.task_done()
+    def terminate(self):
+        "Terminate this session"
+        self.server.quit("#" + self.channel)
+        self.server.close()
     def await(self):
         "Block until processing of all queued messages is done."
         self.queue.join()
@@ -106,7 +110,7 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
-    def allocate_server(self, servername, port):
+    def open(self, servername, port):
         "Allocate a new server instance."
         if not (servername, port) in self.countmap:
             self.countmap[(servername, port)] = (CONNECT_MAX+1, None)
@@ -119,6 +123,13 @@ class Irker:
                               "irker%03d" % self.servercount)
             self.countmap[(servername, port)] = (1, newserver)
         return self.countmap[(servername, port)][1]
+    def close(self, servername, port):
+        "Release a server instance and all sessions using it."
+        del self.countmap[(servername, port)]
+        for (key, val) in self.sessions:
+            if (val.servername, val.port) == (servername, port):
+                self.sessions[servername].terminate()
+                del self.sessions[servername]
     def handle(self, line):
         "Perform a JSON relay request."
         try:
