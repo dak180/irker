@@ -19,7 +19,6 @@
 <cmdsynopsis>
   <command>irker.py</command>
      <arg>-p <replaceable>number</replaceable></arg>
-     <arg>-n <replaceable>namesuffix</replaceable></arg>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-V</arg>
 </cmdsynopsis>
@@ -56,13 +55,6 @@ port of each server.</para>
 
 <variablelist>
 <varlistentry>
-<term>-n</term>
-<listitem><para>Takes a following value which sets the name suffix
-for the nicks that irker uses.  The default suffix is derived from the
-FQDN of the site on which irker is running; the intent is to avoid
-nick collisions by instances running on different sites.</para></listitem>
-</varlistentry>
-<varlistentry>
 <term>-p</term>
 <listitem><para>Takes a following value which sets the port on which the
 daemon will listen.</para></listitem>
@@ -82,14 +74,6 @@ terminate.</para></listitem>
 
 </refsect1>
 
-<refsect1 id='authors'><title>AUTHOR</title>
-<para>Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;.  See the project
-page at <ulink
-url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
-for updates and other resources. The implementation uses the Python IRC 
-library </para>
-</refsect1>
-
 <refsect1 id='limitations'><title>LIMITATIONS</title>
 <para>Requests via UDP optimizes for lowest latency and network load
 by avoiding TCP connection setup time; the cost is that delivery is
@@ -103,6 +87,14 @@ spammers to submit while hiding their IP addresses; the better way to
 deploy, then, is on places like project-hosting sites where the
 <application>irker</application> socket can be visible from commit-hook 
 code but not exposed to the outside world.</para>
+</refsect1>
+
+<refsect1 id='authors'><title>AUTHOR</title>
+<para>Eric S. Raymond <email>esr@snark.thyrsus.com</email>.  See the
+project page at <ulink
+url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
+for updates and other resources. The implementation uses the Python
+IRC library by Joe Rosdahl and Jason R. Coombs.</para>
 </refsect1>
 </refentry>
 

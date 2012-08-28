@@ -12,13 +12,10 @@ a list of such strings; in the latter case the message is broadcast to
 all listed channels.  Note that the channel portion of the URL will
 *not* have a leading '#' unless the channel name itself does.
 
-Options: -p sets the listening port, -n sets the name suffix for the
-nicks that irker uses.  The default suffix is derived from the FQDN of
-the site on which irker is running; the intent is to avoid nick
-collisions by instances running on different sites. The -V option
-prints the program version and exits.
+Options: -p sets the listening port. The -V option prints the program
+version and exits.
 
-Requires Python 2.6 and the irc.client library: see
+Requires Python 2.6 and the irc.client library at version >= 2.0.2: see
 
 http://sourceforge.net/projects/python-irclib
 """
@@ -118,7 +115,7 @@ class Session():
                     self.irker.close(self.servername, self.port)
                     self.server = None
                     break
-            else:
+            elif self.server.nick_accepted:
                 message = self.queue.get()
                 self.server.join("#" + self.channel)
                 self.server.privmsg("#" + self.channel, message)
@@ -135,11 +132,21 @@ class Session():
 
 class Irker:
     "Persistent IRC multiplexer."
-    def __init__(self, debuglevel=0, namesuffix=None):
+    def __init__(self, debuglevel=0):
         self.debuglevel = debuglevel
-        self.namesuffix = namesuffix or socket.getfqdn().replace(".", "-")
         self.irc = irc.client.IRC()
-        self.irc.add_global_handler("ping", lambda c, e: self._handle_ping(c,e))
+        self.irc.add_global_handler("ping",
+                                    lambda c, e: self._handle_ping(c,e))
+        self.irc.add_global_handler("welcome",
+                                    lambda c, e: self._handle_welcome(c,e))
+        self.irc.add_global_handler("erroneusnickname",
+                                    lambda c, e: self._handle_badnick(c,e))
+        self.irc.add_global_handler("nicknameinuse",
+                                    lambda c, e: self._handle_badnick(c,e))
+        self.irc.add_global_handler("nickcollision",
+                                    lambda c, e: self._handle_badnick(c,e))
+        self.irc.add_global_handler("unavailresource",
+                                    lambda c, e: self._handle_badnick(c,e))
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
@@ -155,10 +162,7 @@ class Irker:
             sys.stderr.write("irker: %s\n" % errmsg)
     def nickname(self, n):
         "Return a name for the nth server connection."
-        # The purpose of including the namme suffix (defaulting to the
-        # host's FQDN) is to ensure that the nicks of bots managed by
-        # instances running on different hosts can never collide.
-        return (NAMESTYLE % n) + "-" + self.namesuffix
+        return (NAMESTYLE % n)
     def open(self, servername, port):
         "Allocate a new server instance."
         if not (servername, port) in self.countmap:
@@ -167,9 +171,13 @@ class Irker:
         if count > CONNECT_MAX:
             self.servercount += 1
             newserver = self.irc.server()
+            newserver.nick_trial = self.servercount
             newserver.connect(servername,
                               port,
-                              self.nickname(self.servercount))
+                              nickname=self.nickname(newserver.nick_trial),
+                              username="irker",
+                              ircname="irker relaying client")
+            newserver.nick_accepted = False
             self.countmap[(servername, port)] = (1, newserver)
             self.debug(1, "new server connection %d opened for %s:%s" % \
                        (self.servercount, servername, port))
@@ -186,9 +194,18 @@ class Irker:
                 del self.sessions[val.url]
     def _handle_ping(self, connection, event):
         "PING arrived, bump the last-received time for the connection."
-        for (name, server) in self.sessions.items():
+        for (name, session) in self.sessions.items():
             if name == connection.server:
-                server.last_ping = time.time()
+                session.last_ping = time.time()
+    def _handle_welcome(self, connection, event):
+        "Welcome arrived, nick accepted for this connection."
+        connection.nick_accepted = True
+        self.debug("nick %s accepted" % self.nickname(connection.nick_trial))
+    def _handle_badnick(self, connection, event):
+        "Nick not accepted for this connection."
+        self.debug("nick %s rejected" % self.nickname(connection.nick_trial))
+        connection.nick_trial += 1
+        connection.nick(self.nickname(connection.nick_trial))
     def handle(self, line):
         "Perform a JSON relay request."
         try:
@@ -232,9 +249,8 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
 if __name__ == '__main__':
     host = HOST
     port = PORT
-    namesuffix = None
     debuglevel = 0
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:V")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:V")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglevel = int(val)
@@ -242,8 +258,6 @@ if __name__ == '__main__':
                 logging.basicConfig(level=logging.DEBUG)
         elif opt == '-p':	# Set the listening port
             port = int(val)
-        elif opt == '-n':	# Set the name suffix for irker nicks
-            namesuffix = val
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irker version %s\n" % version)
             sys.exit(0)
