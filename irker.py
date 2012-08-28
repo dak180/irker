@@ -200,10 +200,10 @@ class Irker:
     def _handle_welcome(self, connection, event):
         "Welcome arrived, nick accepted for this connection."
         connection.nick_accepted = True
-        self.debug("nick %s accepted" % self.nickname(connection.nick_trial))
+        self.debug(1, "nick %s accepted" % self.nickname(connection.nick_trial))
     def _handle_badnick(self, connection, event):
         "Nick not accepted for this connection."
-        self.debug("nick %s rejected" % self.nickname(connection.nick_trial))
+        self.debug(1, "nick %s rejected" % self.nickname(connection.nick_trial))
         connection.nick_trial += 1
         connection.nick(self.nickname(connection.nick_trial))
     def handle(self, line):
@@ -261,7 +261,7 @@ if __name__ == '__main__':
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irker version %s\n" % version)
             sys.exit(0)
-    irker = Irker(debuglevel=debuglevel, namesuffix=namesuffix)
+    irker = Irker(debuglevel=debuglevel)
     tcpserver = SocketServer.TCPServer((host, port), IrkerTCPHandler)
     udpserver = SocketServer.UDPServer((host, port), IrkerUDPHandler)
     threading.Thread(target=tcpserver.serve_forever).start()
