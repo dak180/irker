@@ -22,7 +22,7 @@ clean:
 	rm -f irker irker.1 irker-*.rpm irker-*.tar.gz *~
 	rm -f SHIPPER.* *.html
 
-SOURCES = README COPYING irker.py Makefile irker.xml
+SOURCES = README COPYING NEWS irker.py Makefile irker.xml irker-logo.jpg
 
 version:
 	@echo $(VERS)

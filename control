@@ -13,7 +13,7 @@ XBS-Destinations: freecode
 
 Homepage: http://www.catb.org/~esr/irker
 
-#XBS-Logo: shipper-logo.png
+XBS-Logo: irker-logo.png
 
 XBS-Project-Tag-List: IRC, client
 
