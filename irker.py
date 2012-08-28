@@ -92,7 +92,6 @@ class Session():
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
-        self.thread.daemon = True
         self.thread.start()
     def enqueue(self, message):
         "Enque a message for transmission."
@@ -144,7 +143,6 @@ class Irker:
         self.irc.add_global_handler("ping", lambda c, e: self._handle_ping(c,e))
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
-        thread.daemon = True
         thread.start()
         self.sessions = {}
         self.countmap = {}
