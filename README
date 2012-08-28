@@ -1,0 +1,10 @@
+	irker - submission tool for IRC notifications
+
+irker is a specialized IRC client that runs as a daemon, allowing 
+other programs to ship IRC notifications by sending JSON objects to a 
+listening socket. It is meant to be used by hook scripts in version-
+control repositories, allowing them to send commit notifications
+to project IRC channels.
+
+						Eric S. Raymond
+						August 2012

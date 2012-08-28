@@ -4,7 +4,7 @@
 <refentry id='irker.1'>
 <refmeta>
 <refentrytitle>irker</refentrytitle>
-<manvolnum>8</manvolnum>
+<manvolnum>1</manvolnum>
 <refmiscinfo class='date'>Aug 27 2012</refmiscinfo>
 <refmiscinfo class='source'>irker</refmiscinfo>
 <refmiscinfo class='product'>irker</refmiscinfo>
@@ -18,11 +18,11 @@
 
 <cmdsynopsis>
   <command>irker</command>
-     <option>-t</option>
-     <option>-p <replaceable>number</replaceable></option>
-     <option>-n <replaceable>namesuffix</replaceable></option>
-     <option>-d <replaceable>debuglevel</replaceable></option>
-     <option>-V</option>
+     <arg>-t</arg>
+     <arg>-p <replaceable>number</replaceable></arg>
+     <arg>-n <replaceable>namesuffix</replaceable></arg>
+     <arg>-d <replaceable>debuglevel</replaceable></arg>
+     <arg>-V</arg>
 </cmdsynopsis>
 </refsynopsisdiv>
 
@@ -42,20 +42,74 @@ destination list, and "privmsg" specifying the message test.  Examples:
 <programlisting>
 {"to":"irc://chat.freenode.net/git-ciabot", "privmsg":"Hello, world!"}
 {"to":["irc://chat.freenode.net/git-ciabot","irc://chat.freenode.net/gpsd"],"privmsg":"Multichannel test"}
+{"to":"irc://chat.hypothetical.net:6668/git-ciabot", "privmsg":"Hello, world!"}
 </programlisting>
-</para>
+
+The host part of the URL may have a port-number suffix separated by a
+colon, as shown in the third example; otherwise
+<application>irker</application> sends messages to the the default 6667 IRC
+port of each server.</para>
+</refsect1>
+
+<refsect1 id='options'><title>OPTIONS</title>
+
+<para><application>irker</application> takes the following options:</para>
+
+<variablelist>
+<varlistentry>
+<term>-n</term>
+<listitem><para>Takes a following value which sets the name suffix
+for the nicks that irker uses.  The default suffix is derived from the
+FQDN of the site on which irker is running; the intent is to avoid
+nick collisions by instances running on different sites.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-p</term>
+<listitem><para>Takes a following value which sets the port on which the
+daemon will listen.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-t</term>
+<listitem><para>Accept TCP connections. The default is UDP. This choice
+trades slightly increased latency for reliability of delivery.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-d</term>
+<listitem><para>Takes a following value, seting the debugging level from
+it. This option will generally only be of interest to developers;
+consult the source code for details.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-V</term>
+<listitem><para>Write the program version to stdout and
+terminate.</para></listitem>
+</varlistentry>
+</variablelist>
 
 </refsect1>
 
-<refsect1 id='authors'><title>AUTHORS</title>
-<para>Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;.  See ESR's home
+<refsect1 id='authors'><title>AUTHOR</title>
+<para>Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;.  See the project
 page at <ulink
-url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/</ulink> for
-updates and other resources.</para>
+url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
+for updates and other resources. The implementation uses the Python IRC 
+library </para>
 </refsect1>
 
 <refsect1 id='bugs'><title>LIMITATIONS</title>
-<para></para>
+<para>We accept requests via UDP, optimizing for lowest latency and
+network load by avoiding TCP connection setup time; the cost is that
+delivery is not reliable in the face of packet loss.  But see the
+description of the <option>-t</option> option above.</para>
+
+<para>No attempt at a content-based spam-filtering facility has been
+made, since IRC servers have to do that anyway. An
+<application>irker</application> instance with a publicly-accessible
+request socket could complicate spam-blocking by making it easy for
+spammers to submit while hiding their IP addresses; the better way to
+deploy, then, is on places like project-hosting sites where the
+<application>irker</application> socket can be visible from commit-hook 
+code but not exposed to the outside world.</para>
 </refsect1>
 </refentry>
 

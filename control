@@ -1,0 +1,19 @@
+# This is not a real Debian control file, though the syntax is compatible.
+# It's project metadata for the shipper tool
+
+Package: irker
+
+Description: IRC client that runs as a daemon accepting JSON notifications
+ allowing other programs to ship IRC notifications by sending JSON
+ objects to a listening socket. It is meant to be used by hook scripts
+ in version- control repositories, allowing them to send commit
+ notifications to project IRC channels.
+
+XBS-Destinations: freecode
+
+Homepage: http://www.catb.org/~esr/irker
+
+#XBS-Logo: shipper-logo.png
+
+XBS-Project-Tag-List: IRC, client
+
