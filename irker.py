@@ -80,7 +80,7 @@ class Session():
         self.url = url
         self.server = None
         self.last_xmit = time.time()
-        self.last_ping = time.time()       
+        self.last_ping = time.time()
         # Server connection setup
         parsed = urlparse.urlparse(url)
         host, _, port = parsed.netloc.partition(':')
@@ -115,8 +115,7 @@ class Session():
                 if now > self.last_xmit + XMIT_TTL \
                        or now > self.last_ping + PING_TTL:
                     self.irker.debug(1, "timing out inactive connection at %s" % time.asctime())
-                    self.irker.close(self.servername,
-                                                 self.port)
+                    self.irker.close(self.servername, self.port)
                     self.server = None
                     break
             else:
@@ -153,7 +152,7 @@ class Irker:
     def debug(self, level, errmsg):
         "Debugging information."
         if self.debuglevel >= level:
-            sys.stderr.write("irker[%d]: %s\n" % (self.debuglevel, errmsg))
+            sys.stderr.write("irker: %s\n" % errmsg)
     def nickname(self, n):
         "Return a name for the nth server connection."
         # The purpose of including the namme suffix (defaulting to the
@@ -240,7 +239,7 @@ if __name__ == '__main__':
         if opt == '-d':		# Enable debug/progress messages
             debuglevel = int(val)
             if debuglevel > 1:
-                logging.basicConfig(level=DEBUG)
+                logging.basicConfig(level=logging.DEBUG)
         elif opt == '-p':	# Set the listening port
             port = int(val)
         elif opt == '-n':	# Set the name suffix for irker nicks
