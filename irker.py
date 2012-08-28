@@ -117,7 +117,9 @@ class Session():
                     break
             elif self.server.nick_accepted:
                 message = self.queue.get()
-                self.server.join("#" + self.channel)
+                if self.channel not in self.server.channels_joined:
+                    self.server.join("#" + self.channel)
+                    self.server.channels_joined.append(self.channel)
                 self.server.privmsg("#" + self.channel, message)
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (transmission) at %s" % time.asctime())
@@ -172,6 +174,7 @@ class Irker:
             self.servercount += 1
             newserver = self.irc.server()
             newserver.nick_trial = self.servercount
+            newserver.channels_joined = []
             newserver.connect(servername,
                               port,
                               nickname=self.nickname(newserver.nick_trial),
