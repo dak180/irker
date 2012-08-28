@@ -17,8 +17,7 @@
 <refsynopsisdiv id='synopsis'>
 
 <cmdsynopsis>
-  <command>irker</command>
-     <arg>-t</arg>
+  <command>irker.py</command>
      <arg>-p <replaceable>number</replaceable></arg>
      <arg>-n <replaceable>namesuffix</replaceable></arg>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
@@ -69,11 +68,6 @@ nick collisions by instances running on different sites.</para></listitem>
 daemon will listen.</para></listitem>
 </varlistentry>
 <varlistentry>
-<term>-t</term>
-<listitem><para>Accept TCP connections. The default is UDP. This choice
-trades slightly increased latency for reliability of delivery.</para></listitem>
-</varlistentry>
-<varlistentry>
 <term>-d</term>
 <listitem><para>Takes a following value, seting the debugging level from
 it. This option will generally only be of interest to developers;
@@ -96,11 +90,10 @@ for updates and other resources. The implementation uses the Python IRC
 library </para>
 </refsect1>
 
-<refsect1 id='bugs'><title>LIMITATIONS</title>
-<para>We accept requests via UDP, optimizing for lowest latency and
-network load by avoiding TCP connection setup time; the cost is that
-delivery is not reliable in the face of packet loss.  But see the
-description of the <option>-t</option> option above.</para>
+<refsect1 id='limitations'><title>LIMITATIONS</title>
+<para>Requests via UDP optimizes for lowest latency and network load
+by avoiding TCP connection setup time; the cost is that delivery is
+not reliable in the face of packet loss.</para>
 
 <para>No attempt at a content-based spam-filtering facility has been
 made, since IRC servers have to do that anyway. An

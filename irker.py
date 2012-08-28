@@ -12,16 +12,11 @@ a list of such strings; in the latter case the message is broadcast to
 all listed channels.  Note that the channel portion of the URL will
 *not* have a leading '#' unless the channel name itself does.
 
-Message transmission is normally via UDP, optimizing for lowest
-latency and network load by avoiding TCP connection setup time; the
-cost is that delivery is not reliable in the face of packet loss.
-The -t option changes this, telling the daemon to use TCP instead.
-
-Other options: -p sets the listening port, -n sets the name suffix
-for the nicks that irker uses.  The default suffix is derived from the
-FQDN of the site on which irker is running; the intent is to avoid
-nick collisions by instances running on different sites. The -V
-option prints the program version and exits.
+Options: -p sets the listening port, -n sets the name suffix for the
+nicks that irker uses.  The default suffix is derived from the FQDN of
+the site on which irker is running; the intent is to avoid nick
+collisions by instances running on different sites. The -V option
+prints the program version and exits.
 
 Requires Python 2.6 and the irc.client library: see
 
@@ -242,8 +237,7 @@ if __name__ == '__main__':
     port = PORT
     namesuffix = None
     debuglevel = 0
-    tcp = False
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:t:V")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:n:V")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglevel = int(val)
@@ -253,19 +247,13 @@ if __name__ == '__main__':
             port = int(val)
         elif opt == '-n':	# Set the name suffix for irker nicks
             namesuffix = val
-        elif opt == '-t':	# Use TCP rather than UDP
-            tcp = True
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irker version %s\n" % version)
             sys.exit(0)
     irker = Irker(debuglevel=debuglevel, namesuffix=namesuffix)
-    if tcp:
-        server = SocketServer.TCPServer((host, port), IrkerTCPHandler)
-    else:
-        server = SocketServer.UDPServer((host, port), IrkerUDPHandler)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
+    tcpserver = SocketServer.TCPServer((host, port), IrkerTCPHandler)
+    udpserver = SocketServer.UDPServer((host, port), IrkerUDPHandler)
+    threading.Thread(target=tcpserver.serve_forever).start()
+    threading.Thread(target=udpserver.serve_forever).start()
 
 # end
