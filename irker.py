@@ -80,12 +80,12 @@ class Session():
         self.last_ping = time.time()
         # Server connection setup
         parsed = urlparse.urlparse(url)
-        host, _, port = parsed.netloc.partition(':')
-        if not port:
-            port = 6667
-        self.servername = host
+        irchost, _, ircport = parsed.netloc.partition(':')
+        if not ircport:
+            ircport = 6667
+        self.servername = irchost
         self.channel = parsed.path.lstrip('/')
-        self.port = int(port)
+        self.port = int(ircport)
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
@@ -143,6 +143,7 @@ class Irker:
         self.irc.add_global_handler("nicknameinuse", self._handle_badnick)
         self.irc.add_global_handler("nickcollision", self._handle_badnick)
         self.irc.add_global_handler("unavailresource", self._handle_badnick)
+        #self.irc.add_global_handler("featurelist", self._handle_features)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
@@ -244,23 +245,23 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
         irker.handle(data)
 
 if __name__ == '__main__':
-    host = HOST
-    port = PORT
-    debuglevel = 0
+    srvhost = HOST
+    srvport = PORT
+    debuglvl = 0
     (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:V")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
-            debuglevel = int(val)
-            if debuglevel > 1:
+            debuglvl = int(val)
+            if debuglvl > 1:
                 logging.basicConfig(level=logging.DEBUG)
         elif opt == '-p':	# Set the listening port
             port = int(val)
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irker version %s\n" % version)
             sys.exit(0)
-    irker = Irker(debuglevel=debuglevel)
-    tcpserver = SocketServer.TCPServer((host, port), IrkerTCPHandler)
-    udpserver = SocketServer.UDPServer((host, port), IrkerUDPHandler)
+    irker = Irker(debuglevel=debuglvl)
+    tcpserver = SocketServer.TCPServer((srvhost, srvport), IrkerTCPHandler)
+    udpserver = SocketServer.UDPServer((srvhost, srvport), IrkerUDPHandler)
     threading.Thread(target=tcpserver.serve_forever).start()
     threading.Thread(target=udpserver.serve_forever).start()
 
