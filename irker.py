@@ -31,7 +31,7 @@ CONNECT_MAX = 18		# Max channels open per socket (freenet limit)
 
 # No user-serviceable parts below this line
 
-import sys, json, exceptions, getopt, urlparse, time, socket
+import sys, json, exceptions, getopt, urlparse, time
 import threading, Queue, SocketServer
 import irc.client, logging
 
@@ -137,18 +137,12 @@ class Irker:
     def __init__(self, debuglevel=0):
         self.debuglevel = debuglevel
         self.irc = irc.client.IRC()
-        self.irc.add_global_handler("ping",
-                                    lambda c, e: self._handle_ping(c,e))
-        self.irc.add_global_handler("welcome",
-                                    lambda c, e: self._handle_welcome(c,e))
-        self.irc.add_global_handler("erroneusnickname",
-                                    lambda c, e: self._handle_badnick(c,e))
-        self.irc.add_global_handler("nicknameinuse",
-                                    lambda c, e: self._handle_badnick(c,e))
-        self.irc.add_global_handler("nickcollision",
-                                    lambda c, e: self._handle_badnick(c,e))
-        self.irc.add_global_handler("unavailresource",
-                                    lambda c, e: self._handle_badnick(c,e))
+        self.irc.add_global_handler("ping", self._handle_ping)
+        self.irc.add_global_handler("welcome", self._handle_welcome)
+        self.irc.add_global_handler("erroneusnickname", self._handle_badnick)
+        self.irc.add_global_handler("nicknameinuse", self._handle_badnick)
+        self.irc.add_global_handler("nickcollision", self._handle_badnick)
+        self.irc.add_global_handler("unavailresource", self._handle_badnick)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
