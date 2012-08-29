@@ -103,8 +103,7 @@ class Session():
             # expires, then reconnect and resume transmission if the
             # queue fills up again.
             if not self.server:
-                self.server = self.irker.open(self.servername,
-                                                         self.port)
+                self.server = self.irker.open(self.servername, self.port)
                 self.irker.debug(1, "XMIT_TTL bump (connection) at %s" % time.asctime())
                 self.last_xmit = time.time()
             elif self.queue.empty():
