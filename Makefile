@@ -27,16 +27,13 @@ pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irker
 
 
-SOURCES = README COPYING NEWS irker Makefile irker.xml irker-logo.jpg
+SOURCES = README COPYING NEWS irker Makefile irker.xml irker-logo.png
 
 version:
 	@echo $(VERS)
 
 irker-$(VERS).tar.gz: $(SOURCES) irker.1
-	@ls $(SOURCES) irker.1 | sed s:^:irker-$(VERS)/: >MANIFEST
-	@(cd ..; ln -s irker irker-$(VERS))
-	(cd ..; tar -czf irker/irker-$(VERS).tar.gz `cat irker/MANIFEST`)
-	@(cd ..; rm irker-$(VERS))
+	tar --transform='s:^:irker-$(VERS)/:' --show-transformed-names -cvzf irker-$(VERS).tar.gz $(SOURCES)
 
 dist: irker-$(VERS).tar.gz
 
