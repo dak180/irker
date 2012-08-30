@@ -33,7 +33,7 @@ CHANNEL_MAX = 18		# Max channels open per socket (freenet limit)
 
 # No user-serviceable parts below this line
 
-import sys, json, exceptions, getopt, urlparse, time
+import sys, json, getopt, urlparse, time
 import threading, Queue, SocketServer
 import irc.client, logging
 
@@ -67,8 +67,8 @@ version = "1.0"
 # unreliable.
 
 class Connection:
-    def __init__(self, irker, servername, port):
-        self.irker = irker
+    def __init__(self, irkerd, servername, port):
+        self.irker = irkerd
         self.servername = servername
         self.port = port
         self.connection = None
@@ -97,7 +97,7 @@ class Connection:
         "The server says our nick has a conflict."
         self.irker.debug(1, "nick %s rejected" % self.nickname())
         self.nick_trial += 1
-        self.nick(self.nickname())
+        self.connection.nick(self.nickname())
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         self.queue.put((channel, message))
@@ -190,8 +190,8 @@ class Target():
 
 class Dispatcher:
     "Manage connections to a particular server-port combination."
-    def __init__(self, irker, servername, port):
-        self.irker = irker
+    def __init__(self, irkerd, servername, port):
+        self.irker = irkerd
         self.servername = servername
         self.port = port
         self.connections = []
@@ -235,15 +235,15 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irker: %s\n" % errmsg)
-    def _handle_ping(self, connection, event):
+    def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
         if connection.context:
             connection.context.handle_ping()
-    def _handle_welcome(self, connection, event):
+    def _handle_welcome(self, connection, _event):
         "Welcome arrived, nick accepted for this connection."
         if connection.context:
             connection.context.handle_welcome()
-    def _handle_badnick(self, connection, event):
+    def _handle_badnick(self, connection, _event):
         "Nick not accepted for this connection."
         if connection.context:
             connection.context.handle_badnick()
@@ -253,7 +253,7 @@ class Irker:
             for lump in event.arguments():
                 if lump.startswith("DEAF="):
                     connection.mode(connection.context.nickname(), "+"+lump[5:])
-    def drop_server(servername, port):
+    def drop_server(self, servername, port):
         "Drop a server out of the server map."
         del self.servers[(servername, port)]
     def handle(self, line):
@@ -309,7 +309,7 @@ if __name__ == '__main__':
             if debuglvl > 1:
                 logging.basicConfig(level=logging.DEBUG)
         elif opt == '-p':	# Set the listening port
-            port = int(val)
+            srvport = int(val)
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irker version %s\n" % version)
             sys.exit(0)
