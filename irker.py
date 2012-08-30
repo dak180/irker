@@ -30,7 +30,8 @@ NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 PING_TTL = (15 * 60)		# Time to live, seconds from last PING
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
-CONNECT_MAX = 18		# Max channels open per socket (freenet limit)
+UNSEEN_TTL = 60			# Time to live, seconds since first request
+CHANNEL_MAX = 18		# Max channels open per socket (freenet limit)
 
 # No user-serviceable parts below this line
 
@@ -72,7 +73,7 @@ class Connection(irc.client.ServerConnection):
         self.servername = servername
         self.port = port
         self.connection = None
-        self.status = "disconnected"
+        self.status = "unseen"
         self.nick_trial = 1
         self.last_xmit = time.time()
         self.last_ping = time.time()
@@ -126,6 +127,9 @@ class Connection(irc.client.ServerConnection):
                 except irc.client.ServerConnectionError:
                     self.status = "disconnected"
             elif self.queue.empty():
+                # Queue is empty, at some point we want to time out
+                # the connection rather than holding a socket open in
+                # the server forever.
                 now = time.time()
                 if now > self.last_xmit + XMIT_TTL \
                        or now > self.last_ping + PING_TTL:
@@ -136,6 +140,18 @@ class Connection(irc.client.ServerConnection):
                     self.status = "disconnected"
             elif self.status == "disconnected" \
                      and time.time() > self.last_xmit + DISCONNECT_TTL:
+                # Queue is nonempty, but the IRC server might be down. Letting
+                # failed connections retain queue space forever would be a
+                # memory leak.  
+                self.status = "expired"
+                break
+            elif self.status == "unseen" \
+                     and time.time() > self.last_xmit + UNSEEN_TTL:
+                # Nasty people could attempt a denial-of-service
+                # attack by flooding us with requests with invalid
+                # servernames. We guard against this by rapidly
+                # expiring connections that have a nonempty queue but
+                # have never had a successful open.
                 self.status = "expired"
                 break
             elif self.status == "ready":
@@ -147,6 +163,10 @@ class Connection(irc.client.ServerConnection):
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
+    def accepting(self, channel):
+        "Is this connection ready to accept messages for the specified channel?"
+        return channel in self.channels_joined \
+               or len(self.channels_joined) < CHANNEL_MAX
 
 class Target():
     "Represent a transmission target."
@@ -171,16 +191,15 @@ class Dispatcher:
         self.connections = []
     def dispatch(self, channel, message):
         "Dispatch messages for our server-port combination."
-        # FIXME: Implement a nontrivial policy that respects CONNECT_MAX.
-        if not self.connections:
-            try:
-                self.connections.append(Connection(self.irker,
-                                                   self.servername,
-                                                   self.port))
-            except irc.client.ServerConnectionError:
-                self.irker.drop_server((servername, port))
-                return
-        self.connections[0].enqueue(channel, message)
+        self.connections = [x for x in self.connections if x.status!="expired"]
+        eligibles = [x for x in self.connections if x.accepting(channel)]
+        if not eligibles:
+            newconn = Connection(self.irker,
+                                 self.servername,
+                                 self.port)
+            self.connections.append(newconn)
+            eligibles = [newconn]
+        eligibles[0].enqueue(channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
