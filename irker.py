@@ -29,6 +29,7 @@ PORT = 4747			# Overridden by -p option
 NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 PING_TTL = (15 * 60)		# Time to live, seconds from last PING
+DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 CONNECT_MAX = 18		# Max channels open per socket (freenet limit)
 
 # No user-serviceable parts below this line
@@ -71,6 +72,7 @@ class Connection(irc.client.ServerConnection):
         self.servername = servername
         self.port = port
         self.connection = None
+        self.status = "disconnected"
         self.nick_trial = 1
         self.last_xmit = time.time()
         self.last_ping = time.time()
@@ -87,7 +89,7 @@ class Connection(irc.client.ServerConnection):
         self.last_ping = time.time()
     def handle_welcome(self):
         "The server says we're OK, with a non-conflicting nick."
-        self.nick_accepted = True
+        self.status = "ready"
         self.irker.debug(1, "nick %s accepted" % self.nickname(self.nick_trial))
     def handle_badnick(self):
         "The server says our nick has a conflict."
@@ -111,14 +113,18 @@ class Connection(irc.client.ServerConnection):
                 self.connection.context = self
                 self.nick_trial = 1
                 self.channels_joined = []
-                self.connection.connect(self.servername,
+                # This will throw irc.client.ServerConnectionError on failure
+                try:
+                    self.connection.connect(self.servername,
                                         self.port,
                                         nickname=self.nickname(self.nick_trial),
                                         username="irker",
                                         ircname="irker relaying client")
-                self.nick_accepted = False
-                self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
-                self.last_xmit = time.time()
+                    self.status = "handshaking"
+                    self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
+                    self.last_xmit = time.time()
+                except irc.client.ServerConnectionError:
+                    self.status = "disconnected"
             elif self.queue.empty():
                 now = time.time()
                 if now > self.last_xmit + XMIT_TTL \
@@ -127,8 +133,12 @@ class Connection(irc.client.ServerConnection):
                     self.connection.context = None
                     self.connection.close()
                     self.connection = None
-                    break
-            elif self.nick_accepted:
+                    self.status = "disconnected"
+            elif self.status == "disconnected" \
+                     and time.time() > self.last_xmit + DISCONNECT_TTL:
+                self.status = "expired"
+                break
+            elif self.status == "ready":
                 (channel, message) = self.queue.get()
                 if channel not in self.channels_joined:
                     self.connection.join("#" + channel)
@@ -137,12 +147,6 @@ class Connection(irc.client.ServerConnection):
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
-    def timed_out(self):
-        "Predicate: returns True if the connection has timed out."
-        # Important invariant: enqueue() is only called synchronously in the
-        # main thread.  Thus, once the consumer thread empties the queue and
-        # declared timeout, this predicate is thread-stable.
-        return self.connection == None
 
 class Target():
     "Represent a transmission target."
@@ -159,15 +163,24 @@ class Target():
         return (self.servername, self.port)
 
 class Dispatcher:
-    "Dispatch messages for a particular server-port combination."
-    # FIXME: Implement a nontivial policy that respects CONNECT_MAX.
+    "Manage connections to a particular server-port combination."
     def __init__(self, irker, servername, port):
         self.irker = irker
         self.servername = servername
         self.port = port
-        self.connection = Connection(self.irker, servername, port)
+        self.connections = []
     def dispatch(self, channel, message):
-        self.connection.enqueue(channel, message)
+        "Dispatch messages for our server-port combination."
+        # FIXME: Implement a nontrivial policy that respects CONNECT_MAX.
+        if not self.connections:
+            try:
+                self.connections.append(Connection(self.irker,
+                                                   self.servername,
+                                                   self.port))
+            except irc.client.ServerConnectionError:
+                self.irker.drop_server((servername, port))
+                return
+        self.connections[0].enqueue(channel, message)
 
 class Irker:
     "Persistent IRC multiplexer."
