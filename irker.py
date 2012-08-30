@@ -18,6 +18,8 @@ version and exits.
 Requires Python 2.6 and the irc.client library at version >= 2.0.2: see
 
 http://sourceforge.net/projects/python-irclib
+
+TO-DO: set deaf usermode.
 """
 # These things might need tuning
 
@@ -80,6 +82,18 @@ class Connection(irc.client.ServerConnection):
     def nickname(self, n):
         "Return a name for the nth server connection."
         return (NAMESTYLE % n)
+    def handle_ping(self):
+        "Register the fact that the server has pinged this connection."
+        self.last_ping = time.time()
+    def handle_welcome(self):
+        "The server says we're OK, with a non-conflicting nick."
+        self.nick_accepted = True
+        self.irker.debug(1, "nick %s accepted" % self.nickname(self.nick_trial))
+    def handle_badnick(self):
+        "The server says our nick has a conflict."
+        self.irker.debug(1, "nick %s rejected" % self.nickname(self.nick_trial))
+        self.nick_trial += 1
+        self.nick(self.nickname(self.nick_trial))
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         self.queue.put((channel, message))
@@ -123,6 +137,12 @@ class Connection(irc.client.ServerConnection):
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
+    def timed_out(self):
+        "Predicate: returns True if the connection has timed out."
+        # Important invariant: enqueue() is only called synchronously in the
+        # main thread.  Thus, once the consumer thread empties the queue and
+        # declared timeout, this predicate is thread-stable.
+        return self.connection == None
 
 class Target():
     "Represent a transmission target."
@@ -174,16 +194,16 @@ class Irker:
             sys.stderr.write("irker: %s\n" % errmsg)
     def _handle_ping(self, connection, event):
         "PING arrived, bump the last-received time for the connection."
-        connection.context.last_ping = time.time()
+        if connection.context:
+            connection.context.handle_ping()
     def _handle_welcome(self, connection, event):
         "Welcome arrived, nick accepted for this connection."
-        connection.context.nick_accepted = True
-        self.debug(1, "nick %s accepted" % connection.context.nickname(connection.context.nick_trial))
+        if connection.context:
+            connection.context.handle_welcome()
     def _handle_badnick(self, connection, event):
         "Nick not accepted for this connection."
-        self.debug(1, "nick %s rejected" % self.nickname(connection.context.nick_trial))
-        connection.context.nick_trial += 1
-        connection.context.nick(self.nickname(connection.context.nick_trial))
+        if connection.context:
+            connection.context.handle_badnick()
     def handle(self, line):
         "Perform a JSON relay request."
         try:
