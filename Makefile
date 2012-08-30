@@ -22,7 +22,7 @@ clean:
 	rm -f irker irker.1 irker-*.rpm irker-*.tar.gz *~
 	rm -f SHIPPER.* *.html
 
-PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902"
+PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902,R0903,E1101"
 pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irker.py
 
