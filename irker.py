@@ -184,7 +184,7 @@ class Irker:
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
-        self.ircds = {}
+        self.servers = {}
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irker: " + errmsg + "\n")
@@ -204,6 +204,9 @@ class Irker:
         "Nick not accepted for this connection."
         if connection.context:
             connection.context.handle_badnick()
+    def drop_server(servername, port):
+        "Drop a server out of the server map."
+        del self.servers[(servername, port)]
     def handle(self, line):
         "Perform a JSON relay request."
         try:
@@ -224,9 +227,9 @@ class Irker:
                             self.logerr("malformed request - unexpected type: %s" % repr(request))
                         else:
                             target = Target(url)
-                            if target.server() not in self.ircds:
-                                self.ircds[target.server()] = Dispatcher(self, target.servername, target.port)
-                            self.ircds[target.server()].dispatch(target.channel, message)
+                            if target.server() not in self.servers:
+                                self.servers[target.server()] = Dispatcher(self, target.servername, target.port)
+                            self.servers[target.server()].dispatch(target.channel, message)
         except ValueError:
             self.logerr("can't recognize JSON on input: %s" % repr(line))
 
