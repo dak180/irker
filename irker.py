@@ -163,10 +163,15 @@ class Connection(irc.client.ServerConnection):
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
-    def accepting(self, channel):
-        "Is this connection ready to accept messages for the specified channel?"
-        return channel in self.channels_joined \
-               or len(self.channels_joined) < CHANNEL_MAX
+    def live(self):
+        "Should this connection not be scavenged?"
+        return self.status != "expired"
+    def joined_to(self, channel):
+        "Is this connection joined to the specified channel?"
+        return channel in self.channels_joined
+    def accepting(self):
+        "Can this connection accept new channel joins?"
+        return len(self.channels_joined) < CHANNEL_MAX
 
 class Target():
     "Represent a transmission target."
@@ -191,8 +196,9 @@ class Dispatcher:
         self.connections = []
     def dispatch(self, channel, message):
         "Dispatch messages for our server-port combination."
-        self.connections = [x for x in self.connections if x.status!="expired"]
-        eligibles = [x for x in self.connections if x.accepting(channel)]
+        self.connections = [x for x in self.connections if x.live()]
+        eligibles = [x for x in self.connections if x.joined_to(channel)] \
+                    or [x for x in self.connections if x.accepting()]
         if not eligibles:
             newconn = Connection(self.irker,
                                  self.servername,
@@ -200,6 +206,10 @@ class Dispatcher:
             self.connections.append(newconn)
             eligibles = [newconn]
         eligibles[0].enqueue(channel, message)
+    def live(self):
+        "Does this server-port combination have any live connections?"
+        self.connections = [x for x in self.connections if x.live()]
+        return not self.connections
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -262,6 +272,11 @@ class Irker:
                             if target.server() not in self.servers:
                                 self.servers[target.server()] = Dispatcher(self, target.servername, target.port)
                             self.servers[target.server()].dispatch(target.channel, message)
+                            # GC dispatchers with no active connections
+                            servernames = self.servers.keys()
+                            for servername in servernames:
+                                if not self.servers[servername].live():
+                                    del self.servers[servername]
         except ValueError:
             self.logerr("can't recognize JSON on input: %s" % repr(line))
 
