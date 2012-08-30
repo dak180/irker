@@ -1,6 +1,6 @@
 # Makefile for the irker relaying tool
 
-VERS=$(shell irker.py -V | sed 's/irker version //')
+VERS=$(shell irker -V | sed 's/irker version //')
 
 docs: irker.html irker.1
 
@@ -11,12 +11,12 @@ irker.html: irker.xml
 
 install: irker.1 uninstall
 	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/bin/
-	install -m 755 -o 0 -g 0 irker.py $(ROOT)/usr/bin/irker.py
+	install -m 755 -o 0 -g 0 irker $(ROOT)/usr/bin/irker.py
 	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/share/man/man1/
 	install -m 755 -o 0 -g 0 irker.1 $(ROOT)/usr/share/man/man1/irker.1
 
 uninstall:
-	rm -f ${ROOT}/usr/bin/irker.py ${ROOT}/usr/share/man/man1/irker.1
+	rm -f ${ROOT}/usr/bin/irker ${ROOT}/usr/share/man/man1/irker.1
 
 clean:
 	rm -f irker irker.1 irker-*.rpm irker-*.tar.gz *~
@@ -24,10 +24,10 @@ clean:
 
 PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902,R0903,E1101"
 pylint:
-	@pylint --output-format=parseable $(PYLINTOPTS) irker.py
+	@pylint --output-format=parseable $(PYLINTOPTS) irker
 
 
-SOURCES = README COPYING NEWS irker.py Makefile irker.xml irker-logo.jpg
+SOURCES = README COPYING NEWS irker Makefile irker.xml irker-logo.jpg
 
 version:
 	@echo $(VERS)

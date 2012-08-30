@@ -17,7 +17,7 @@
 <refsynopsisdiv id='synopsis'>
 
 <cmdsynopsis>
-  <command>irker.py</command>
+  <command>irker</command>
      <arg>-p <replaceable>number</replaceable></arg>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-V</arg>
@@ -32,10 +32,11 @@ channels. The use case in mind when it was designed was broadcasting
 notifications from commit hooks in version-control systems.</para>
 
 <para><application>irker</application> is a socket server that listens
-on a UDP or TCP port (normally UDP port 4747) for textual request
-lines containing JSON objects and terminated by a newline. Each JSON
-object must have exactly two members: "to" specifying a destination or
-destination list, and "privmsg" specifying the message test.  Examples:
+on for UDP or TCP packets on a port (normally 4747) for textual
+request lines containing JSON objects and terminated by a
+newline. Each JSON object must have exactly two members: "to"
+specifying a destination or destination list, and "privmsg" specifying
+the message test.  Examples:
 
 <programlisting>
 {"to":"irc://chat.freenode.net/git-ciabot", "privmsg":"Hello, world!"}
