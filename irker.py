@@ -18,8 +18,6 @@ version and exits.
 Requires Python 2.6 and the irc.client library at version >= 2.0.2: see
 
 http://sourceforge.net/projects/python-irclib
-
-TO-DO: set deaf usermode.
 """
 # These things might need tuning
 
@@ -45,11 +43,12 @@ version = "1.0"
 #
 # One Irker object manages multiple IRC sessions.  It holds a map of
 # Dispatcher objects, one per (server, port) combination, which are
-# responsible for routing messages to one of any bumber of Connection
-# objects that do the actual socket conversation.  The reason for
+# responsible for routing messages to one of any number of Connection
+# objects that do the actual socket conversations.  The reason for
 # the Dispatcher layer is that IRC daemons limit the number of channels
 # a client (that is, from the daemon's point of view, a socket) can be
-# joined to.
+# joined to, so we may need a flock of connection instances each with
+# its own socket.
 #
 # Connections are timed out and removed when either they haven't seen a
 # PING for a while (indicating that the server may be stalled or down)
@@ -67,7 +66,7 @@ version = "1.0"
 # problem - there is little point in delivery to a relay that is down or
 # unreliable.
 
-class Connection(irc.client.ServerConnection):
+class Connection:
     def __init__(self, irker, servername, port):
         self.irker = irker
         self.servername = servername
@@ -82,8 +81,10 @@ class Connection(irc.client.ServerConnection):
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
         self.thread.start()
-    def nickname(self, n):
+    def nickname(self, n=None):
         "Return a name for the nth server connection."
+        if n is None:
+            n = self.nick_trial
         return (NAMESTYLE % n)
     def handle_ping(self):
         "Register the fact that the server has pinged this connection."
@@ -91,12 +92,12 @@ class Connection(irc.client.ServerConnection):
     def handle_welcome(self):
         "The server says we're OK, with a non-conflicting nick."
         self.status = "ready"
-        self.irker.debug(1, "nick %s accepted" % self.nickname(self.nick_trial))
+        self.irker.debug(1, "nick %s accepted" % self.nickname())
     def handle_badnick(self):
         "The server says our nick has a conflict."
-        self.irker.debug(1, "nick %s rejected" % self.nickname(self.nick_trial))
+        self.irker.debug(1, "nick %s rejected" % self.nickname())
         self.nick_trial += 1
-        self.nick(self.nickname(self.nick_trial))
+        self.nick(self.nickname())
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         self.queue.put((channel, message))
@@ -118,7 +119,7 @@ class Connection(irc.client.ServerConnection):
                 try:
                     self.connection.connect(self.servername,
                                         self.port,
-                                        nickname=self.nickname(self.nick_trial),
+                                        nickname=self.nickname(),
                                         username="irker",
                                         ircname="irker relaying client")
                     self.status = "handshaking"
@@ -222,7 +223,7 @@ class Irker:
         self.irc.add_global_handler("nicknameinuse", self._handle_badnick)
         self.irc.add_global_handler("nickcollision", self._handle_badnick)
         self.irc.add_global_handler("unavailresource", self._handle_badnick)
-        #self.irc.add_global_handler("featurelist", self._handle_features)
+        self.irc.add_global_handler("featurelist", self._handle_features)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
@@ -246,6 +247,12 @@ class Irker:
         "Nick not accepted for this connection."
         if connection.context:
             connection.context.handle_badnick()
+    def _handle_features(self, connection, event):
+        "Determine if and how we can set deaf mode."
+        if connection.context:
+            for lump in event.arguments():
+                if lump.startswith("DEAF="):
+                    connection.mode(connection.context.nickname(), "+"+lump[5:])
     def drop_server(servername, port):
         "Drop a server out of the server map."
         del self.servers[(servername, port)]
