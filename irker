@@ -19,8 +19,6 @@ Requires Python 2.6 and the irc.client library at version >= 2.0.2: see
 
 http://sourceforge.net/projects/python-irclib
 """
-# TO-DO: use the CHANLIMIT field in 005.
-
 # These things might need tuning
 
 HOST = "localhost"
@@ -32,7 +30,7 @@ PING_TTL = (15 * 60)		# Time to live, seconds from last PING
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (freenet limit)
-ANTI_FLOOD_DELAY = 0.025	# Anti-flood delay after transmissions, seconds
+ANTI_FLOOD_DELAY = 0.125	# Anti-flood delay after transmissions, seconds
 
 # No user-serviceable parts below this line
 
@@ -80,6 +78,7 @@ class Connection:
         self.last_xmit = time.time()
         self.last_ping = time.time()
         self.channels_joined = []
+        self.channel_max = CHANNEL_MAX
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
@@ -176,7 +175,7 @@ class Connection:
         return channel in self.channels_joined
     def accepting(self):
         "Can this connection accept new channel joins?"
-        return len(self.channels_joined) < CHANNEL_MAX
+        return len(self.channels_joined) < self.channel_max
 
 class Target():
     "Represent a transmission target."
@@ -257,6 +256,8 @@ class Irker:
             for lump in event.arguments():
                 if lump.startswith("DEAF="):
                     connection.mode(connection.context.nickname(), "+"+lump[5:])
+                elif lump.startswith("CHANLIMIT=#:"):
+                    connection.context.channel_max = int(lump[12:])
     def drop_server(self, servername, port):
         "Drop a server out of the server map."
         del self.servers[(servername, port)]
