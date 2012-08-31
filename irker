@@ -32,7 +32,7 @@ PING_TTL = (15 * 60)		# Time to live, seconds from last PING
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (freenet limit)
-ANTI_FLOOD_DELAY = 0.125	# Anti-flood delay after trasmissions, seconds
+ANTI_FLOOD_DELAY = 0.025	# Anti-flood delay after transmissions, seconds
 
 # No user-serviceable parts below this line
 
