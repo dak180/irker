@@ -40,14 +40,20 @@ the message test.  Examples:
 
 <programlisting>
 {"to":"irc://chat.freenode.net/git-ciabot", "privmsg":"Hello, world!"}
-{"to":["irc://chat.freenode.net/git-ciabot","irc://chat.freenode.net/gpsd"],"privmsg":"Multichannel test"}
+{"to":["irc://chat.freenode.net/#git-ciabot","irc://chat.freenode.net/#gpsd"],"privmsg":"Multichannel test"}
 {"to":"irc://chat.hypothetical.net:6668/git-ciabot", "privmsg":"Hello, world!"}
-</programlisting>
+</programlisting></para>
 
-The host part of the URL may have a port-number suffix separated by a
+<para>If the channel part of the URL does not have one of the prefix characters
+<quote>#</quote>, <quote>&amp;</quote>, or <quote>+</quote>, a <quote>#</quote>
+will be prepended to it before shipping.</para>
+
+<para>The host part of the URL may have a port-number suffix separated by a
 colon, as shown in the third example; otherwise
 <application>irker</application> sends messages to the the default 6667 IRC
 port of each server.</para>
+
+
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
@@ -80,14 +86,14 @@ terminate.</para></listitem>
 by avoiding TCP connection setup time; the cost is that delivery is
 not reliable in the face of packet loss.</para>
 
-<para>No attempt at a content-based spam-filtering facility has been
-made, since IRC servers have to do that anyway. An
-<application>irker</application> instance with a publicly-accessible
-request socket could complicate spam-blocking by making it easy for
-spammers to submit while hiding their IP addresses; the better way to
-deploy, then, is on places like project-hosting sites where the
-<application>irker</application> socket can be visible from commit-hook 
-code but not exposed to the outside world.</para>
+<para>An <application>irker</application> instance with a
+publicly-accessible request socket could complicate blocking of IRC
+spam by making it easy for spammers to submit while hiding their IP
+addresses; the better way to deploy, then, is on places like
+project-hosting sites where the <application>irker</application>
+socket can be visible from commit-hook code but not exposed to the
+outside world. Priming your firewall with blocklists of IP addresses
+known to spew spam is always a good idea.</para>
 </refsect1>
 
 <refsect1 id='authors'><title>AUTHOR</title>
