@@ -66,6 +66,11 @@ version = "1.0"
 # this was considered acceptable because IRC (notoriously) has the same
 # problem - there is little point in delivery to a relay that is down or
 # unreliable.
+#
+# This code is strictly compliant to RFC1459, except for the interpretation
+# and use of the DEAF and CHANLIMIT features.  CHANLIMIT is described jn the
+# Internet  RFC draft draft-brocklesby-irc-isupport-03 at
+# <http://www.mirc.com/isupport.html>.
 
 class Connection:
     def __init__(self, irkerd, servername, port):
@@ -160,9 +165,11 @@ class Connection:
             elif self.status == "ready":
                 (channel, message) = self.queue.get()
                 if channel not in self.channels_joined:
-                    self.connection.join("#" + channel)
                     self.channels_joined.append(channel)
-                self.connection.privmsg("#" + channel, message)
+                    if channel[0] not in "#&+":
+                        channel = "#" + channel
+                    self.connection.join(channel)
+                self.connection.privmsg(channel, message)
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
