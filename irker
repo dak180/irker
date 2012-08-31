@@ -19,6 +19,8 @@ Requires Python 2.6 and the irc.client library at version >= 2.0.2: see
 
 http://sourceforge.net/projects/python-irclib
 """
+# TO-DO: use the CHANLIMIT field in 005.
+
 # These things might need tuning
 
 HOST = "localhost"
@@ -30,6 +32,7 @@ PING_TTL = (15 * 60)		# Time to live, seconds from last PING
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (freenet limit)
+ANTI_FLOOD_DELAY = 0.125	# Anti-flood delay after trasmissions, seconds
 
 # No user-serviceable parts below this line
 
@@ -164,6 +167,7 @@ class Connection:
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
+                time.sleep(ANTI_FLOOD_DELAY)
     def live(self):
         "Should this connection not be scavenged?"
         return self.status != "expired"
