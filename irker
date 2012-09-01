@@ -74,13 +74,13 @@ version = "1.0"
 # <http://www.mirc.com/isupport.html>.
 
 class Connection:
-    def __init__(self, irkerd, servername, port):
+    def __init__(self, irkerd, servername, port, nick_base=1):
         self.irker = irkerd
         self.servername = servername
         self.port = port
+        self.nick_trial = nick_base
         self.connection = None
         self.status = "unseen"
-        self.nick_trial = 1
         self.last_xmit = time.time()
         self.last_ping = time.time()
         self.channels_joined = []
@@ -214,7 +214,8 @@ class Dispatcher:
         if not eligibles:
             newconn = Connection(self.irker,
                                  self.servername,
-                                 self.port)
+                                 self.port,
+                                 len(self.connections)+1)
             self.connections.append(newconn)
             eligibles = [newconn]
         eligibles[0].enqueue(channel, message)
