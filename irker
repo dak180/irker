@@ -45,15 +45,17 @@ version = "1.0"
 # One Irker object manages multiple IRC sessions.  It holds a map of
 # Dispatcher objects, one per (server, port) combination, which are
 # responsible for routing messages to one of any number of Connection
-# objects that do the actual socket conversations.  The reason for
-# the Dispatcher layer is that IRC daemons limit the number of channels
-# a client (that is, from the daemon's point of view, a socket) can be
-# joined to, so we may need a flock of connection instances each with
-# its own socket.
+# objects that do the actual socket conversations.  The reason for the
+# Dispatcher layer is that IRC daemons limit the number of channels a
+# client (that is, from the daemon's point of view, a socket) can be
+# joined to, so each session to a server needs a flock of Connection
+# instances each with its own socket.
 #
 # Connections are timed out and removed when either they haven't seen a
 # PING for a while (indicating that the server may be stalled or down)
-# or there has been no message traffic to them for a while.
+# or there has been no message traffic to them for a while, or
+# even if the queue is nonempty but efforts to connect have failed for
+# a long time.
 #
 # There are multiple threads. One accepts incoming traffic from all servers.
 # Each Connection also has a consumer thread and a thread-safe message queue.
@@ -69,7 +71,7 @@ version = "1.0"
 #
 # This code uses only NICK, JOIN, MODE, and PRIVMSG. It is strictly
 # compliant to RFC1459, except for the interpretation and use of the
-# DEAF and CHANLIMIT features.  CHANLIMIT is as described jn the
+# DEAF and CHANLIMIT features.  CHANLIMIT is as described in the
 # Internet RFC draft draft-brocklesby-irc-isupport-03 at
 # <http://www.mirc.com/isupport.html>.
 
