@@ -64,16 +64,16 @@ version = "1.0"
 # stalls, it only blocks an individual consumer thread; if it stalls long
 # enough, the session will be timed out.
 #
-# Message delivery is thus not reliable in the face of network stalls, but
-# this was considered acceptable because IRC (notoriously) has the same
-# problem - there is little point in delivery to a relay that is down or
-# unreliable.
+# Message delivery is thus not reliable in the face of network stalls,
+# but this was considered acceptable because IRC (notoriously) has the
+# same problem - there is little point in reliable delivery to a relay
+# that is down or unreliable.
 #
 # This code uses only NICK, JOIN, MODE, and PRIVMSG. It is strictly
 # compliant to RFC1459, except for the interpretation and use of the
-# DEAF and CHANLIMIT features.  CHANLIMIT is as described in the
-# Internet RFC draft draft-brocklesby-irc-isupport-03 at
-# <http://www.mirc.com/isupport.html>.
+# DEAF and CHANLIMIT and (obsolete) MAXCHANNELS features.  CHANLIMIT
+# is as described in the Internet RFC draft
+# draft-brocklesby-irc-isupport-03 at <http://www.mirc.com/isupport.html>.
 
 class Connection:
     def __init__(self, irkerd, servername, port, nick_base=1):
