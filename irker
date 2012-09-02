@@ -86,7 +86,7 @@ class Connection:
         self.last_xmit = time.time()
         self.last_ping = time.time()
         self.channels_joined = []
-        self.channel_max = CHANNEL_MAX
+        self.channel_limits = {}
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
@@ -183,9 +183,16 @@ class Connection:
     def joined_to(self, channel):
         "Is this connection joined to the specified channel?"
         return channel in self.channels_joined
-    def accepting(self):
-        "Can this connection accept new channel joins?"
-        return len(self.channels_joined) < self.channel_max
+    def accepting(self, channel):
+        "Can this connection accept a join of this channel?"
+        if self.channel_limits:
+            match_count = 0
+            for already in self.channels_joined:
+                if already[0] == channel[0]:
+                    match_count += 1
+            return match_count < self.channel_limits.get(channel[0], CHANNEL+MAX)
+        else:
+            return len(self.channels_joined) < CHANNEL_MAX
 
 class Target():
     "Represent a transmission target."
@@ -212,7 +219,7 @@ class Dispatcher:
         "Dispatch messages for our server-port combination."
         self.connections = [x for x in self.connections if x.live()]
         eligibles = [x for x in self.connections if x.joined_to(channel)] \
-                    or [x for x in self.connections if x.accepting()]
+                    or [x for x in self.connections if x.accepting(channel)]
         if not eligibles:
             newconn = Connection(self.irker,
                                  self.servername,
@@ -264,11 +271,28 @@ class Irker:
     def _handle_features(self, connection, event):
         "Determine if and how we can set deaf mode."
         if connection.context:
+            cxt = connection.context
             for lump in event.arguments():
                 if lump.startswith("DEAF="):
-                    connection.mode(connection.context.nickname(), "+"+lump[5:])
+                    connection.mode(cxt.nickname(), "+"+lump[5:])
+                elif lump.startswith("MAXCHANNELS="):
+                    m = int(lump[12:])
+                    for pref in "#&+":
+                        cxt.channel_limits[pref] = m
+                    self.debug(1, "%s maxchannels is %d" \
+                               % (connection.server, m))
                 elif lump.startswith("CHANLIMIT=#:"):
-                    connection.context.channel_max = int(lump[12:])
+                    limits = lump[10:].split(",")
+                    try:
+                        for token in limits:
+                            (prefixes, limit) = token.split(":")
+                            limit = int(limit)
+                            for c in prefixes:
+                                cxt.channel_limits[c] = limit
+                        self.debug(1, "%s channel limit map is %s" \
+                                   % (connection.server, cxt.channel_limits))
+                    except ValueError:
+                        self.logerr("ill-formed CHANLIMIT property")
     def drop_server(self, servername, port):
         "Drop a server out of the server map."
         del self.servers[(servername, port)]
