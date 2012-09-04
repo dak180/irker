@@ -15,6 +15,9 @@ all listed channels.  Note that the channel portion of the URL need
 Options: -p sets the listening port. The -V option prints the program
 version and exits.
 
+Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
+resource page at <http://www.catb.org/~esr/irker/>.
+
 Requires Python 2.6 and the irc.client library at version >= 2.0.2: see
 
 http://sourceforge.net/projects/python-irclib
