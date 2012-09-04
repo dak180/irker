@@ -51,8 +51,6 @@ will be prepended to it before shipping.</para>
 colon, as shown in the third example; otherwise
 <application>irker</application> sends messages to the the default 6667 IRC
 port of each server.</para>
-
-
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
@@ -92,6 +90,10 @@ known to spew spam is always a good idea.</para>
 <para>The absence of any option to set the service port is deliberate.
 If you think you need to do that, you have a problem better solved at
 your firewall.</para>
+
+<para>IRC has a message length limit of 510 bytes and ignores any text
+after an embedded \n; generate your privmsg attribute values with
+appropriate care.</para> 
 </refsect1>
 
 <refsect1 id='authors'><title>AUTHOR</title>
