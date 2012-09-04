@@ -339,23 +339,19 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
         irker.handle(data)
 
 if __name__ == '__main__':
-    srvhost = HOST
-    srvport = PORT
     debuglvl = 0
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:p:V")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:V")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
             if debuglvl > 1:
                 logging.basicConfig(level=logging.DEBUG)
-        elif opt == '-p':	# Set the listening port
-            srvport = int(val)
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irker version %s\n" % version)
             sys.exit(0)
     irker = Irker(debuglevel=debuglvl)
-    tcpserver = SocketServer.TCPServer((srvhost, srvport), IrkerTCPHandler)
-    udpserver = SocketServer.UDPServer((srvhost, srvport), IrkerUDPHandler)
+    tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
+    udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
     threading.Thread(target=tcpserver.serve_forever).start()
     threading.Thread(target=udpserver.serve_forever).start()
 
