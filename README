@@ -4,9 +4,12 @@ irker is a specialized IRC client that runs as a daemon, allowing
 other programs to ship IRC notifications by sending JSON objects to a 
 listening socket. It is meant to be used by hook scripts in version-
 control repositories, allowing them to send commit notifications
-to project IRC channels.  Hook scripts are included.
+to project IRC channels.
 
-Due to the abrupt death of cia.vc in later September 2012 the
+A hook script supporting git and Subversion (irkerhook.py) is included.
+See its header comment for installation instructions.
+
+Due to the abrupt death of cia.vc in late September 2012 the
 inmitial release of this software was a bit rushed.  See the file
 BUGS for known problems.
 
