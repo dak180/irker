@@ -174,7 +174,7 @@ if __name__ == "__main__":
     notify = True
     channels = ""
     commit = ""
-    repository= ""
+    repository = ""
     for (switch, val) in options:
         if switch == '-n':
             notify = False
