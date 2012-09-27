@@ -72,6 +72,15 @@ version = "1.0"
 def do(command):
     return commands.getstatusoutput(command)[1]
 
+def urlify(extractor, commit):
+    prefix = urlprefix % extractor.__dict__
+    # Try to tinyfy a reference to a web view for this commit.
+    try:
+        url = open(urllib.urlretrieve(tinyifier + prefix + commit)[0]).read()
+    except:
+        url = prefix + commit
+    return url
+
 class GitExtractor:
     "Metadata extraction for the git version control system."
     def __init__(self, project=None):
@@ -99,11 +108,7 @@ class GitExtractor:
         # Revision level
         self.refname = do("git symbolic-ref HEAD 2>/dev/null")
         self.commit = do("git rev-parse HEAD")
-        # Try to tinyfy a reference to a web view for this commit.
-        try:
-            self.url = open(urllib.urlretrieve(tinyifier + urlprefix + self.commit)[0]).read()
-        except:
-            self.url = urlprefix + self.commit
+        self.url = urlify(self, self.commit)
 
         self.branch = os.path.basename(self.refname)
 
