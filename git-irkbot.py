@@ -3,7 +3,7 @@
 # Distributed under BSD terms.
 #
 # This script contains porcelain and porcelain byproducts.
-# It should be compatible back to Python 2.1.5
+# Requires Python 2.6, or 2.4 with the 2.6 json library installed.
 #
 # usage: git-irkbot.py [-V] [-n] [-p projectname] [refname [commits...]]
 #
@@ -29,10 +29,12 @@
 # irker.repo = name of the project repo for gitweb/cgit purposes
 # irker.revformat = format in which the revision is shown
 # irker.server = location of the irker server to use for relaying
+# irker.tcp = use TCP/IP if true, otherwise UDP
 #
 # irker.channels defaults to a project channel on freenode, and #commits
 # irker.project defaults to the directory name of the repository toplevel.
 # irker.repo defaults to irker.project lowercased.
+# irker.tcp defaults to False
 #
 # This means that in the normal case you need not do any configuration at all,
 # but setting the project name will speed it up slightly.
@@ -46,7 +48,7 @@
 # The default location of the irker proxy, if the project configuration
 # does not override it.
 default_irker_host = "localhost"
-default_irker_port = 6659
+IRKER_PORT = 6659
 
 # Changeset URL prefix for your repo: when the commit ID is appended
 # to this, it should point at a CGI that will display the commit
@@ -126,6 +128,7 @@ if __name__ == "__main__":
     repo = do("git config --get irker.repo")
     server = do("git config --get irker.server")
     channels = do("git config --get irker.channels")
+    tcp = do("git config --get irker.tcp")
 
     host = socket.getfqdn()
 
@@ -184,8 +187,19 @@ if __name__ == "__main__":
             print message
         else:
             try:
-                # FIXME: Actual delivery must go here. Use the server variable.
-                pass
+                if tcp:
+                    try:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        sock.connect((server, IRKER_PORT))
+                        sock.sendall(message + "\n")
+                    finally:
+                        sock.close()
+                else:
+                    try:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        sock.sendto(message + "\n", (server, IRKER_PORT))
+                    finally:
+                        sock.close()
             except socket.error, e:
                 sys.stderr.write("%s\n" % e)
 
