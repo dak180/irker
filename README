@@ -6,5 +6,9 @@ listening socket. It is meant to be used by hook scripts in version-
 control repositories, allowing them to send commit notifications
 to project IRC channels.  Hook scripts are included.
 
+Due to the abrupt death of cia.vc in later September 2012 the
+inmitial release of this software was a bit rushed.  See the file
+BUGS for known problems.
+
 						Eric S. Raymond
 						August 2012

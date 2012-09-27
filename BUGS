@@ -1,0 +1,11 @@
+			KNOWN BUGS
+
+We apologize for the rough edges on this software.  The initial release
+was somewhat rushed by the sudden death of cia.vc in late Sptember 2012;
+a replacement needed to be fielded immediately.
+
+* irkbot.py does the default UDP send correctly, but something is not
+  quite right with the TCP-send code.
+
+* irkbot.py is intended to be a multi-VCS hook script that self-configures
+  from its environment, but it presently supports only git.
