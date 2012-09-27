@@ -193,7 +193,7 @@ class Connection:
             for already in self.channels_joined:
                 if already[0] == channel[0]:
                     match_count += 1
-            return match_count < self.channel_limits.get(channel[0], CHANNEL+MAX)
+            return match_count < self.channel_limits.get(channel[0], CHANNEL_MAX)
         else:
             return len(self.channels_joined) < CHANNEL_MAX
 
