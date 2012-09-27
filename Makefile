@@ -1,6 +1,6 @@
 # Makefile for the irker relaying tool
 
-VERS=$(shell irker -V | sed 's/irker version //')
+VERS=$(shell irkerd -V | sed 's/irker version //')
 
 docs: irker.html irker.1
 
