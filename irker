@@ -220,9 +220,9 @@ class Dispatcher:
         self.connections = []
     def dispatch(self, channel, message):
         "Dispatch messages for our server-port combination."
-        self.connections = [x for x in self.connections if x.live()]
-        eligibles = [x for x in self.connections if x.joined_to(channel)] \
-                    or [x for x in self.connections if x.accepting(channel)]
+        connections = [x for x in self.connections if x.live()]
+        eligibles = [x for x in connections if x.joined_to(channel)] \
+                    or [x for x in connections if x.accepting(channel)]
         if not eligibles:
             newconn = Connection(self.irker,
                                  self.servername,
@@ -234,7 +234,7 @@ class Dispatcher:
     def live(self):
         "Does this server-port combination have any live connections?"
         self.connections = [x for x in self.connections if x.live()]
-        return not self.connections
+        return len(self.connections) > 0
 
 class Irker:
     "Persistent IRC multiplexer."
