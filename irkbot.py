@@ -160,9 +160,9 @@ if __name__ == "__main__":
             if tok.startswith(key + "="):
                 val = tok[len(key)+1:]
                 if key in booleans:
-                    if val.lower == "true":
+                    if val.lower() == "true":
                         setattr(extractor, key, True)
-                    elif val.lower == "false":
+                    elif val.lower() == "false":
                         setattr(extractor, key, False)
                 else:
                     setattr(extractor, key, val)
