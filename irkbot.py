@@ -161,17 +161,17 @@ if __name__ == "__main__":
         print message
     else:
         try:
-            if tcp:
+            if extractor.tcp:
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.connect((server, IRKER_PORT))
+                    sock.connect((extractor.server or default_irker_host, IRKER_PORT))
                     sock.sendall(message + "\n")
                 finally:
                     sock.close()
             else:
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    sock.sendto(message + "\n", (server, IRKER_PORT))
+                    sock.sendto(message + "\n", (extractor.server or default_irker_host, IRKER_PORT))
                 finally:
                     sock.close()
         except socket.error, e:

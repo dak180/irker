@@ -22,13 +22,13 @@ clean:
 	rm -f irker irker.1 irker-*.rpm irker-*.tar.gz *~
 	rm -f SHIPPER.* *.html
 
-PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902,R0903,E1101,W0621"
+PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902,R0903,E1101,W0621,W0702"
 pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irker
-	@pylint --output-format=parseable $(PYLINTOPTS) git-irkbot.py
+	@pylint --output-format=parseable $(PYLINTOPTS) irkbot.py
 
 
-SOURCES = README COPYING NEWS irker git-irkbot.py Makefile irker.xml irker-logo.png
+SOURCES = README COPYING NEWS irker irkbot.py Makefile irker.xml irker-logo.png
 
 version:
 	@echo $(VERS)
