@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-irker - a simple IRC multiplexer daemon
+irkerd - a simple IRC multiplexer daemon
 
 Listens for JSON objects of the form {'to':<irc-url>, 'privmsg':<text>}
 and relays messages to IRC channels. Each request must be followed by
@@ -254,11 +254,11 @@ class Irker:
         self.servers = {}
     def logerr(self, errmsg):
         "Log a processing error."
-        sys.stderr.write("irker: " + errmsg + "\n")
+        sys.stderr.write("irkerd: " + errmsg + "\n")
     def debug(self, level, errmsg):
         "Debugging information."
         if self.debuglevel >= level:
-            sys.stderr.write("irker: %s\n" % errmsg)
+            sys.stderr.write("irkerd: %s\n" % errmsg)
     def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
         if connection.context:
@@ -353,7 +353,7 @@ if __name__ == '__main__':
             if debuglvl > 1:
                 logging.basicConfig(level=logging.DEBUG)
         elif opt == '-V':	# Emit version and exit
-            sys.stdout.write("irker version %s\n" % version)
+            sys.stdout.write("irkerd version %s\n" % version)
             sys.exit(0)
     irker = Irker(debuglevel=debuglvl)
     tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
