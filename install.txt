@@ -5,7 +5,7 @@ such as SourceForge, GitHub, Gitorious, Gna, and Savannah.  This
 file explains the theory of operation, how to install the code,
 and how to test it.
 
-== Installing irker installation ==
+== Installing irker ==
 
 irker needs to run constantly, watching for TCP and UDP traffic on
 port 6659.  Install it accordingly.
@@ -19,14 +19,17 @@ irkerhook.py should be called from the post-commit hook of each
 repository.  See its header comment for detailed installation 
 instructions.
 
-You should set the server and either repository or project variables
+You should set the server and (for Subversion) repository variables
 from the command line in your post-commit hook.  The server variable
 should be set to the inside-the-firewall host running your irker
 instance.
 
 A git invocation line should look something like this:
 
-/usr/local/bin/irkerhook.py project=foobar server=internal.foobar.net
+/usr/local/bin/irkerhook.py server=internal.foobar.net
+
+Each project will be able to set its own channel URLs, provided it
+has access to its git config file.
 
 A Subversion invocation should look something like this:
 
@@ -34,9 +37,15 @@ REPOSITORY=$1
 REV=$2
 irkerhook.py repository=$REPOSITORY commit=$REV server=internal.foobar.net
 
-Note that the basename of the repository will be used as the project
-name. 
+Note that unless you supply additional overrides of project= and
+channels= in the hook, the basename of the repository will be used as
+the project name and will also be used as the IRC channel name on
+freenode.  This is not a limitation of irker.irkerhook, but a
+result of the absence of a git-config equivalent that the hook can
+mine stuff out of.
 
 == Testing ==
 
-Go to a project repo and call 
+Go to a project repo and call irkerhook.py as indicated above while
+watching the freenode #commits channel.
+ 
