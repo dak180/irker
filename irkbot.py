@@ -20,9 +20,10 @@
 # commit level (second argument of Subversion post-commit). CHANNELS must
 # be a string containing either an IRC URL or comma-separated list of same
 #
-# For git, you can noormally call this script withoutr arguments; it will 
-# deduce what it needs from git configuration variables and where it is in
-# the file system.  Configuration variables are as follows.
+# For git, you can noormally call this script without arguments; it
+# will deduce most of what it needs from git configuration variables
+# (and the project value from where it is in the file system.
+# Configuration variables are as follows.
 #
 # irker.project = name of the project
 # irker.channels = list of IRC URLs corresponding to channels
@@ -87,19 +88,20 @@ class GitExtractor:
     "Metadata extraction for the git version control system."
     def __init__(self, project=None):
         # Get all global config variables
-        self.revformat = do("git config --get irker.revformat")
         self.project = project or do("git config --get irker.project")
         self.repo = do("git config --get irker.repo")
         self.server = do("git config --get irker.server")
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
+        # This one is git-specific
+        self.revformat = do("git config --get irker.revformat")
         # The project variable defaults to the name of the repository toplevel.
-        bare = do("git config --bool --get core.bare")
-        if bare.lower() == "true":
-            keyfile = "HEAD"
-        else:
-            keyfile = ".git/HEAD"
         if not self.project:
+            bare = do("git config --bool --get core.bare")
+            if bare.lower() == "true":
+                keyfile = "HEAD"
+            else:
+                keyfile = ".git/HEAD"
             here = os.getcwd()
             while True:
                 if os.path.exists(os.path.join(here, keyfile)):
