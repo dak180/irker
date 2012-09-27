@@ -25,10 +25,10 @@ clean:
 PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902,R0903,E1101,W0621,W0702"
 pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irker
-	@pylint --output-format=parseable $(PYLINTOPTS) irkbot.py
+	@pylint --output-format=parseable $(PYLINTOPTS) irkerhook.py
 
 
-SOURCES = README COPYING NEWS BUGS irker irkbot.py Makefile irker.xml irker-logo.png
+SOURCES = README COPYING NEWS BUGS irker irkerhook.py Makefile irker.xml irker-logo.png
 
 version:
 	@echo $(VERS)

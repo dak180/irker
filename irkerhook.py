@@ -5,7 +5,7 @@
 # This script contains git porcelain and porcelain byproducts.
 # Requires Python 2.6, or 2.4 with the 2.6 json library installed.
 #
-# usage: irkbot.py [-V] [-n]
+# usage: irkerhook.py [-V] [-n]
 #
 # This script is meant to be run in a post-commit hook.  Try it with
 # -n to see the notification dumped to stdout and verify that it looks
@@ -13,7 +13,7 @@
 #
 # Currently works for svn and git.  For svn you must call it as follows:
 #
-# irkbot.py type=svn repository=REPO-PATH commit=REVISION channels=CHANNELS server=SERVER
+# irkerhook.py type=svn repository=REPO-PATH commit=REVISION channels=CHANNELS server=SERVER
 #
 # REPO-PATH must be the absolute path of the SVN repository (first
 # argument of Subversion post-commit).  REVISION must be the Subversion numeric
@@ -109,7 +109,7 @@ class GitExtractor:
                     self.project = os.path.basename(here)
                     break
                 elif here == '/':
-                    sys.stderr.write("irkbot.py: no git repo below root!\n")
+                    sys.stderr.write("irkerhook.py: no git repo below root!\n")
                     sys.exit(1)
                 here = os.path.dirname(here)
         # Revision level
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     try:
         (options, arguments) = getopt.getopt(sys.argv[1:], "nV")
     except getopt.GetoptError, msg:
-        print "irkbot.py: " + str(msg)
+        print "irkerhook.py: " + str(msg)
         raise SystemExit, 1
 
     vcs = "git"
@@ -177,7 +177,7 @@ if __name__ == "__main__":
         if switch == '-n':
             notify = False
         elif switch == '-V':
-            print "irkbot.py: version", version
+            print "irkerhook.py: version", version
             sys.exit(0)
 
     # Force the type if not git, also make globals settable
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     extractor.url = urlify(extractor, extractor.commit)
 
     if not extractor.project:
-        sys.stderr.write("irkbot.py: no project name set!\n")
+        sys.stderr.write("irkerhook.py: no project name set!\n")
         sys.exit(1)
 
     privmsg = template % extractor.__dict__
