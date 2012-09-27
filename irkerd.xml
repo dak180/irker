@@ -1,23 +1,23 @@
 <!DOCTYPE refentry PUBLIC 
    "-//OASIS//DTD DocBook XML V4.1.2//EN"
    "docbook/docbookx.dtd">
-<refentry id='irker.1'>
+<refentry id='irkerd.1'>
 <refmeta>
-<refentrytitle>irker</refentrytitle>
+<refentrytitle>irkerd</refentrytitle>
 <manvolnum>1</manvolnum>
 <refmiscinfo class='date'>Aug 27 2012</refmiscinfo>
-<refmiscinfo class='source'>irker</refmiscinfo>
-<refmiscinfo class='product'>irker</refmiscinfo>
+<refmiscinfo class='source'>irkerd</refmiscinfo>
+<refmiscinfo class='product'>irkerd</refmiscinfo>
 <refmiscinfo class='manual'>Commands</refmiscinfo>
 </refmeta>
 <refnamediv id='name'>
-<refname>irker</refname>
+<refname>irkerd</refname>
 <refpurpose>relay for shipping notifications to IRC servers</refpurpose>
 </refnamediv>
 <refsynopsisdiv id='synopsis'>
 
 <cmdsynopsis>
-  <command>irker</command>
+  <command>irkerd</command>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-V</arg>
 </cmdsynopsis>
@@ -25,12 +25,12 @@
 
 <refsect1 id='description'><title>DESCRIPTION</title>
 
-<para><application>irker</application> is a specialized write-only IRC
+<para><application>irkerd</application> is a specialized write-only IRC
 client intended to be used for shipping notification messages to IRC
 channels. The use case in mind when it was designed was broadcasting
 notifications from commit hooks in version-control systems.</para>
 
-<para><application>irker</application> is a socket server that listens
+<para><application>irkerd</application> is a socket server that listens
 on for UDP or TCP packets on port 6659 for textual request lines
 containing JSON objects and terminated by a newline. Each JSON object
 must have exactly two members: "to" specifying a destination or
@@ -49,13 +49,13 @@ will be prepended to it before shipping.</para>
 
 <para>The host part of the URL may have a port-number suffix separated by a
 colon, as shown in the third example; otherwise
-<application>irker</application> sends messages to the the default 6667 IRC
+<application>irkerd</application> sends messages to the the default 6667 IRC
 port of each server.</para>
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
 
-<para><application>irker</application> takes the following options:</para>
+<para><application>irkerd</application> takes the following options:</para>
 
 <variablelist>
 <varlistentry>
@@ -78,11 +78,11 @@ terminate.</para></listitem>
 by avoiding TCP connection setup time; the cost is that delivery is
 not reliable in the face of packet loss.</para>
 
-<para>An <application>irker</application> instance with a
+<para>An <application>irkerd</application> instance with a
 publicly-accessible request socket could complicate blocking of IRC
 spam by making it easy for spammers to submit while hiding their IP
 addresses; the better way to deploy, then, is on places like
-project-hosting sites where the <application>irker</application>
+project-hosting sites where the <application>irkerd</application>
 socket can be visible from commit-hook code but not exposed to the
 outside world. Priming your firewall with blocklists of IP addresses
 known to spew spam is always a good idea.</para>
@@ -100,8 +100,9 @@ appropriate care.</para>
 <para>Eric S. Raymond <email>esr@snark.thyrsus.com</email>.  See the
 project page at <ulink
 url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
-for updates and other resources. The implementation uses the Python
-IRC library by Joe Rosdahl and Jason R. Coombs.</para>
+for updates and other resources, including an insrtallable repository
+hook script. The implementation uses the Python IRC library by Joe
+Rosdahl and Jason R. Coombs.</para>
 </refsect1>
 </refentry>
 
