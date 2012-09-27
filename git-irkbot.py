@@ -53,8 +53,8 @@ default_irker_port = 6659
 # through gitweb or something similar. The defaults will probably
 # work if you have a typical gitweb/cgit setup.
 #
-#urlprefix="http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h="
-urlprefix="http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
+#urlprefix = "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h="
+urlprefix = "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
 
 # The service used to turn your gitwebbish URL into a tinyurl so it
 # will take up less space on the IRC notification line.
@@ -102,7 +102,7 @@ def extract(refname, merged):
         rev = merged[:12]
 
     # Extract the meta-information for the commit
-    files=do("git diff-tree -r --name-only '"+ merged +"' | sed -e '1d' -e 's-.*-&-'")
+    files = do("git diff-tree -r --name-only '"+ merged +"' | sed -e '1d' -e 's-.*-&-'")
     metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%at%n%s' " + merged)
     (author, ts, logmsg) = metainfo.split("\n")
 
@@ -179,8 +179,7 @@ if __name__ == "__main__":
         merges = arguments[1:]
 
     for merged in merges:
-        context = extract(refname, merged)
-        privmsg = template % context
+        privmsg = template % extract(refname, merged)
         channel_list = channels.split(",")
         structure = {"to":channel_list, "privmsg":privmsg}
         message = json.dumps(structure)
