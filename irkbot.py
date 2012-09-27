@@ -144,15 +144,14 @@ class SvnExtractor:
                 self.repository = tok[11:]
             elif tok.startswith("commit="):
                 self.commit = tok[7:]
-        self.project = os.path.basename(self.path)
+        self.project = os.path.basename(self.repository)
         self.author = self.svnlook("author")
         self.files = self.svnlook("dirs-changed")
         self.logmsg = self.svnlook("log")
         self.repo = None
         self.tcp = True
         self.channels = None
-        # SVN includes this in the path
-        self.branch = ""
+        self.rev = "r{0}".format(self.commit)
 
     def svnlook(self, info):
         return do("svnlook {0} {1} --revision {2}".format(info, self.repository, self.commit))
@@ -203,9 +202,9 @@ if __name__ == "__main__":
     #
     # ${project}: ${author} ${repo}:${branch} * ${rev} / ${files}: ${logmsg} ${url}
     if vcs == "svn":
-        template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
-    else:
         template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+    else:
+        template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
 
     # Make command-line overrides possible.
     # Each argument of the form <key>=<value> can override the
