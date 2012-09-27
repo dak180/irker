@@ -43,15 +43,13 @@
 default_server = "localhost"
 IRKER_PORT = 6659
 
-svn = True
-
 # Changeset URL prefix for your repo: when the commit ID is appended
 # to this, it should point at a CGI that will display the commit
 # through gitweb or something similar. The defaults will probably
 # work if you have a typical gitweb/cgit setup.
 #
 #urlprefix = "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h="
-if svn:
+if vcs == "git":
     urlprefix = "http://%(host)s/viewcvs/%(repo)s?view=revision&revision="
 else:
     urlprefix = "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
@@ -64,7 +62,7 @@ tinyifier = "http://tinyurl.com/api-create.php?url="
 # visible changes to the IRC-bot notification lines by hacking this.
 #
 # ${project}: ${author} ${repo}:${branch} * ${rev} / ${files}: ${logmsg} ${url}
-if svn:
+if vcs == "git":
     template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
 else:
     template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
@@ -170,7 +168,6 @@ class SvnExtractor(object):
 
         self.url = urlify(self, self.rev)
 
-
     def svnlook(self, info):
         return do("svnlook {0} {1} --revision {2}".format(info, self.repository, self.rev))
 
@@ -183,6 +180,7 @@ if __name__ == "__main__":
         print "irkbot.py: " + str(msg)
         raise SystemExit, 1
 
+    vcs = "git"
     notify = True
     project = None
     channels = ""
@@ -196,7 +194,7 @@ if __name__ == "__main__":
             sys.exit(0)
 
     # Someday we'll have extractors for several version-control systems
-    if svn:
+    if vcs == "git":
         extractor = SvnExtractor(project, arguments[0], arguments[1])
     else:
         extractor = GitExtractor(project)
