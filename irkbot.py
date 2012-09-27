@@ -43,13 +43,18 @@
 default_server = "localhost"
 IRKER_PORT = 6659
 
+svn = True
+
 # Changeset URL prefix for your repo: when the commit ID is appended
 # to this, it should point at a CGI that will display the commit
 # through gitweb or something similar. The defaults will probably
 # work if you have a typical gitweb/cgit setup.
 #
 #urlprefix = "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h="
-urlprefix = "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
+if svn:
+    urlprefix = "http://%(host)s/viewcvs/%(repo)s?view=revision&revision="
+else:
+    urlprefix = "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
 
 # The service used to turn your gitwebbish URL into a tinyurl so it
 # will take up less space on the IRC notification line.
@@ -59,7 +64,10 @@ tinyifier = "http://tinyurl.com/api-create.php?url="
 # visible changes to the IRC-bot notification lines by hacking this.
 #
 # ${project}: ${author} ${repo}:${branch} * ${rev} / ${files}: ${logmsg} ${url}
-template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+if svn:
+    template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+else:
+    template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
 
 #
 # No user-serviceable parts below this line:
@@ -132,6 +140,40 @@ class GitExtractor:
         # would make the freenode #commits channel into harvester heaven.
         self.author = self.author.replace("<", "").split("@")[0].split()[-1]
 
+class SvnExtractor(object):
+    "Metadata extraction for the svn version control system."
+    def __init__(self, project, repository, revision):
+        self.repository = repository
+        self.rev = revision
+        self.project = project
+
+        self.author = self.svnlook("author")
+        self.files = self.svnlook("dirs-changed")
+        self.logmsg = self.svnlook("log")
+        self.host = socket.getfqdn()
+        # TODO: The below three should be configurable
+        self.repo = None
+        self.tcp = True
+        self.channels = None
+        # SVN includes this in the path
+        self.branch = ""
+
+        # The project variable defaults to the name of the repository toplevel. 
+        if not self.project:
+            here = os.getcwd()
+            while os.path.exists(os.path.join(here, ".svn")):
+                self.project = os.path.basename(here)
+                here = os.path.dirname(here)
+
+        if not self.repo and self.project:
+            self.repo = self.project.lower()
+
+        self.url = urlify(self, self.rev)
+
+
+    def svnlook(self, info):
+        return do("svnlook {0} {1} --revision {2}".format(info, self.repository, self.rev))
+
 if __name__ == "__main__":
     import getopt
 
@@ -154,7 +196,10 @@ if __name__ == "__main__":
             sys.exit(0)
 
     # Someday we'll have extractors for several version-control systems
-    extractor = GitExtractor(project)
+    if svn:
+        extractor = SvnExtractor(project, arguments[0], arguments[1])
+    else:
+        extractor = GitExtractor(project)
 
     # Make command-line overrides possible.
     # Each argument of the form <key>=<value> can override the
