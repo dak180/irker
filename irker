@@ -333,7 +333,10 @@ class Irker:
 class IrkerTCPHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         while True:
-            irker.handle(self.rfile.readline().strip())
+            line = self.rfile.readline()
+            if not line:
+                break
+            irker.handle(line.strip())
 
 class IrkerUDPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
