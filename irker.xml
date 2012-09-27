@@ -60,7 +60,7 @@ port of each server.</para>
 <variablelist>
 <varlistentry>
 <term>-d</term>
-<listitem><para>Takes a following value, seting the debugging level from
+<listitem><para>Takes a following value, setting the debugging level from
 it. This option will generally only be of interest to developers;
 consult the source code for details.</para></listitem>
 </varlistentry>
