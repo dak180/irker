@@ -1,6 +1,6 @@
 # Makefile for the irker relaying tool
 
-VERS=$(shell irkerd -V | sed 's/irker version //')
+VERS=$(shell irkerd -V | sed 's/irkerd version //')
 
 docs: irker.html irker.1
 
@@ -34,7 +34,7 @@ SOURCES = README COPYING NEWS BUGS install.txt \
 version:
 	@echo $(VERS)
 
-irker-$(VERS).tar.gz: $(SOURCES) irker.1
+irker-$(VERS).tar.gz: $(SOURCES) irkerd.1
 	tar --transform='s:^:irker-$(VERS)/:' --show-transformed-names -cvzf irker-$(VERS).tar.gz $(SOURCES)
 
 dist: irker-$(VERS).tar.gz
