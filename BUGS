@@ -6,3 +6,7 @@ a replacement needed to be fielded immediately.
 
 * irkbot.py is intended to be a multi-VCS hook script that self-configures
   from its environment, but it presently supports only git.
+
+Subversion support could be done by stripping parts out of
+
+http://code.google.com/p/cia-vc/source/browse/trunk/cia/htdocs/clients/svn/ciabot_svn.py?r=46
