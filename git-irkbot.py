@@ -5,22 +5,11 @@
 # This script contains porcelain and porcelain byproducts.
 # Requires Python 2.6, or 2.4 with the 2.6 json library installed.
 #
-# usage: git-irkbot.py [-V] [-n] [-p projectname] [refname [commits...]]
+# usage: git-irkbot.py [-V] [-n]
 #
-# This script is meant to be run either in a post-commit hook or in an
-# update hook. Try it with -n to see the notification mail dumped to
-# stdout and verify that it looks sane. With -V it dumps its version
-# and exits.
-#
-# In post-commit, run it without arguments. It will query for
-# current HEAD and the latest commit ID to get the information it
-# needs.
-#
-# In update, call it with a refname followed by a list of commits:
-# You want to reverse the order git rev-list emits because it lists
-# from most recent to oldest.
-#
-# /path/to/git-irkbot.py ${refname} $(git rev-list ${oldhead}..${newhead} | tac)
+# This script is meant to be run in a post-commit hook.  Try it with
+# -n to see the notification dumped to stdout and verify that it looks
+# sane. With -V it dumps its version and exits.
 #
 # git configuration variables affecting this script:
 #
@@ -103,29 +92,30 @@ class GitExtractor:
         if not self.repo:
             self.repo = self.project.lower()
         self.host = socket.getfqdn()            
-    def extract(self, refname, merged):
-        "Extract metadata to be reported to CIA."
+        # Revision level
+        self.refname = do("git symbolic-ref HEAD 2>/dev/null")
+        self.commit = do("git rev-parse HEAD")
         # Try to tinyfy a reference to a web view for this commit.
         try:
-            self.url = open(urllib.urlretrieve(tinyifier + urlprefix + merged)[0]).read()
+            self.url = open(urllib.urlretrieve(tinyifier + urlprefix + self.commit)[0]).read()
         except:
-            self.url = urlprefix + merged
+            self.url = urlprefix + self.commit
 
-        self.branch = os.path.basename(refname)
+        self.branch = os.path.basename(self.refname)
 
         # Compute a description for the revision
         if self.revformat == 'raw':
-            self.rev = merged
+            self.rev = self.commit
         elif self.revformat == 'short':
             self.rev = ''
         else: # self.revformat == 'describe'
-            self.rev = do("git describe %s 2>/dev/null" % merged)
+            self.rev = do("git describe %s 2>/dev/null" % self.commit)
         if not self.rev:
-            self.rev = merged[:12]
+            self.rev = self.commit[:12]
 
         # Extract the meta-information for the commit
-        self.files = do("git diff-tree -r --name-only '"+ merged +"' | sed -e '1d' -e 's-.*-&-'")
-        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + merged)
+        self.files = do("git diff-tree -r --name-only '"+ self.commit +"' | sed -e '1d' -e 's-.*-&-'")
+        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + self.commit)
         (self.author, self.logmsg) = metainfo.split("\n")
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
@@ -163,39 +153,28 @@ if __name__ == "__main__":
 
     urlprefix = urlprefix % extractor.__dict__
 
-    # The script wants a reference to head followed by the list of
-    # commit IDs to report about.
-    if len(arguments) == 0:
-        refname = do("git symbolic-ref HEAD 2>/dev/null")
-        merges = [do("git rev-parse HEAD")]
+    privmsg = template % extractor.__dict__
+    channel_list = extractor.channels.split(",")
+    structure = {"to":channel_list, "privmsg":privmsg}
+    message = json.dumps(structure)
+    if not notify:
+        print message
     else:
-        refname = arguments[0]
-        merges = arguments[1:]
-
-    for merged in merges:
-        extractor.extract(refname, merged)
-        privmsg = template % extractor.__dict__
-        channel_list = extractor.channels.split(",")
-        structure = {"to":channel_list, "privmsg":privmsg}
-        message = json.dumps(structure)
-        if not notify:
-            print message
-        else:
-            try:
-                if tcp:
-                    try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        sock.connect((server, IRKER_PORT))
-                        sock.sendall(message + "\n")
-                    finally:
-                        sock.close()
-                else:
-                    try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                        sock.sendto(message + "\n", (server, IRKER_PORT))
-                    finally:
-                        sock.close()
-            except socket.error, e:
-                sys.stderr.write("%s\n" % e)
+        try:
+            if tcp:
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((server, IRKER_PORT))
+                    sock.sendall(message + "\n")
+                finally:
+                    sock.close()
+            else:
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    sock.sendto(message + "\n", (server, IRKER_PORT))
+                finally:
+                    sock.close()
+        except socket.error, e:
+            sys.stderr.write("%s\n" % e)
 
 #End
