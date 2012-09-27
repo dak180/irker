@@ -77,7 +77,7 @@ class GitExtractor:
         self.repo = do("git config --get irker.repo")
         self.server = do("git config --get irker.server")
         self.channels = do("git config --get irker.channels")
-        self.tcp = do("git config --get irker.tcp")
+        self.tcp = do("git config --bool --get irker.tcp")
         # The project variable defaults to the name of the repository toplevel. 
         if not self.project:
             here = os.getcwd()
