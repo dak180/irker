@@ -13,12 +13,13 @@
 #
 # Currently works for svn and git.  For svn you must call it as follows:
 #
-# irkbot.py type=svn repository=REPO-PATH commit=REVISION channels=CHANNELS
+# irkbot.py type=svn repository=REPO-PATH commit=REVISION channels=CHANNELS server=SERVER
 #
 # REPO-PATH must be the absolute path of the SVN repository (first
 # argument of Subversion post-commit).  REVISION must be the Subversion numeric
 # commit level (second argument of Subversion post-commit). CHANNELS must
-# be a string containing either an IRC URL or comma-separated list of same
+# be a string containing either an IRC URL or comma-separated list of same.
+# SERVER must be an irker host.
 #
 # For git, you can noormally call this script without arguments; it
 # will deduce most of what it needs from git configuration variables
@@ -141,20 +142,21 @@ class SvnExtractor:
     "Metadata extraction for the svn version control system."
     def __init__(self, arguments):
         self.commit = None
+        # Some things we need to have before metadata queries will work
         for tok in arguments:
             if tok.startswith("repository="):
                 self.repository = tok[11:]
             elif tok.startswith("commit="):
                 self.commit = tok[7:]
         self.project = os.path.basename(self.repository)
+        self.repo = None
+        self.server = None
+        self.channels = None
+        self.tcp = True
         self.author = self.svnlook("author")
         self.files = self.svnlook("dirs-changed")
         self.logmsg = self.svnlook("log")
-        self.repo = None
-        self.tcp = True
-        self.channels = None
         self.rev = "r{0}".format(self.commit)
-
     def svnlook(self, info):
         return do("svnlook {0} {1} --revision {2}".format(info, self.repository, self.commit))
 
@@ -178,10 +180,12 @@ if __name__ == "__main__":
             print "irkbot.py: version", version
             sys.exit(0)
 
-    # Force the type if not git
+    # Force the type if not git, also make globals settable
     for tok in arguments:
         if tok.startswith("type="):
             vcs = tok[5:]
+        elif tok.startswith("tinyfier="):
+            tinyfier = tok[9:]
 
     # Someday we'll have extractors for several version-control systems
     if vcs == "git":
@@ -234,7 +238,7 @@ if __name__ == "__main__":
     extractor.url = urlify(extractor, extractor.commit)
 
     if not extractor.project:
-        sys.stderr.write("irkbot.py: no project name set\n")
+        sys.stderr.write("irkbot.py: no project name set!\n")
         sys.exit(1)
 
     privmsg = template % extractor.__dict__
