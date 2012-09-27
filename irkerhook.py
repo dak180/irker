@@ -21,9 +21,9 @@
 # be a string containing either an IRC URL or comma-separated list of same.
 # SERVER must be an irker host.
 #
-# For git, you can noormally call this script without arguments; it
+# For git, you can normally call this script without arguments; it
 # will deduce most of what it needs from git configuration variables
-# (and the project value from where it is in the file system.
+# (and the project value from where it is in the file system).
 # Configuration variables are as follows.
 #
 # irker.project = name of the project
@@ -52,8 +52,10 @@
 # name to foobar, regardless of what the git configuration says.
 #
 # Other configuration changes you may want to make are to:
+#
 # urlprefix: the current version should work for viewcvs or gitweb
 # installations, but will require modification for other systems.
+#
 # tinyfier: If your project maintains its own url-shrinking service
 
 # The default location of the irker proxy, if the project configuration
