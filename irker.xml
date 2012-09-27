@@ -31,11 +31,11 @@ channels. The use case in mind when it was designed was broadcasting
 notifications from commit hooks in version-control systems.</para>
 
 <para><application>irker</application> is a socket server that listens
-on for UDP or TCP packets on a port (normally 6659) for textual
-request lines containing JSON objects and terminated by a
-newline. Each JSON object must have exactly two members: "to"
-specifying a destination or destination list, and "privmsg" specifying
-the message test.  Examples:
+on for UDP or TCP packets on port 6659 for textual request lines
+containing JSON objects and terminated by a newline. Each JSON object
+must have exactly two members: "to" specifying a destination or
+destination list, and "privmsg" specifying the message test.
+Examples:
 
 <programlisting>
 {"to":"irc://chat.freenode.net/git-ciabot", "privmsg":"Hello, world!"}
