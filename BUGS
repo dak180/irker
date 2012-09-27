@@ -6,5 +6,8 @@ a replacement needed to be fielded immediately.
 
 * Testing has been minimal.
 
+* There is one report of unrexxplainedly high CPU usage by the daemon when
+  processing UDP requests.
+
 * Despite what the header comment implies, the URL prefix and message template
   can at present only be modified by hacking the script.
