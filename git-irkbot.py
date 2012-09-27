@@ -22,7 +22,7 @@
 #
 # /path/to/git-irkbot.py ${refname} $(git rev-list ${oldhead}..${newhead} | tac)
 #
-# Configuration variables affecting this script:
+# git configuration variables affecting this script:
 #
 # irker.project = name of the project
 # irker.channels = list of IRC URLs corresponding to channels
@@ -79,58 +79,66 @@ version = "1.0"
 def do(command):
     return commands.getstatusoutput(command)[1]
 
-def extract(refname, merged):
-    "Extract metadata to be reported to CIA."
+class GitExtractor:
+    "Metadata extraction for the git version control system."
+    def __init__(self, project=None):
+        # Get all global config variables
+        self.revformat = do("git config --get irker.revformat")
+        self.project = project or do("git config --get irker.project")
+        self.repo = do("git config --get irker.repo")
+        self.server = do("git config --get irker.server")
+        self.channels = do("git config --get irker.channels")
+        self.tcp = do("git config --get irker.tcp")
+        # The project variable defaults to the name of the repository toplevel. 
+        if not self.project:
+            here = os.getcwd()
+            while True:
+                if os.path.exists(os.path.join(here, ".git")):
+                    self.project = os.path.basename(here)
+                    break
+                elif here == '/':
+                    sys.stderr.write("git-irkbot.py: no .git below root!\n")
+                    sys.exit(1)
+                here = os.path.dirname(here)
+        if not self.repo:
+            self.repo = self.project.lower()
+        self.host = socket.getfqdn()            
+    def extract(self, refname, merged):
+        "Extract metadata to be reported to CIA."
+        # Try to tinyfy a reference to a web view for this commit.
+        try:
+            self.url = open(urllib.urlretrieve(tinyifier + urlprefix + merged)[0]).read()
+        except:
+            self.url = urlprefix + merged
 
-    # Try to tinyfy a reference to a web view for this commit.
-    try:
-        url = open(urllib.urlretrieve(tinyifier + urlprefix + merged)[0]).read()
-    except:
-        url = urlprefix + merged
+        self.branch = os.path.basename(refname)
 
-    branch = os.path.basename(refname)
+        # Compute a description for the revision
+        if self.revformat == 'raw':
+            self.rev = merged
+        elif self.revformat == 'short':
+            self.rev = ''
+        else: # self.revformat == 'describe'
+            self.rev = do("git describe %s 2>/dev/null" % merged)
+        if not self.rev:
+            self.rev = merged[:12]
 
-    # Compute a description for the revision
-    if revformat == 'raw':
-        rev = merged
-    elif revformat == 'short':
-        rev = ''
-    else: # revformat == 'describe'
-        rev = do("git describe %s 2>/dev/null" % merged)
-    if not rev:
-        rev = merged[:12]
+        # Extract the meta-information for the commit
+        self.files = do("git diff-tree -r --name-only '"+ merged +"' | sed -e '1d' -e 's-.*-&-'")
+        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%at%n%s' " + merged)
+        (self.author, self.ts, self.logmsg) = metainfo.split("\n")
 
-    # Extract the meta-information for the commit
-    files = do("git diff-tree -r --name-only '"+ merged +"' | sed -e '1d' -e 's-.*-&-'")
-    metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%at%n%s' " + merged)
-    (author, ts, logmsg) = metainfo.split("\n")
+        # This discards the part of the author's address after @.
+        # Might be be nice to ship the full email address, if not
+        # for spammers' address harvesters - getting this wrong
+        # would make the freenode #commits channel into harvester heaven.
+        self.author = self.author.replace("<", "").split("@")[0].split()[-1]
 
-    # This discards the part of the author's address after @.
-    # Might be be nice to ship the full email address, if not
-    # for spammers' address harvesters - getting this wrong
-    # would make the freenode #commits channel into harvester heaven.
-    author = author.replace("<", "").split("@")[0].split()[-1]
-
-    # This ignores the timezone.  Not clear what to do with it...
-    ts = ts.strip().split()[0]
-
-    context = locals()
-    context.update(globals())
-
-    return context
+        # This ignores the timezone.  Not clear what to do with it...
+        self.ts = self.ts.strip().split()[0]
 
 if __name__ == "__main__":
     import getopt
-
-    # Get all config variables
-    revformat = do("git config --get irker.revformat")
-    project = do("git config --get irker.project")
-    repo = do("git config --get irker.repo")
-    server = do("git config --get irker.server")
-    channels = do("git config --get irker.channels")
-    tcp = do("git config --get irker.tcp")
-
-    host = socket.getfqdn()
 
     try:
         (options, arguments) = getopt.getopt(sys.argv[1:], "np:V")
@@ -139,6 +147,8 @@ if __name__ == "__main__":
         raise SystemExit, 1
 
     notify = True
+    project = None
+    channels = ""
     for (switch, val) in options:
         if switch == '-p':
             project = val
@@ -148,29 +158,17 @@ if __name__ == "__main__":
             print "git-irkbot.py: version", version
             sys.exit(0)
 
-    # The project variable defaults to the name of the repository toplevel. 
-    if not project:
-        here = os.getcwd()
-        while True:
-            if os.path.exists(os.path.join(here, ".git")):
-                project = os.path.basename(here)
-                break
-            elif here == '/':
-                sys.stderr.write("git-irkbot.py: no .git below root!\n")
-                sys.exit(1)
-            here = os.path.dirname(here)
+    # Someday we'll have extractors for several version-control systems
+    extractor = GitExtractor(project)
 
     # By default, the channel list includes the freenode #commits list 
-    if not channels:
-        channels = "irc://chat.freenode.net/%s,irc://chat.freenode.net/#commits" % project
+    if not extractor.channels:
+        extractor.channels = "irc://chat.freenode.net/%s,irc://chat.freenode.net/#commits" % extractor.project
 
-    if not repo:
-        repo = project.lower()
-
-    urlprefix = urlprefix % globals()
+    urlprefix = urlprefix % extractor.__dict__
 
     # The script wants a reference to head followed by the list of
-    # commit ID to report about.
+    # commit IDs to report about.
     if len(arguments) == 0:
         refname = do("git symbolic-ref HEAD 2>/dev/null")
         merges = [do("git rev-parse HEAD")]
@@ -179,8 +177,9 @@ if __name__ == "__main__":
         merges = arguments[1:]
 
     for merged in merges:
-        privmsg = template % extract(refname, merged)
-        channel_list = channels.split(",")
+        extractor.extract(refname, merged)
+        privmsg = template % extractor.__dict__
+        channel_list = extractor.channels.split(",")
         structure = {"to":channel_list, "privmsg":privmsg}
         message = json.dumps(structure)
         if not notify:
