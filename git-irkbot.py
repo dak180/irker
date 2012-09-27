@@ -5,7 +5,7 @@
 # This script contains porcelain and porcelain byproducts.
 # It should be compatible back to Python 2.1.5
 #
-# usage: git-irkbot.py [-V] [-n] [-p projectname]  [refname [commits...]]
+# usage: git-irkbot.py [-V] [-n] [-p projectname] [refname [commits...]]
 #
 # This script is meant to be run either in a post-commit hook or in an
 # update hook. Try it with -n to see the notification mail dumped to
@@ -72,9 +72,6 @@ template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %
 
 import os, sys, commands, socket, urllib, json
 
-# Identify the generator script.
-# Should only change when the script itself gets a new home and maintainer.
-generator = "http://www.catb.org/~esr/irker/git-irkbot.py"
 version = "1.0"
 
 def do(command):
