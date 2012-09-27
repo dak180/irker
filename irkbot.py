@@ -33,6 +33,10 @@
 # short -> first 12 chars of hex ID
 # describe = -> describe relative to last tag, falling back to short
 # The default is 'describe'.
+#
+# Any of these variables can be overridden with a command-line argument that
+# is a key=value pair. For example "project=foobar" will force the project
+# name to foobar, regardless of what the git configuration says.
 
 # The default location of the irker proxy, if the project configuration
 # does not override it.
@@ -146,6 +150,22 @@ if __name__ == "__main__":
 
     # Someday we'll have extractors for several version-control systems
     extractor = GitExtractor(project)
+
+    # Make command-line overrides possible.
+    # Each argument of the form <key>=<value> can override the
+    # <key> member of the extractor class. 
+    booleans = ["tcp"]
+    for tok in arguments:
+        for key in extractor.__dict__:
+            if tok.startswith(key + "="):
+                val = tok[len(key)+1:]
+                if key in booleans:
+                    if val.lower == "true":
+                        setattr(extractor, key, True)
+                    elif val.lower == "false":
+                        setattr(extractor, key, False)
+                else:
+                    setattr(extractor, key, val)
 
     # By default, the channel list includes the freenode #commits list 
     if not extractor.channels:
