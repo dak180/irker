@@ -2,10 +2,10 @@
 # Copyright (c) 2012 Eric S. Raymond <esr@thyrsus.com>
 # Distributed under BSD terms.
 #
-# This script contains porcelain and porcelain byproducts.
+# This script contains git porcelain and porcelain byproducts.
 # Requires Python 2.6, or 2.4 with the 2.6 json library installed.
 #
-# usage: git-irkbot.py [-V] [-n]
+# usage: irkbot.py [-V] [-n]
 #
 # This script is meant to be run in a post-commit hook.  Try it with
 # -n to see the notification dumped to stdout and verify that it looks
@@ -36,7 +36,7 @@
 
 # The default location of the irker proxy, if the project configuration
 # does not override it.
-default_irker_host = "localhost"
+default_server = "localhost"
 IRKER_PORT = 6659
 
 # Changeset URL prefix for your repo: when the commit ID is appended
@@ -86,7 +86,7 @@ class GitExtractor:
                     self.project = os.path.basename(here)
                     break
                 elif here == '/':
-                    sys.stderr.write("git-irkbot.py: no .git below root!\n")
+                    sys.stderr.write("irkbot.py: no .git below root!\n")
                     sys.exit(1)
                 here = os.path.dirname(here)
         if not self.repo:
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     try:
         (options, arguments) = getopt.getopt(sys.argv[1:], "np:V")
     except getopt.GetoptError, msg:
-        print "git-irkbot.py: " + str(msg)
+        print "irkbot.py: " + str(msg)
         raise SystemExit, 1
 
     notify = True
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         elif switch == '-n':
             notify = False
         elif switch == '-V':
-            print "git-irkbot.py: version", version
+            print "irkbot.py: version", version
             sys.exit(0)
 
     # Someday we'll have extractors for several version-control systems
@@ -164,14 +164,14 @@ if __name__ == "__main__":
             if extractor.tcp:
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.connect((extractor.server or default_irker_host, IRKER_PORT))
+                    sock.connect((extractor.server or default_server, IRKER_PORT))
                     sock.sendall(message + "\n")
                 finally:
                     sock.close()
             else:
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    sock.sendto(message + "\n", (extractor.server or default_irker_host, IRKER_PORT))
+                    sock.sendto(message + "\n", (extractor.server or default_server, IRKER_PORT))
                 finally:
                     sock.close()
         except socket.error, e:
