@@ -4,9 +4,5 @@ We apologize for the rough edges on this software.  The initial release
 was somewhat rushed by the sudden death of cia.vc in late September 2012;
 a replacement needed to be fielded immediately.
 
-* irkbot.py is intended to be a multi-VCS hook script that self-configures
-  from its environment, but it presently supports only git.
-
-Subversion support could be done by stripping parts out of
-
-http://code.google.com/p/cia-vc/source/browse/trunk/cia/htdocs/clients/svn/ciabot_svn.py?r=46
+* Despite what the header comment implies, the URL prefix and tinyfier 
+  can at present only be modified by hacking the script.
