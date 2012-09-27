@@ -28,7 +28,7 @@ pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) git-irkbot.py
 
 
-SOURCES = README COPYING NEWS irker Makefile irker.xml irker-logo.png
+SOURCES = README COPYING NEWS irker git-irkbot.py Makefile irker.xml irker-logo.png
 
 version:
 	@echo $(VERS)
