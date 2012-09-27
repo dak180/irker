@@ -13,7 +13,7 @@
 #
 # Currently works for svn and git.  For svn you must call it as follows:
 #
-# irkerhook.py type=svn repository=REPO-PATH commit=REVISION channels=CHANNELS server=SERVER
+# irkerhook.py repository=REPO-PATH commit=REVISION channels=CHANNELS server=SERVER
 #
 # REPO-PATH must be the absolute path of the SVN repository (first
 # argument of Subversion post-commit).  REVISION must be the Subversion numeric
@@ -171,10 +171,10 @@ if __name__ == "__main__":
         print "irkerhook.py: " + str(msg)
         raise SystemExit, 1
 
-    vcs = "git"
     notify = True
     channels = ""
     commit = ""
+    repository= ""
     for (switch, val) in options:
         if switch == '-n':
             notify = False
@@ -182,18 +182,24 @@ if __name__ == "__main__":
             print "irkerhook.py: version", version
             sys.exit(0)
 
-    # Force the type if not git, also make globals settable
+    # Gather info for repo type discrimination, make globals settable
     for tok in arguments:
-        if tok.startswith("type="):
-            vcs = tok[5:]
-        elif tok.startswith("tinyfier="):
+        if tok.startswith("tinyfier="):
             tinyfier = tok[9:]
+        elif tok.startswith("repository="):
+            repository = tok[11:]
+
+    # Determine the repository type. Default to git unless user has pointed
+    # us at a repo with identifiable internals.
+    vcs = "git"
+    if os.path.exists(os.path.join(repository, "format")):
+        vcs = "svn"
 
     # Someday we'll have extractors for several version-control systems
-    if vcs == "git":
-        extractor = GitExtractor()
-    else:
+    if vcs == "svn":
         extractor = SvnExtractor(arguments)
+    else:
+        extractor = GitExtractor()
 
     # Changeset URL prefix for your repo: when the commit ID is appended
     # to this, it should point at a CGI that will display the commit

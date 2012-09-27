@@ -1,0 +1,42 @@
+= Forge installation instructions =
+
+irker and irkerhook.py are intended to be installed on forge sites
+such as SourceForge, GitHub, Gitorious, Gna, and Savannah.  This
+file explains the theory of operation, how to install the code,
+and how to test it.
+
+== Installing irker installation ==
+
+irker needs to run constantly, watching for TCP and UDP traffic on
+port 6659.  Install it accordingly.
+
+You should *not* make irker visible from outside the site firewall, as
+it can be used to spam IRC channels while masking the source address.
+
+== Installing irkerhook.py ==
+
+irkerhook.py should be called from the post-commit hook of each 
+repository.  See its header comment for detailed installation 
+instructions.
+
+You should set the server and either repository or project variables
+from the command line in your post-commit hook.  The server variable
+should be set to the inside-the-firewall host running your irker
+instance.
+
+A git invocation line should look something like this:
+
+/usr/local/bin/irkerhook.py project=foobar server=internal.foobar.net
+
+A Subversion invocation should look something like this:
+
+REPOSITORY=$1
+REV=$2
+irkerhook.py repository=$REPOSITORY commit=$REV server=internal.foobar.net
+
+Note that the basename of the repository will be used as the project
+name. 
+
+== Testing ==
+
+Go to a project repo and call 
