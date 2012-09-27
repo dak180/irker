@@ -125,17 +125,8 @@ class GitExtractor:
 
         # Extract the meta-information for the commit
         self.files = do("git diff-tree -r --name-only '"+ merged +"' | sed -e '1d' -e 's-.*-&-'")
-        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%at%n%s' " + merged)
-        (self.author, self.ts, self.logmsg) = metainfo.split("\n")
-
-        # This discards the part of the author's address after @.
-        # Might be be nice to ship the full email address, if not
-        # for spammers' address harvesters - getting this wrong
-        # would make the freenode #commits channel into harvester heaven.
-        self.author = self.author.replace("<", "").split("@")[0].split()[-1]
-
-        # This ignores the timezone.  Not clear what to do with it...
-        self.ts = self.ts.strip().split()[0]
+        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + merged)
+        (self.author, self.logmsg) = metainfo.split("\n")
 
 if __name__ == "__main__":
     import getopt
@@ -178,6 +169,11 @@ if __name__ == "__main__":
 
     for merged in merges:
         extractor.extract(refname, merged)
+        # This discards the part of the author's address after @.
+        # Might be be nice to ship the full email address, if not
+        # for spammers' address harvesters - getting this wrong
+        # would make the freenode #commits channel into harvester heaven.
+        extractor.author = extractor.author.replace("<", "").split("@")[0].split()[-1]
         privmsg = template % extractor.__dict__
         channel_list = extractor.channels.split(",")
         structure = {"to":channel_list, "privmsg":privmsg}
