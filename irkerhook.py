@@ -157,7 +157,7 @@ class SvnExtractor:
         self.channels = None
         self.tcp = True
         self.author = self.svnlook("author")
-        self.files = self.svnlook("dirs-changed")
+        self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         self.logmsg = self.svnlook("log")
         self.rev = "r{0}".format(self.commit)
     def svnlook(self, info):
