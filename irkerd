@@ -296,9 +296,6 @@ class Irker:
                                    % (connection.server, cxt.channel_limits))
                     except ValueError:
                         self.logerr("ill-formed CHANLIMIT property")
-    def drop_server(self, servername, port):
-        "Drop a server out of the server map."
-        del self.servers[(servername, port)]
     def handle(self, line):
         "Perform a JSON relay request."
         try:
