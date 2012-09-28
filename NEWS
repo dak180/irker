@@ -5,5 +5,7 @@
 
 1.1 @ 2012-09-28
   Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
+  Fix a bug in reporting of multi-file commits.
+
 
 

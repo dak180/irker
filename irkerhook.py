@@ -73,7 +73,7 @@ tinyifier = "http://tinyurl.com/api-create.php?url="
 
 import os, sys, commands, socket, urllib, json
 
-version = "1.0"
+version = "1.1"
 
 def do(command):
     return commands.getstatusoutput(command)[1]
@@ -131,7 +131,8 @@ class GitExtractor:
             self.rev = self.commit[:12]
 
         # Extract the meta-information for the commit
-        self.files = do("git diff-tree -r --name-only '"+ self.commit +"' | sed -e '1d' -e 's-.*-&-'")
+        self.files = do("git diff-tree -r --name-only '"+ self.commit +"'")
+        self.files = " ".join(self.files.strip().split("\n")[1:])
         metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + self.commit)
         (self.author, self.logmsg) = metainfo.split("\n")
         # This discards the part of the author's address after @.
