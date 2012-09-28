@@ -3,4 +3,7 @@
 1.0 @ 2012-09-27
   First production version, somewhat rushed by the sudden death of cia.vc.
 
+1.1 @ 2012-09-28
+  Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
+
 

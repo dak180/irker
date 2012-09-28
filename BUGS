@@ -1,13 +1,4 @@
 			KNOWN BUGS
 
-We apologize for the rough edges on this software.  The initial release
-was somewhat rushed by the sudden death of cia.vc in late September 2012;
-a replacement needed to be fielded immediately.
-
-* Testing has been minimal.
-
-* There is one report of unexplainedly high CPU usage by irkerd when
-  processing UDP requests.
-
 * Despite what the header comment implies, the URL prefix and message template
   in irkerhook.py can at present only be modified by hacking the script.
