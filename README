@@ -10,7 +10,7 @@ IRC channels.  A hook script, irkerhook.py, supporting git and
 Subversion is included in the dustribution; see the install.txt file
 for installation instructions.
 
-There's an alpha-stage proxy that takes CIA XML-RPC notofications 
+There's an alpha-stage proxy that takes CIA XML-RPC notifications 
 and passes them to a local irker instance. Find it here:
 
     https://github.com/nenolod/irker-cia-proxy
