@@ -12,7 +12,7 @@ a list of such strings; in the latter case the message is broadcast to
 all listed channels.  Note that the channel portion of the URL need
 *not* have a leading '#' unless the channel name itself does.
 
-Options: -p sets the debug-message level (probably only of interest to
+Options: -d sets the debug-message level (probably only of interest to
 developers). The -V option prints the program version and exits.
 
 Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
