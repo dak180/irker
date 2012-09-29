@@ -34,7 +34,7 @@ notifications from commit hooks in version-control systems.</para>
 listens on for UDP or TCP packets on port 6659 for textual request
 lines containing JSON objects and terminated by a newline. Each JSON
 object must have two members: "to" specifying a destination or
-destination list, and "privmsg" specifying the message test.
+destination list, and "privmsg" specifying the message text.
 Examples:
 
 <programlisting>
@@ -103,7 +103,7 @@ discarded. </para>
 <para>Eric S. Raymond <email>esr@snark.thyrsus.com</email>.  See the
 project page at <ulink
 url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
-for updates and other resources, including an insrtallable repository
+for updates and other resources, including an installable repository
 hook script. The implementation uses the Python IRC library by Joe
 Rosdahl and Jason R. Coombs.</para>
 </refsect1>
