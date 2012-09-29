@@ -186,7 +186,8 @@ class Connection:
                     if channel[0] not in "#&+":
                         channel = "#" + channel
                     self.connection.join(channel)
-                self.connection.privmsg(channel, message)
+                for segment in message.split("\n"):
+                    self.connection.privmsg(channel, segment)
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
