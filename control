@@ -9,7 +9,7 @@ Description: IRC client that runs as a daemon accepting notification requests
  to send commit notifications to project IRC channels.  A hook script 
  that works with git and svn is included in the distribution.
 
-#XBS-Destinations: freecode
+XBS-Destinations: freecode
 
 Homepage: http://www.catb.org/~esr/irker
 
