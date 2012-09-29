@@ -7,7 +7,7 @@ listening socket.
 It is meant to be used by hook scripts in version-control
 repositories, allowing them to send commit notifications to project
 IRC channels.  A hook script, irkerhook.py, supporting git and
-Subversion is included in the dustribution; see the install.txt file
+Subversion is included in the distribution; see the install.txt file
 for installation instructions.
 
 There's an alpha-stage proxy that takes CIA XML-RPC notifications 
