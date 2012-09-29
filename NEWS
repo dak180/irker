@@ -7,5 +7,9 @@
   Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
   Fix a bug in reporting of multi-file commits.
 
+1.2 @
+  All segments of a message with embedded newlines are now transmitted.
+
+
 
 
