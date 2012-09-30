@@ -1,15 +1,16 @@
 			irker history 
 
 1.0 @ 2012-09-27
-  First production version, somewhat rushed by the sudden death of cia.vc.
+  First production version, somewhat rushed by the sudden death of cia.vc
+  on 24 September.
 
 1.1 @ 2012-09-28
   Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
   Fix a bug in reporting of multi-file commits.
 
-1.2 @
+1.2 @ 2012-09-30
   All segments of a message with embedded newlines are now transmitted.
-  Message reduction - irkerhook drips the filelist on execessively long ones.
+  Message reduction - irkerhook drops the filelist on execessively long ones.
   Shell quote hardening in irkerhook.py and some anti-DoS logic.
 
 

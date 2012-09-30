@@ -43,7 +43,7 @@ import sys, json, getopt, urlparse, time, random
 import threading, Queue, SocketServer
 import irc.client, logging
 
-version = "1.1"
+version = "1.2"
 
 # Sketch of implementation:
 #

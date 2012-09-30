@@ -73,7 +73,7 @@ tinyifier = "http://tinyurl.com/api-create.php?url="
 
 import os, sys, commands, socket, urllib, json
 
-version = "1.1"
+version = "1.2"
 
 def shellquote(s):
     return "'" + s.replace("'","'\\''") + "'"
