@@ -2,21 +2,21 @@
 
 VERS=$(shell irkerd -V | sed 's/irkerd version //')
 
-docs: irker.html irker.1
+docs: irkerd.html irkerd.1
 
 irkerd.1: irkerd.xml
 	xmlto man irkerd.xml
 irkerd.html: irkerd.xml
 	xmlto html-nochunks irkerd.xml
 
-install: irker.1 uninstall
+install: irkerd.1 uninstall
 	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/bin/
 	install -m 755 -o 0 -g 0 irkerd $(ROOT)/usr/bin/irkerd
 	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/share/man/man1/
 	install -m 755 -o 0 -g 0 irkerd.1 $(ROOT)/usr/share/man/man1/irkerd.1
 
 uninstall:
-	rm -f ${ROOT}/usr/bin/irker ${ROOT}/usr/share/man/man1/irker.1
+	rm -f ${ROOT}/usr/bin/irkerd ${ROOT}/usr/share/man/man1/irkerd.1
 
 clean:
 	rm -f irkerd.1 irker-*.tar.gz *~
