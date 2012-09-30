@@ -62,6 +62,7 @@ class GitExtractor:
         self.server = do("git config --get irker.server")
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
+        self.template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         # This one is git-specific
         self.revformat = do("git config --get irker.revformat")
         # The project variable defaults to the name of the repository toplevel.
@@ -152,6 +153,7 @@ class SvnExtractor:
         self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         self.logmsg = self.svnlook("log")
         self.rev = "r%s" % self.commit
+        self.template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         load_preferences(self, os.path.join(self.repository, "irker.conf"))
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
@@ -205,14 +207,6 @@ if __name__ == "__main__":
         urlprefix = "http://%(host)s/viewcvs/%(repo)s?view=revision&revision="
     else:
         urlprefix = "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
-    # The template used to generate notifications.  You can make
-    # visible changes to the IRC-bot notification lines by hacking this.
-    #
-    # ${project}: ${author} ${repo}:${branch} * ${rev} / ${files}: ${logmsg} ${url}
-    if vcs == "svn":
-        template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
-    else:
-        template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
 
     # Make command-line overrides possible.
     # Each argument of the form <key>=<value> can override the
@@ -249,10 +243,10 @@ if __name__ == "__main__":
     # purposes the commit text is more important.  If it's still too long
     # there's nothing much can be done other than ship it expecting the IRC
     # server to truncate.
-    privmsg = template % extractor.__dict__
+    privmsg = extractor.template % extractor.__dict__
     if len(privmsg) > 510:
         extractor.files = ""
-        privmsg = template % extractor.__dict__
+        privmsg = extractor.template % extractor.__dict__
 
     channel_list = extractor.channels.split(",")
     structure = {"to":channel_list, "privmsg":privmsg}
