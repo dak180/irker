@@ -152,13 +152,10 @@ with legitimate high-volume use by a very active repo site.
 After this we appear to have run out of easy options, as source IP address
 is the only thing irkerd can see that an attacker can't spoof.
 
-=== Future directions ===
-
-One way we could mitigate some availability risks is by reaping old
-sessions when we're near resource limits.  An ordinary DoS attack
-would then be prevented from completely blocking all message traffic;
-the cost would be a whole lot of join/leave spam due to connection
-churn.
+We mitigate some availability risks by reaping old sessions when we're
+near resource limits.  An ordinary DoS attack would then be prevented
+from completely blocking all message traffic; the cost would be a
+whole lot of join/leave spam due to connection churn.
 
 = Authentication/Integrity =
 

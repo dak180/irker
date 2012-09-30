@@ -35,6 +35,7 @@ UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (default)
 ANTI_FLOOD_DELAY = 0.125	# Anti-flood delay after transmissions, seconds
 ANTI_BUZZ_DELAY = 0.09		# Anti-buzz delay after queue-empty check
+CONNECTION_MAX = 200		# Avoid pushing per-process thread or fd limits
 
 # No user-serviceable parts below this line
 
@@ -340,6 +341,26 @@ class Irker:
                             for servername in servernames:
                                 if not self.servers[servername].live():
                                     del self.servers[servername]
+                            # If we might be pushing a resource limit
+                            # even after garbage collection, remove a
+                            # session.  The goal here is to head off
+                            # DoS attacks that aim at exhausting
+                            # thread space or file descriptors.  The
+                            # cost is that attempts to DoS this
+                            # service will cause lots of join/leave
+                            # spam as we scavenge old channels after
+                            # connecting to new ones. The particular
+                            # method used for selecting a session to
+                            # be terminated doesn't matter much; we
+                            # choose the one longest idle on the
+                            # assumption that message activity is likely
+                            # to be clumpy.
+                            oldest = None
+                            if len(self.servers) >= CONNECTION_MAX:
+                                for (name, server) in self.servers.items():
+                                    if not oldest or server.last_xmit < self.servers[oldest].last_xmit:
+                                        oldest = name
+                                del self.servers[oldest]
         except ValueError:
             self.logerr("can't recognize JSON on input: %s" % repr(line))
 

@@ -9,8 +9,8 @@
 
 1.2 @
   All segments of a message with embedded newlines are now transmitted.
-  Message reduction - irkerhook driops the filelist on execessively long ones.
-  Shell quote hardening in irkerhook.py.
+  Message reduction - irkerhook drips the filelist on execessively long ones.
+  Shell quote hardening in irkerhook.py and some anti-DoS logic.
 
 
 
