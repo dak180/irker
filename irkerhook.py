@@ -26,12 +26,12 @@
 default_server = "localhost"
 IRKER_PORT = 6659
 
-# The service used to turn your gitwebbish URL into a tinyurl so it
+# The default service used to turn your gitwebbish URL into a tinyurl so it
 # will take up less space on the IRC notification line.
 tinyifier = "http://tinyurl.com/api-create.php?url="
 
-# Map magic urlprefix values to actual URL prefixes
-prefixmap = {
+# Map magic urlprefix values to actual URL prefixes.
+urlprefixmap = {
     "viewcvs": "http://%(host)s/viewcvs/%(repo)s?view=revision&revision=",
     "gitweb": "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h=",
     "cgit": "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id=",
@@ -52,7 +52,7 @@ def do(command):
     return commands.getstatusoutput(command)[1]
 
 def urlify(extractor, commit):
-    extractor.urlprefix = prefixmap.get(extractor.urlprefix, extractor.urlprefix) 
+    extractor.urlprefix = urlprefixmap.get(extractor.urlprefix, extractor.urlprefix) 
     prefix = extractor.urlprefix % extractor.__dict__
     # Try to tinyfy a reference to a web view for this commit.
     try:
