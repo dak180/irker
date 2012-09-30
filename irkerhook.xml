@@ -69,7 +69,7 @@ specified, defaults to a lowercased copy of the project name.</para>
 <term>channels</term>
 <listitem>
 <para>An IRC channel URL, or comma-separated list of same, identifying
-channels to which notofications are to be sent. If not specified, the
+channels to which notifications are to be sent. If not specified, the
 defaults channel list id the freenode #commits channel plus the freenode
 channel named by the project variable.</para>
 </listitem>
@@ -100,6 +100,18 @@ work if you have a typical gitweb/cgit setup.</para>
 field in commit notifications will be suppressed. Other magic values
 are "cgit", "gitweb", and "viewcvs", which expand to URL templates
 that will usually work with those systems.</para>
+
+<para>The magic cookies "%(host)s" and %(repo)s" may occur in this
+URL.  The former is expanded to the FQDN of the host on which
+<application>irkerhook.py</application> is running; the latter is
+expanded to the value of the "repo" variable.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>tinyifier</term>
+<listitem>
+<para>URL template pointing to a service for compressing URLs so they 
+will take up less space in the notification line.</para>
 </listitem>
 </varlistentry>
 </variablelist>

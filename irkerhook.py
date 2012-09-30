@@ -13,22 +13,15 @@
 #
 # See the irkerhook manual page in the distribution for a detailed
 # explanation of how to configure this hook.
-#
-# Other configuration changes you may want to make are to:
-#
-# urlprefix: the current version should work for viewcvs or gitweb
-# installations, but will require modification for other systems.
-#
-# tinyfier: If your project maintains its own url-shrinking service
 
 # The default location of the irker proxy, if the project configuration
 # does not override it.
 default_server = "localhost"
 IRKER_PORT = 6659
 
-# The default service used to turn your gitwebbish URL into a tinyurl so it
+# The default service used to turn your web-view URL into a tinyurl so it
 # will take up less space on the IRC notification line.
-tinyifier = "http://tinyurl.com/api-create.php?url="
+default_tinyifier = "http://tinyurl.com/api-create.php?url="
 
 # Map magic urlprefix values to actual URL prefixes.
 urlprefixmap = {
@@ -36,6 +29,9 @@ urlprefixmap = {
     "gitweb": "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h=",
     "cgit": "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id=",
     }
+
+# By default, the channel list includes the freenode #commits list 
+default_channels = "irc://chat.freenode.net/%(project)s,irc://chat.freenode.net/#commits"
 
 #
 # No user-serviceable parts below this line:
@@ -56,7 +52,7 @@ def urlify(extractor, commit):
     prefix = extractor.urlprefix % extractor.__dict__
     # Try to tinyfy a reference to a web view for this commit.
     try:
-        url = open(urllib.urlretrieve(tinyifier + prefix + commit)[0]).read()
+        url = open(urllib.urlretrieve(extractor.tinyifier + prefix + commit)[0]).read()
     except:
         url = prefix + commit
     return url
@@ -72,6 +68,7 @@ class GitExtractor:
         self.tcp = do("git config --bool --get irker.tcp")
         self.template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
+        self.tinyifier = default_tinyifier
         # This one is git-specific
         self.revformat = do("git config --get irker.revformat")
         # The project variable defaults to the name of the repository toplevel.
@@ -164,6 +161,7 @@ class SvnExtractor:
         self.rev = "r%s" % self.commit
         self.template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         self.urlprefix = "viewcvs"
+        self.tinyifier = default_tinyifier
         load_preferences(self, os.path.join(self.repository, "irker.conf"))
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
@@ -188,11 +186,9 @@ if __name__ == "__main__":
             print "irkerhook.py: version", version
             sys.exit(0)
 
-    # Gather info for repo type discrimination, make globals settable
+    # Gather info for repo type discrimination
     for tok in arguments:
-        if tok.startswith("tinyfier="):
-            tinyfier = tok[9:]
-        elif tok.startswith("repository="):
+        if tok.startswith("repository="):
             repository = tok[11:]
 
     # Determine the repository type. Default to git unless user has pointed
@@ -223,9 +219,8 @@ if __name__ == "__main__":
                 else:
                     setattr(extractor, key, val)
 
-    # By default, the channel list includes the freenode #commits list 
     if not extractor.channels:
-        extractor.channels = "irc://chat.freenode.net/%s,irc://chat.freenode.net/#commits" % extractor.project
+        extractor.channels = default_channels % extractor.__dict__
     # Other defaults get set here
     if not extractor.repo:
         extractor.repo = extractor.project.lower()
