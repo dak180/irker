@@ -114,6 +114,20 @@ expanded to the value of the "repo" variable.</para>
 will take up less space in the notification line.</para>
 </listitem>
 </varlistentry>
+<varlistentry>
+<term>maxchannels</term>
+<listitem>
+<para>Interpreted as an integer. If not zero, limits the number of
+channels the hook will interpret from the "channels" variable.</para>
+
+<para>This variable cannot be set through VCS configuration variables
+or <filename>irker.conf</filename>; it can only be set with a command-line
+argument.  Thus, on a forge site in which repository owners are not
+allowed to modify their post-commit scripts, a site administrator can set it 
+to prevent shotgun spamming by malicious project owners.  Setting it to
+a value less than 2, however, would probably be unwise.</para>
+</listitem>
+</varlistentry>
 </variablelist>
 
 <refsect2 id="git"><title>git</title>

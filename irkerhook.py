@@ -113,6 +113,7 @@ class GitExtractor:
         # for spammers' address harvesters - getting this wrong
         # would make the freenode #commits channel into harvester heaven.
         self.author = self.author.replace("<", "").split("@")[0].split()[-1]
+        self.maxchannels = 0
 
 def load_preferences(extractor, conf):
     "Load preferences from a file in the repository root."
@@ -138,6 +139,9 @@ def load_preferences(extractor, conf):
             val = True
         if val.lower() == "false":
             val = False
+        # User cannot set maxchannels - only a command-line arg can do that.
+        if fld == "maxchannels":
+            return
         setattr(extractor, fld, val)
 
 class SvnExtractor:
@@ -162,6 +166,7 @@ class SvnExtractor:
         self.template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         self.urlprefix = "viewcvs"
         self.tinyifier = default_tinyifier
+        self.maxchannels = 0
         load_preferences(self, os.path.join(self.repository, "irker.conf"))
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
@@ -207,6 +212,7 @@ if __name__ == "__main__":
     # Each argument of the form <key>=<value> can override the
     # <key> member of the extractor class. 
     booleans = ["tcp"]
+    numerics = ["maxchannels"]
     for tok in arguments:
         for key in extractor.__dict__:
             if tok.startswith(key + "="):
@@ -216,6 +222,8 @@ if __name__ == "__main__":
                         setattr(extractor, key, True)
                     elif val.lower() == "false":
                         setattr(extractor, key, False)
+                elif key in numerics:
+                    setattr(extractor, key, int(val))
                 else:
                     setattr(extractor, key, val)
 
@@ -246,6 +254,8 @@ if __name__ == "__main__":
         privmsg = extractor.template % extractor.__dict__
 
     channel_list = extractor.channels.split(",")
+    if extractor.maxchannels != 0:
+        channel_list = channel_list[:extractor.maxchannels]
     structure = {"to":channel_list, "privmsg":privmsg}
     message = json.dumps(structure)
     if not notify:
