@@ -144,6 +144,30 @@ class GitExtractor:
         # would make the freenode #commits channel into harvester heaven.
         self.author = self.author.replace("<", "").split("@")[0].split()[-1]
 
+def load_preferences(extractor, conf):
+    "Load preferences from a file in the repository root."
+    ln = 0
+    for line in open(conf):
+        ln += 1
+        if line.startswith("#") or not line.strip():
+            continue
+        elif line.count('=') != 1:
+            sys.stderr.write('"%s", line %d: missing = in config line\n' \
+                             % (conf, ln))
+            continue
+        fields = line.split('=')
+        if len(fields) != 2:
+            sys.stderr.write('"%s", line %d: too many fields in config line\n' \
+                             % (conf, ln))
+            continue
+        fld = fields[0].strip()
+        val = fields[1].strip()
+        if val.lower() == "true":
+            val = True
+        if val.lower() == "false":
+            val = False
+        setattr(extractor, fld, val)
+
 class SvnExtractor:
     "Metadata extraction for the svn version control system."
     def __init__(self, arguments):
@@ -162,7 +186,8 @@ class SvnExtractor:
         self.author = self.svnlook("author")
         self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         self.logmsg = self.svnlook("log")
-        self.rev = "r%s" % self.commit)
+        self.rev = "r%s" % self.commit
+        load_preferences(self, os.path.join(self.repository, "irker.conf"))
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
 
