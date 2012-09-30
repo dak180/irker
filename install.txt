@@ -13,6 +13,10 @@ port 6659.  Install it accordingly.
 You should *not* make irker visible from outside the site firewall, as
 it can be used to spam IRC channels while masking the source address.
 
+You will need to have Jason Coombs's irc library where Python can see
+it.  See <http://pypi.python.org/pypi/irc/>; use version 3.0, not the
+older code from SourceForge.
+
 == Installing irkerhook.py ==
 
 irkerhook.py should be called from the post-commit hook of each 
@@ -49,3 +53,7 @@ mine stuff out of.
 Go to a project repo and call irkerhook.py as indicated above while
 watching the freenode #commits channel.
  
+== Security considerations ==
+
+See the security.txt document for a detailed discussion of security
+and DoS vulnerabilities related to irker.

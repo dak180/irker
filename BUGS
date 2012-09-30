@@ -2,3 +2,7 @@
 
 * Despite what the header comment implies, the URL prefix and message template
   in irkerhook.py can at present only be modified by hacking the script.
+
+* DoS attacks on irker instances are not presently very difficult.
+  Some mechanism for reaping old connections when near exhaustion of
+  thread instances or file descriptors would be a good idea.

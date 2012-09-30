@@ -1,0 +1,263 @@
+= Security analysis of irker =
+
+This is an analysis of security and DoS vulnerabilities associated
+with irker, exploring and explaining certain design choices.  Much of
+it derives from a code audit and report by Daniel Franke.
+
+== Assumptions and Goals ==
+
+We begin by stating some assumptions about how irker will be deployed,
+and articulating a set of security goals.
+
+Communication flow in an irker deployment will looks like this:
+
+             Committers
+                 |
+                 |
+        Version-control repositories
+                 |
+                 |
+            irkerhook.py
+                 |
+                 |
+               irkerd
+                 |
+                 |
+             IRC servers
+
+Here are our assumptions:
+
+1. The repositories are hosted on a public forge sites such as
+SourceForge, GitHub, Gitorious, Savannah, or Gna and must be
+accessible to untrusted users. 
+
+2. Repository project owners can set properties on their repositories
+(including but not limited to irker.*), and may be able to set custom
+post-commit hooks which can execute arbitrary code on the repostory
+server. In particular, these people my be able to modify the local
+copy of irkerhook.py.
+
+3. The machine which hosts irkerd has the same owner as the machine which
+hosts the the repo; these machines are possibly but not necessarily
+one and the same. 
+
+4. The network is protected by a perimeter firewall, and only a
+trusted group is able to emit arbitrary packets from inside the
+perimeter; committers are not necessarily part of this group.
+
+5. irkerd communicates with IRC servers over the open internet,
+and an IRC server's administrator is assumed to hold no position of
+trust with any other party.
+
+We can, accordingly, identify the following groups of security
+principals:
+
+A. irker administrators.
+B. Project committers.
+C. Project owners
+D. IRC server administrators.
+E. Other people on irker's internal network.
+F. irkerd-IRC men-in-the-middle (i.e. people who control the network path
+   between irkerd and the IRC server).
+G. Random people on the internet.
+
+Our security goals for irker can be enumerated as follows:
+
+* Control: We don't want anyone outside group A gaining control of
+  the machines which host irkerd or the git repos.
+
+* Availability: Only group A should be able to to deny or degrade
+  irkerd's ability to receive commit messages and relay them to the
+  IRC server. We recognize and accept as inevitable that MITMs (groups
+  4 and 5) can do this too (by ARP spoofing, cable-cutting, etc.).
+  But, in particular, we would like irker-mediated services to be
+  resilient against DoS (denial of service) attacks.
+
+* Authentication/integrity: Notifications should be truthful, i.e.,
+  commit messages sent to IRC channels should actually reflect that a
+  corresponding commit has taken place. We accept that groups A, C,
+  D, and E can violate this property.
+
+* Secrecy: irker shouldn't aid spammers (group G) in harvesting
+  committers' email addresses.
+
+* Auditability: If people abuse irkerd, we want to be able to identify
+  the abusive account or IP address.
+
+== Control Issues ===
+
+We have audited the irker and irkerhook.py code for exploitable 
+vulnerabilities.  We have not found any in the code itself, but the
+fact that irkerhook.py relies on external binaries to mine data ought
+of its repository opens up a well-known set of vulnerabilities if a
+malicious user is able to insert binaries in a carelessly-set 
+execution path.  Normal precautions against this should be taken.
+
+== Availability ==
+
+=== Solved problems ===
+
+When the original implementation of irkerd saw a nick collision it
+generated new nicks in a predictable sequence. A malicious IRC user
+could have continuously changed his own nick to the next one that
+irkerd is going to try. Some randomness has been added to nick
+generation to prevent this.
+
+=== Unsolved problems ===
+
+DoS attacks on any networked application can never completely
+prevented, only mitigated by forcing attackers to invest more
+resources.  Here we consider the easiest attack paths against irker,
+and possible countermeasures.
+
+irker handles each connection to a particular IRC server in a separate
+thread - actually, due to server limits on open channels per
+connection, there may be multiple sessions per server. This may not
+scale well, especially on 32-bit architectures. 
+
+Thread instance overhead, combined with the lack of any restriction on
+how many URLs can appear in the 'to' list, is a DoS vulnerability. If
+a repository's properties specify that notifications should go to more
+than about 500 unique hostnames, then on 32-bit architectures we'll
+hit the 4GB cap on virtual memory (even while the resident set size
+remains small).
+
+Another ceiling to watch out for is the ulimit on file descriptors,
+which defaults to 1024 on many Linux systems but can safely be set
+much larger. Each connection instance costs a file descriptor.
+
+We consider some possible ways of addressing the problem:
+
+1. Limit the number of URLs in a request.  Pretty painless - it will
+be very rare that anyone wants to specify a larger set than a project
+channel plus freenode #commits - but also ineffective.  A malicious
+hook could achieve DoS simply by spamming lots of requests.
+
+2. Limit the total number of requests than can be queued. Completely
+ineffective - just sets a target for the DoS attack.
+
+3. Limit the number of requests that can be queued by source IP address.
+This might be worth doing; it would stymie a single-source DoS attack through
+a publicly-exposed irkerd, though not a DDoS by a bitnet.  But there isn't
+a lot of win here for a properly installed irker (e.g. behind a firewall), 
+which is typically going to get all its requests from a single repo host
+anyway.
+
+4. Rate-limit requests by source IP address - that is, after any request
+discard additional ones during some timeout period.  Again, good for 
+stopping a single-source DoS against an exposed irker, won't stop a
+DDoS.  The real problem though, is that any such rate limit might interfere
+with legitimate high-volume use by a very active repo site.
+
+After this we appear to have run out of easy options, as source IP address
+is the only thing irkerd can see that an attacker can't spoof.
+
+=== Future directions ===
+
+One way we could mitigate some availability risks is by reaping old
+sessions when we're near resource limits.  An ordinary DoS attack
+would then be prevented from completely blocking all message traffic;
+the cost would be a whole lot of join/leave spam due to connection
+churn.
+
+= Authentication/Integrity =
+
+One way to help prevent DoS attacks would be in-band authentication -
+requiring irkerd submitters to present a credential along with each
+message submission.  In principle this, if it existed, could also be used
+to verify that a submitter is authorized to issue notifications with
+respect to a given project.
+
+We rejected this approach. The design goal for irker was to make
+submissions fast, cheap, and stateless; baking an authentication
+system directly into the irkerd codebase would have conflicted with
+these objectives, not to mention probably becoming the camel's nose
+for a godawful amount of code bloat.
+
+The deployment advice in the installation instructions assumes that 
+irkerd submitters are "authenticated" by being inside a firewall - that is,
+mesages are issued from an intranet and it can be trusted that anyone 
+issuing messages from within a given intrenet is authorized to do so.
+This fits the assumption that irker instances will run on forge sites
+receiving requests from instances of irkerhook.py.
+
+If this is *not* the case (e.g. the network between a hook and irkerd
+has to be considered hostile) we could hide irkerd behind an instance
+of spiped <http://www.tarsnap.com/spiped.html> or an instance of
+stunnel <http://www.stunnel.orgproxy>. These would be far superior to
+in-band authentication in that they would leave the job to specialist
+code not in any way coupled to irkerd's internals, minimizing
+global complexity and failure modes.
+
+=== Future directions ===
+
+There is presently no direct support for spipe or stunnel in
+irkerhook.py.  We'd take patches for this.
+
+== Secrecy ==
+
+irkerd has no inherent secrecy risks.
+
+The distributed version of irkerhook.py removes the host part of
+author addresses specifically in order to prevent address harvesting
+from the notifications.
+
+== Auditability ==
+
+We previously noted that source IP address is the only thing irker can
+see that an attacker can't spoof.  This makes auditability difficult
+unless we impose conventions on the notifications passing though it.
+
+The irkerhook.py that we ship inherits an auditability property from
+the CIA service it was designed to replace: the first field of every
+notification (terminated by a colon) is the name of the issuing
+project.  The only other competitor to replace CIA known to us
+(kgb_bot) shares this property.
+
+In the general case we cannot guarantee this property against
+groups A and F.
+
+== Risks relative to centralized services ==
+
+irker and irkerhook.py were written as a replacement for the
+now-defunct CIA notification service.  The author has written
+a critique of that service: "CIA and the perils of overengineering"
+at <http://esr.ibiblio.org/?p=4540>.  It is thus worth considering how
+a risk assessment of CIA compares to this one.
+
+The principal advantages of CIA from a security point of view were (a)
+it provided a single point at which spam filtering and source blocking
+could be done with benefit to all projects using the service, and (b)
+since it had to have a database anyway for routing messages to project
+channels, the incremental overhead for an authentication feature will
+be relatively low.
+
+As a matter of fact rather than theory CIA never fully exploited
+either possibility.  Anyone could create a CIA project entry with
+fanout to any desired set of IRC channels.  Notifications were not
+authenticated, so anyone could masquerade as a member of any project.
+The only check on abuse was human intervention to source-block
+spammers, and this was by no means completely effective - spam shipped
+via CIA was occasionally seen on on the freenode #commits channel.
+
+The principal security disadvantage of CIA was that it meant the
+entire notification system was subject to single-point failure due
+to software or hosting failures on cia.vc, or to DoS attacks
+against the server.  While there is no evidence that the site
+was ever deliberately DoSed, failures were sufficiently common
+that a half-hearted DoS attack might not have been even noticed.
+
+Despite the absence of authentication, irker instances on
+properly firewalled intranets do not obviously pose additional
+spamming risks beyond those incurred by the CIA service.  The
+overall robustness of the notification system as a whole should
+be greatly improved.
+
+== Conclusions ==
+
+The security and DoS issues irker has are not readily addressable by
+changing the irker codebase itself, short of a complete (much more
+complex and heavyweight) redesign.  They are largely implicit risks of
+its operating environment and must be managed by properly controlling
+access to irker instances.
+
