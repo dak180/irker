@@ -116,20 +116,19 @@ will take up less space in the notification line.</para>
 </varlistentry>
 </variablelist>
 
-
-
 <refsect2 id="git"><title>git</title>
 
 <para>Under git, <application>irkerhook.py</application> does not
 require any arguments.  All variables may be set in the repo
-<filename>config</filename> file, and are distinguished with
-the application prefix "irker.".  Command-line variable=value
-arguments are accepted but not required.  No attempt is made
-to interpret an <filename>irker.conf</filename> file.</para>
+<filename>config</filename> file, and are distinguished with the
+application prefix "irker.".  Command-line variable=value arguments
+are accepted but not required.  No attempt is made to interpret an
+<filename>irker.conf</filename> file.  You should not set the
+"repository" variable (an equivalent will be computed).</para>
 
 <para>The default value of the "project" variable is the basename
 of the repository directory. The default value of the "urlprefix"
-variable is "viewcvs".</para>
+variable is "cgit".</para>
 
 <para>There is one git-specific variable, "revformat", controlling
 the format of the commit identifier in a notification. It
@@ -172,7 +171,7 @@ given on the command line, and will override any settings in an
 
 <para>The default for the project variable is the basename of the
 (required) repository= argument.The default value of the "urlprefix"
-variable is "cgit".</para>
+variable is "viewcvs".</para>
 
 <para>If an <filename>irker.conf</filename> file exists in the repository
 root directory (not the checkout directory but where internals such as the
@@ -185,6 +184,9 @@ project = irker
 channels  = irc://chat.freenode/irker,irc://chat.freenode/commits
 tcp = false
 </programlisting>
+
+<para>Don't the "repository" or "commit" variables in this file;
+that would have unhappy results.</para>
 
 <para>There are no Subversion-specific variables.</para>
 
