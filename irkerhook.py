@@ -162,7 +162,7 @@ class SvnExtractor:
         self.author = self.svnlook("author")
         self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         self.logmsg = self.svnlook("log")
-        self.rev = "r{0}".format(self.commit)
+        self.rev = "r%s" % self.commit)
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
 
