@@ -20,7 +20,7 @@
   <command>irkerhook.py</command>
      <arg>-n</arg>
      <arg>-V</arg>
-     <arg rep='repeat'><replaceable>key=val</replaceable></arg>
+     <arg rep='repeat'><replaceable>variable=value</replaceable></arg>
 </cmdsynopsis>
 </refsynopsisdiv>
 
@@ -32,6 +32,133 @@ job is to collect information about the commit that fired the hook (and
 possibly preferences set by the repository owner) and ship that information
 to an instance of <application>irkerd</application> for forwarding to
 various announcement channels.</para>
+
+<para>The proper invocation and behavior of 
+<application>irkerhook.py</application> varies depending on which
+VCS (version-control system) is calling it.  There are four different places
+from which it may extract information:</para>
+
+<orderedlist>
+<listitem><para>Calls to VCS utilities.</para></listitem>
+<listitem><para>In VCSes like git that support user-settable configuration
+variables, variables with the prefix "irker.".</para></listitem>
+<listitem><para>In other VCSes, a configuration file, "irker.conf", in the
+repository's internals directory.</para></listitem>
+<listitem><para>Command-line arguments of the form
+variable=value.</para></listitem>
+</orderedlist>
+
+<para>The following variables are general to all supported VCSes:</para>
+
+<variablelist>
+<varlistentry>
+<term>project</term>
+<listitem>
+<para>The name of the project.  Should be a relatively short identifier;
+will usually appear at the very beginning of a notification.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>repo</term>
+<listitem>
+<para>The name of the repository top-level directory.  If not
+specified, defaults to a lowercased copy of the project name.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>channels</term>
+<listitem>
+<para>An IRC channel URL, or comma-separated list of same, identifying
+channels to which notofications are to be sent. If not specified, the
+defaults channel list id the freenode #commits channel plus the freenode
+channel named by the project variable.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>server</term>
+<listitem>
+<para>The host on which the notification-relaying irker daemon is expected
+to reside. Defaults to "localhost".</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>tcp</term>
+<listitem>
+<para>If "true", use TCP for communication; if "false", use UDP.
+Defaults to "false".</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<refsect2 id="git"><title>git</title>
+
+<para>Under git, <application>irkerhook.py</application> does not
+require any arguments.  All variables may be set in the repo
+<filename>config</filename> file, and are distinguished with
+the application prefix "irker.".  Command-line variable=value
+arguments are accepted but not required.  No attempt is made
+to interpret an <filename>irker.conf</filename> file.</para>
+
+<para>The default value of the "project" variable is the basename
+of the repository directory.</para>
+
+<para>There is one git-specific variable, "revformat", controlling
+the format of the commit identifier in a notification. It
+may have the following values:</para>
+
+<variablelist>
+<varlistentry>
+<term>raw</term>
+<listitem><para>full hex ID of commit</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>short</term>
+<listitem><para>first 12 chars of hex ID</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>describe</term>
+<listitem><para>describe relative to last tag, falling back to short</para></listitem>
+</varlistentry>
+</variablelist>
+
+<para>The default is 'describe'.</para>
+</refsect2>
+
+<refsect2 id="svn"><title>Subversion</title>
+
+<para>Under Subversion, <application>irkerhook.py</application>
+requires two arguments: "repository=" (the absolute pathname of the
+Subversion repository) and "commit=" (the numeric revision level of
+the commit).  The values must be the two arguments that Subversion
+gives its post-commit hook. Thus, a typical invocation in the post-commit
+script will look like this:</para>
+
+<programlisting>
+irkerhook.py repository=$1 commit=$2
+</programlisting>
+
+<para>Other variable=value settings may also be
+given on the command line, and will override any settings in an
+<filename>irker.conf</filename> file.</para>
+
+<para>The default for the project variable is the basename of the
+(required) repository= argument.</para>
+
+<para>If an <filename>irker.conf</filename> file exists in the repository
+root directory (not the checkout directory but where internals such as the
+"format" file live) the hook will interpret variable settings from it.  Here
+is an example of what such a file might look like:</para>
+
+<programlisting>
+# irkerhook variable settings for the irker project
+project = irker
+channels  = irc://chat.freenode/irker,irc://chat.freenode/commits
+tcp = false
+</programlisting>
+
+<para>There are no Subversion-specific variables.</para>
+
+</refsect2>
 
 </refsect1>
 

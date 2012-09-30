@@ -9,47 +9,10 @@
 #
 # This script is meant to be run in a post-commit hook.  Try it with
 # -n to see the notification dumped to stdout and verify that it looks
-# sane. With -V it dumps its version and exits.
+# sane. With -V this script dumps its version and exits.
 #
-# Currently works for svn and git.  For svn you must call it as follows:
-#
-# irkerhook.py repository=REPO-PATH commit=REVISION channels=CHANNELS server=SERVER
-#
-# REPO-PATH must be the absolute path of the SVN repository (first
-# argument of Subversion post-commit).  REVISION must be the Subversion numeric
-# commit level (second argument of Subversion post-commit). CHANNELS must
-# be a string containing either an IRC URL or comma-separated list of same.
-# SERVER must be an irker host.
-#
-# For git, you can normally call this script without arguments; it
-# will deduce most of what it needs from git configuration variables
-# (and the project value from where it is in the file system).
-# Configuration variables are as follows.
-#
-# irker.project = name of the project
-# irker.channels = list of IRC URLs corresponding to channels
-# irker.repo = name of the project repo for gitweb/cgit purposes
-# irker.revformat = format in which the revision is shown
-# irker.server = location of the irker server to use for relaying
-# irker.tcp = use TCP/IP if true, otherwise UDP
-#
-# irker.channels defaults to a project channel on freenode, and #commits
-# irker.project defaults to the directory name of the repository toplevel.
-# irker.repo defaults to irker.project lowercased.
-# irker.tcp defaults to False
-#
-# This means that in the normal case you need not do any configuration at all,
-# but setting the project name will speed it up slightly.
-#
-# The revformat variable may have the following values
-# raw -> full hex ID of commit
-# short -> first 12 chars of hex ID
-# describe = -> describe relative to last tag, falling back to short
-# The default is 'describe'.
-#
-# Any of these variables can be overridden with a command-line argument that
-# is a key=value pair. For example "project=foobar" will force the project
-# name to foobar, regardless of what the git configuration says.
+# See the irkerhook manual page in the distribution for a detailed
+# explanation of how to configure this hook.
 #
 # Other configuration changes you may want to make are to:
 #
