@@ -109,6 +109,8 @@ class GitExtractor:
 
 def load_preferences(extractor, conf):
     "Load preferences from a file in the repository root."
+    if not os.path.exists(conf):
+        return
     ln = 0
     for line in open(conf):
         ln += 1
