@@ -75,6 +75,9 @@ import os, sys, commands, socket, urllib, json
 
 version = "1.1"
 
+def shellquote(s):
+    return "'" + s.replace("'","'\\''") + "'"
+
 def do(command):
     return commands.getstatusoutput(command)[1]
 
@@ -126,14 +129,14 @@ class GitExtractor:
         elif self.revformat == 'short':
             self.rev = ''
         else: # self.revformat == 'describe'
-            self.rev = do("git describe %s 2>/dev/null" % self.commit)
+            self.rev = do("git describe %s 2>/dev/null" % shellquote(self.commit))
         if not self.rev:
             self.rev = self.commit[:12]
 
         # Extract the meta-information for the commit
-        self.files = do("git diff-tree -r --name-only '"+ self.commit +"'")
+        self.files = do("git diff-tree -r --name-only " + shellquote(self.commit))
         self.files = " ".join(self.files.strip().split("\n")[1:])
-        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + self.commit)
+        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + shellquote(self.commit))
         (self.author, self.logmsg) = metainfo.split("\n")
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
@@ -161,7 +164,7 @@ class SvnExtractor:
         self.logmsg = self.svnlook("log")
         self.rev = "r{0}".format(self.commit)
     def svnlook(self, info):
-        return do("svnlook {0} {1} --revision {2}".format(info, self.repository, self.commit))
+        return do("svnlook {0} {1} --revision {2}".format(shellquote(info), shellquote(self.repository), shellquote(self.commit)))
 
 if __name__ == "__main__":
     import getopt
@@ -250,7 +253,17 @@ if __name__ == "__main__":
         sys.stderr.write("irkerhook.py: no project name set!\n")
         sys.exit(1)
 
+    # Message reduction.  The assumption here is that IRC can't handle
+    # lines more than 510 characters long. If we exceed that length, we
+    # try knocking out the file list, on the theory that for notification
+    # purposes the commit text is more important.  If it's still too long
+    # there's nothing much can be done other than ship it expecting the IRC
+    # server to truncate.
     privmsg = template % extractor.__dict__
+    if len(privmsg) > 510:
+        extractor.files = ""
+        privmsg = template % extractor.__dict__
+
     channel_list = extractor.channels.split(",")
     structure = {"to":channel_list, "privmsg":privmsg}
     message = json.dumps(structure)
