@@ -164,7 +164,7 @@ class SvnExtractor:
         self.logmsg = self.svnlook("log")
         self.rev = "r{0}".format(self.commit)
     def svnlook(self, info):
-        return do("svnlook {0} {1} --revision {2}".format(shellquote(info), shellquote(self.repository), shellquote(self.commit)))
+        return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
 
 if __name__ == "__main__":
     import getopt
