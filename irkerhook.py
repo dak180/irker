@@ -30,6 +30,13 @@ IRKER_PORT = 6659
 # will take up less space on the IRC notification line.
 tinyifier = "http://tinyurl.com/api-create.php?url="
 
+# Map magic urlprefix values to actual URL prefixes
+prefixmap = {
+    "viewcvs": "http://%(host)s/viewcvs/%(repo)s?view=revision&revision=",
+    "gitweb": "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h=",
+    "cgit": "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id=",
+    }
+
 #
 # No user-serviceable parts below this line:
 #
@@ -45,7 +52,8 @@ def do(command):
     return commands.getstatusoutput(command)[1]
 
 def urlify(extractor, commit):
-    prefix = urlprefix % extractor.__dict__
+    extractor.urlprefix = prefixmap.get(extractor.urlprefix, extractor.urlprefix) 
+    prefix = extractor.urlprefix % extractor.__dict__
     # Try to tinyfy a reference to a web view for this commit.
     try:
         url = open(urllib.urlretrieve(tinyifier + prefix + commit)[0]).read()
@@ -63,6 +71,7 @@ class GitExtractor:
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
         self.template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+        self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
         # This one is git-specific
         self.revformat = do("git config --get irker.revformat")
         # The project variable defaults to the name of the repository toplevel.
@@ -154,6 +163,7 @@ class SvnExtractor:
         self.logmsg = self.svnlook("log")
         self.rev = "r%s" % self.commit
         self.template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+        self.urlprefix = "viewcvs"
         load_preferences(self, os.path.join(self.repository, "irker.conf"))
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
@@ -197,17 +207,6 @@ if __name__ == "__main__":
     else:
         extractor = GitExtractor()
 
-    # Changeset URL prefix for your repo: when the commit ID is appended
-    # to this, it should point at a CGI that will display the commit
-    # through gitweb or something similar. The defaults will probably
-    # work if you have a typical gitweb/cgit setup.
-    #
-    #urlprefix = "http://%(host)s/cgi-bin/gitweb.cgi?p=%(repo)s;a=commit;h="
-    if vcs == "svn":
-        urlprefix = "http://%(host)s/viewcvs/%(repo)s?view=revision&revision="
-    else:
-        urlprefix = "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id="
-
     # Make command-line overrides possible.
     # Each argument of the form <key>=<value> can override the
     # <key> member of the extractor class. 
@@ -230,8 +229,11 @@ if __name__ == "__main__":
     # Other defaults get set here
     if not extractor.repo:
         extractor.repo = extractor.project.lower()
-    extractor.host = socket.getfqdn()            
-    extractor.url = urlify(extractor, extractor.commit)
+    extractor.host = socket.getfqdn()
+    if extractor.urlprefix == "None":
+        extractor.url = ""
+    else:
+        extractor.url = urlify(extractor, extractor.commit)
 
     if not extractor.project:
         sys.stderr.write("irkerhook.py: no project name set!\n")

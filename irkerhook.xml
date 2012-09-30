@@ -88,7 +88,23 @@ to reside. Defaults to "localhost".</para>
 Defaults to "false".</para>
 </listitem>
 </varlistentry>
+<varlistentry>
+<term>urlprefix</term>
+<listitem>
+<para>Changeset URL prefix for your repo. When the commit ID is appended
+to this, it should point at a CGI that will display the commit
+through cgit,gitweb or something similar. The defaults will probably
+work if you have a typical gitweb/cgit setup.</para>
+
+<para>If the value of this variable is "None", generation of the URL
+field in commit notifications will be suppressed. Other magic values
+are "cgit", "gitweb", and "viewcvs", which expand to URL templates
+that will usually work with those systems.</para>
+</listitem>
+</varlistentry>
 </variablelist>
+
+
 
 <refsect2 id="git"><title>git</title>
 
@@ -100,7 +116,8 @@ arguments are accepted but not required.  No attempt is made
 to interpret an <filename>irker.conf</filename> file.</para>
 
 <para>The default value of the "project" variable is the basename
-of the repository directory.</para>
+of the repository directory. The default value of the "urlprefix"
+variable is "viewcvs".</para>
 
 <para>There is one git-specific variable, "revformat", controlling
 the format of the commit identifier in a notification. It
@@ -142,7 +159,8 @@ given on the command line, and will override any settings in an
 <filename>irker.conf</filename> file.</para>
 
 <para>The default for the project variable is the basename of the
-(required) repository= argument.</para>
+(required) repository= argument.The default value of the "urlprefix"
+variable is "cgit".</para>
 
 <para>If an <filename>irker.conf</filename> file exists in the repository
 root directory (not the checkout directory but where internals such as the
