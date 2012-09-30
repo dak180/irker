@@ -1,10 +1,10 @@
 <!DOCTYPE refentry PUBLIC 
    "-//OASIS//DTD DocBook XML V4.1.2//EN"
    "docbook/docbookx.dtd">
-<refentry id='irkerd.1'>
+<refentry id='irkerd.8'>
 <refmeta>
 <refentrytitle>irkerd</refentrytitle>
-<manvolnum>1</manvolnum>
+<manvolnum>8</manvolnum>
 <refmiscinfo class='date'>Aug 27 2012</refmiscinfo>
 <refmiscinfo class='source'>irkerd</refmiscinfo>
 <refmiscinfo class='product'>irkerd</refmiscinfo>

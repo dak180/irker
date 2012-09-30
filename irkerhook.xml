@@ -1,0 +1,66 @@
+<!DOCTYPE refentry PUBLIC 
+   "-//OASIS//DTD DocBook XML V4.1.2//EN"
+   "docbook/docbookx.dtd">
+<refentry id='irkerhook.1'>
+<refmeta>
+<refentrytitle>irkerhook</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class='date'>Aug 27 2012</refmiscinfo>
+<refmiscinfo class='source'>irkerd</refmiscinfo>
+<refmiscinfo class='product'>irkerd</refmiscinfo>
+<refmiscinfo class='manual'>Commands</refmiscinfo>
+</refmeta>
+<refnamediv id='name'>
+<refname>irkerhook</refname>
+<refpurpose>repository hook script issuing irker notifications</refpurpose>
+</refnamediv>
+<refsynopsisdiv id='synopsis'>
+
+<cmdsynopsis>
+  <command>irkerhook.py</command>
+     <arg>-n</arg>
+     <arg>-V</arg>
+     <arg rep='repeat'><replaceable>key=val</replaceable></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1 id='description'><title>DESCRIPTION</title>
+
+<para><application>irkerhook.py</application> is a Python script intended 
+to be called from the post-commit hook of a version-control repository. Its
+job is to collect information about the commit that fired the hook (and
+possibly preferences set by the repository owner) and ship that information
+to an instance of <application>irkerd</application> for forwarding to
+various announcement channels.</para>
+
+</refsect1>
+
+<refsect1 id='options'><title>OPTIONS</title>
+
+<para><application>irkerhook.py</application> takes the following
+options:</para>
+
+<variablelist>
+<varlistentry>
+<term>-n</term>
+<listitem><para>Suppress transmission to a daemon. Instead, dump the
+generated JSON request to standard output. Useful for
+debugging.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-V</term>
+<listitem><para>Write the program version to stdout and
+terminate.</para></listitem>
+</varlistentry>
+</variablelist>
+
+</refsect1>
+
+<refsect1 id='authors'><title>AUTHOR</title>
+<para>Eric S. Raymond <email>esr@snark.thyrsus.com</email>.  See the
+project page at <ulink
+url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
+for updates and other resources.</para>
+</refsect1>
+</refentry>
+
