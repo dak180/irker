@@ -57,18 +57,89 @@ def urlify(extractor, commit):
         url = prefix + commit
     return url
 
-class GitExtractor:
+class GenericExtractor:
+    "Generic class for encapsulating data from a VCS."
+    def __init__(self, arguments):
+        self.arguments = arguments
+        self.project = None
+        self.repo = None
+        # These aren't really repo data but they belong here anyway...
+        self.tcp = True
+        self.tinyifier = default_tinyifier
+        self.server = None
+        self.channels = None
+        self.maxchannels = 0
+    def load_preferences(self, conf):
+        "Load preferences from a file in the repository root."
+        if not os.path.exists(conf):
+            return
+        ln = 0
+        for line in open(conf):
+            ln += 1
+            if line.startswith("#") or not line.strip():
+                continue
+            elif line.count('=') != 1:
+                sys.stderr.write('"%s", line %d: missing = in config line\n' \
+                                 % (conf, ln))
+                continue
+            fields = line.split('=')
+            if len(fields) != 2:
+                sys.stderr.write('"%s", line %d: too many fields in config line\n' \
+                                 % (conf, ln))
+                continue
+            fld = fields[0].strip()
+            val = fields[1].strip()
+            if val.lower() == "true":
+                val = True
+            if val.lower() == "false":
+                val = False
+            # User cannot set maxchannels - only a command-line arg can do that.
+            if fld == "maxchannels":
+                return
+            setattr(self, fld, val)
+    def do_overrides(self):
+        "Make command-line overrides possible."
+        booleans = ["tcp"]
+        numerics = ["maxchannels"]
+        for tok in self.arguments:
+            for key in self.__dict__:
+                if tok.startswith(key + "="):
+                    val = tok[len(key)+1:]
+                    if key in booleans:
+                        if val.lower() == "true":
+                            setattr(self, key, True)
+                        elif val.lower() == "false":
+                            setattr(self, key, False)
+                    elif key in numerics:
+                        setattr(self, key, int(val))
+                    else:
+                        setattr(self, key, val)
+        if not self.channels:
+            self.channels = default_channels % self.__dict__
+        # Other defaults get set here
+        if not self.repo:
+            self.repo = self.project.lower()
+        self.host = socket.getfqdn()
+        if self.urlprefix == "None":
+            self.url = ""
+        else:
+            self.url = urlify(self, self.commit)
+        if not self.project:
+            sys.stderr.write("irkerhook.py: no project name set!\n")
+            sys.exit(1)
+
+class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
-    def __init__(self, project=None):
+    def __init__(self, arguments):
+        GenericExtractor.__init__(self, arguments)
         # Get all global config variables
-        self.project = project or do("git config --get irker.project")
+        self.project = do("git config --get irker.project")
         self.repo = do("git config --get irker.repo")
         self.server = do("git config --get irker.server")
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
         self.template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
-        self.tinyifier = default_tinyifier
         # This one is git-specific
         self.revformat = do("git config --get irker.revformat")
         # The project variable defaults to the name of the repository toplevel.
@@ -90,9 +161,7 @@ class GitExtractor:
         # Revision level
         self.refname = do("git symbolic-ref HEAD 2>/dev/null")
         self.commit = do("git rev-parse HEAD")
-
         self.branch = os.path.basename(self.refname)
-
         # Compute a description for the revision
         if self.revformat == 'raw':
             self.rev = self.commit
@@ -102,7 +171,6 @@ class GitExtractor:
             self.rev = do("git describe %s 2>/dev/null" % shellquote(self.commit))
         if not self.rev:
             self.rev = self.commit[:12]
-
         # Extract the meta-information for the commit
         self.files = do("git diff-tree -r --name-only " + shellquote(self.commit))
         self.files = " ".join(self.files.strip().split("\n")[1:])
@@ -113,40 +181,13 @@ class GitExtractor:
         # for spammers' address harvesters - getting this wrong
         # would make the freenode #commits channel into harvester heaven.
         self.author = self.author.replace("<", "").split("@")[0].split()[-1]
-        self.maxchannels = 0
+        # Get overrides
+        self.do_overrides()
 
-def load_preferences(extractor, conf):
-    "Load preferences from a file in the repository root."
-    if not os.path.exists(conf):
-        return
-    ln = 0
-    for line in open(conf):
-        ln += 1
-        if line.startswith("#") or not line.strip():
-            continue
-        elif line.count('=') != 1:
-            sys.stderr.write('"%s", line %d: missing = in config line\n' \
-                             % (conf, ln))
-            continue
-        fields = line.split('=')
-        if len(fields) != 2:
-            sys.stderr.write('"%s", line %d: too many fields in config line\n' \
-                             % (conf, ln))
-            continue
-        fld = fields[0].strip()
-        val = fields[1].strip()
-        if val.lower() == "true":
-            val = True
-        if val.lower() == "false":
-            val = False
-        # User cannot set maxchannels - only a command-line arg can do that.
-        if fld == "maxchannels":
-            return
-        setattr(extractor, fld, val)
-
-class SvnExtractor:
+class SvnExtractor(GenericExtractor):
     "Metadata extraction for the svn version control system."
     def __init__(self, arguments):
+        GenericExtractor.__init__(self)
         self.commit = None
         # Some things we need to have before metadata queries will work
         for tok in arguments:
@@ -154,20 +195,18 @@ class SvnExtractor:
                 self.repository = tok[11:]
             elif tok.startswith("commit="):
                 self.commit = tok[7:]
+        if self.commit is None or self.repository is None:
+            sys.stderr.write("irkerhook: svn requires 'repository' and 'commit' variables.")
+            sys.exit(1)
         self.project = os.path.basename(self.repository)
-        self.repo = None
-        self.server = None
-        self.channels = None
-        self.tcp = True
         self.author = self.svnlook("author")
         self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         self.logmsg = self.svnlook("log")
         self.rev = "r%s" % self.commit
         self.template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
         self.urlprefix = "viewcvs"
-        self.tinyifier = default_tinyifier
-        self.maxchannels = 0
-        load_preferences(self, os.path.join(self.repository, "irker.conf"))
+        self.load_preferences(os.path.join(self.repository, "irker.conf"))
+        self.do_overrides()
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
 
@@ -206,41 +245,7 @@ if __name__ == "__main__":
     if vcs == "svn":
         extractor = SvnExtractor(arguments)
     else:
-        extractor = GitExtractor()
-
-    # Make command-line overrides possible.
-    # Each argument of the form <key>=<value> can override the
-    # <key> member of the extractor class. 
-    booleans = ["tcp"]
-    numerics = ["maxchannels"]
-    for tok in arguments:
-        for key in extractor.__dict__:
-            if tok.startswith(key + "="):
-                val = tok[len(key)+1:]
-                if key in booleans:
-                    if val.lower() == "true":
-                        setattr(extractor, key, True)
-                    elif val.lower() == "false":
-                        setattr(extractor, key, False)
-                elif key in numerics:
-                    setattr(extractor, key, int(val))
-                else:
-                    setattr(extractor, key, val)
-
-    if not extractor.channels:
-        extractor.channels = default_channels % extractor.__dict__
-    # Other defaults get set here
-    if not extractor.repo:
-        extractor.repo = extractor.project.lower()
-    extractor.host = socket.getfqdn()
-    if extractor.urlprefix == "None":
-        extractor.url = ""
-    else:
-        extractor.url = urlify(extractor, extractor.commit)
-
-    if not extractor.project:
-        sys.stderr.write("irkerhook.py: no project name set!\n")
-        sys.exit(1)
+        extractor = GitExtractor(arguments)
 
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
