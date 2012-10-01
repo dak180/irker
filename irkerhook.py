@@ -49,6 +49,8 @@ def do(command):
 
 class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
+    booleans = ["tcp", "color"]
+    numerics = ["maxchannels"]
     def __init__(self, arguments):
         self.arguments = arguments
         self.project = None
@@ -109,21 +111,19 @@ class GenericExtractor:
             setattr(self, variable, value)
     def do_overrides(self):
         "Make command-line overrides possible."
-        booleans = ["tcp", "color"]
-        numerics = ["maxchannels"]
         for tok in self.arguments:
             for key in self.__dict__:
                 if tok.startswith(key + "="):
                     val = tok[len(key)+1:]
-                    if key in booleans:
-                        if val.lower() == "true":
-                            setattr(self, key, True)
-                        elif val.lower() == "false":
-                            setattr(self, key, False)
-                    elif key in numerics:
-                        setattr(self, key, int(val))
-                    else:
-                        setattr(self, key, val)
+                    setattr(self, key, val)
+        for (key, val) in self.__dict__.items():
+            if key in GenericExtractor.booleans:
+                if val.lower() == "true":
+                    setattr(self, key, True)
+                elif val.lower() == "false":
+                    setattr(self, key, False)
+                elif key in GenericExtractor.numerics:
+                    setattr(self, key, int(val))
         if not self.project:
             sys.stderr.write("irkerhook.py: no project name set!\n")
             raise SystemExit, 1
