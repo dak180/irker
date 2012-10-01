@@ -363,6 +363,11 @@ class Irker:
     def handle(self, line):
         "Perform a JSON relay request."
         try:
+            # Without this guard, a line consisting of a thousand '[' chars
+            # can crash irker by inducing the JSON parser to blow Python's
+            # recursion stack. 
+            if line.count("[") > 256 or line.count("{") > 256:
+                raise ValueError
             request = json.loads(line.strip())
             if type(request) != type({}):
                 self.logerr("request in tot a JSON dictionary: %s" % repr(request))
