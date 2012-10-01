@@ -97,16 +97,16 @@ class GenericExtractor:
                 sys.stderr.write('"%s", line %d: too many fields in config line\n' \
                                  % (conf, ln))
                 continue
-            fld = fields[0].strip()
-            val = fields[1].strip()
-            if val.lower() == "true":
-                val = True
-            if val.lower() == "false":
-                val = False
+            variable = fields[0].strip()
+            value = fields[1].strip()
+            if value.lower() == "true":
+                value = True
+            elif value.lower() == "false":
+                value = False
             # User cannot set maxchannels - only a command-line arg can do that.
-            if fld == "maxchannels":
+            if variable == "maxchannels":
                 return
-            setattr(self, fld, val)
+            setattr(self, variable, value)
     def do_overrides(self):
         "Make command-line overrides possible."
         booleans = ["tcp", "color"]
@@ -126,7 +126,7 @@ class GenericExtractor:
                         setattr(self, key, val)
         if not self.project:
             sys.stderr.write("irkerhook.py: no project name set!\n")
-            raise SystemExit,1
+            raise SystemExit, 1
         if not self.repo:
             self.repo = self.project.lower()
         if not self.channels:
@@ -136,11 +136,19 @@ class GenericExtractor:
         else:
             self.urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
             prefix = self.urlprefix % self.__dict__
-            # Try to tinyfy a reference to a web view for this commit.
             try:
-                self.url = open(urllib.urlretrieve(self.tinyifier + prefix + self.commit)[0]).read()
-            except:
-                self.url = prefix + self.commit
+                webview = prefix + self.commit
+                txt = open(urllib.urlretrieve(webview)[0]).read()
+                if "404" in txt or "not found" in txt:
+                    raise IOError
+                try:
+                    # Didn't get a retrieval error or 404 on the web
+                    # view, so try to tinyify a reference to it.
+                    self.url = open(urllib.urlretrieve(self.tinyifier + webview)[0]).read()
+                except IOError:
+                    self.url = webview
+            except IOError:
+                self.url = ""
         if self.color:
             self.activate_color()
 
