@@ -137,6 +137,10 @@ class Connection:
     def handle_disconnect(self):
         "Server disconnected us for flooding or some other reason."
         self.connection = None
+    def handle_kick(self, channel):
+        "We've been kicked."
+        self.channels_joined.remove(channel)
+        # FIXME: Clear messages for this channel from the queue. 
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         self.queue.put((channel, message))
@@ -289,6 +293,7 @@ class Irker:
         self.irc.add_global_handler("unavailresource", self._handle_badnick)
         self.irc.add_global_handler("featurelist", self._handle_features)
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
+        self.irc.add_global_handler("kick", self._handle_kick)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
@@ -342,6 +347,11 @@ class Irker:
         self.debug(1, "server disconnected")
         if connection.context:
             connection.context.handle_disconnect()
+    def _handle_kick(self, connection, event):
+        "Server hung up the connection."
+        self.debug(1, "irker has been kicked from %s" % event.target())
+        if connection.context:
+            connection.context.handle_kick(event.target())
     def handle(self, line):
         "Perform a JSON relay request."
         try:
