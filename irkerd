@@ -242,7 +242,7 @@ class Target():
         self.port = int(ircport)
     def valid(self):
         "Both components must be present for a valid target."
-        self.servername and self.channel
+        return self.servername and self.channel
     def server(self):
         "Return a hashable tuple representing the destination server."
         return (self.servername, self.port)
