@@ -47,16 +47,6 @@ def shellquote(s):
 def do(command):
     return commands.getstatusoutput(command)[1]
 
-def urlify(extractor, commit):
-    extractor.urlprefix = urlprefixmap.get(extractor.urlprefix, extractor.urlprefix) 
-    prefix = extractor.urlprefix % extractor.__dict__
-    # Try to tinyfy a reference to a web view for this commit.
-    try:
-        url = open(urllib.urlretrieve(extractor.tinyifier + prefix + commit)[0]).read()
-    except:
-        url = prefix + commit
-    return url
-
 class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
     def __init__(self, arguments):
@@ -69,6 +59,7 @@ class GenericExtractor:
         self.server = None
         self.channels = None
         self.maxchannels = 0
+        self.host = socket.getfqdn()
     def load_preferences(self, conf):
         "Load preferences from a file in the repository root."
         if not os.path.exists(conf):
@@ -119,14 +110,19 @@ class GenericExtractor:
         # Other defaults get set here
         if not self.repo:
             self.repo = self.project.lower()
-        self.host = socket.getfqdn()
         if self.urlprefix == "None":
             self.url = ""
         else:
-            self.url = urlify(self, self.commit)
+            self.urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
+            prefix = self.urlprefix % self.__dict__
+            # Try to tinyfy a reference to a web view for this commit.
+            try:
+                self.url = open(urllib.urlretrieve(self.tinyifier + prefix + self.commit)[0]).read()
+            except:
+                self.url = prefix + self.commit
         if not self.project:
             sys.stderr.write("irkerhook.py: no project name set!\n")
-            sys.exit(1)
+            raise SystemExit,1
 
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
@@ -258,11 +254,13 @@ if __name__ == "__main__":
         extractor.files = ""
         privmsg = extractor.template % extractor.__dict__
 
+    # Anti-spamming guard.
     channel_list = extractor.channels.split(",")
     if extractor.maxchannels != 0:
         channel_list = channel_list[:extractor.maxchannels]
-    structure = {"to":channel_list, "privmsg":privmsg}
-    message = json.dumps(structure)
+
+    # Ready to ship.
+    message = json.dumps({"to":channel_list, "privmsg":privmsg})
     if not notify:
         print message
     else:
