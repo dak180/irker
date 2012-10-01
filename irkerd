@@ -237,7 +237,7 @@ class Target():
             ircport = 6667
         self.servername = irchost
         self.channel = parsed.path.lstrip('/')
-        if self.channel[0] not in "#&+":
+        if self.channel and self.channel[0] not in "#&+":
             self.channel = "#" + self.channel
         self.port = int(ircport)
     def valid(self):
