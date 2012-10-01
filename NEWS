@@ -13,12 +13,14 @@
   Message reduction - irkerhook drops the filelist on excessively long ones.
   Shell quote hardening in irkerhook.py and some anti-DoS logic.
 
-1.3 @
+1.3 @ 2012-10-01
   Support for an irker.conf file to set irkerhook variables under Subversion.
   Color highlighting of notification fields can be enabled. 
   irkerhook.py now has its own manual page.
   Added channelmax variable for rate-limiting.
   irkerd now uses green threads, with much lower overhead.
+  Fix a bug in handling of channel names with no prefix.
+
 
 
 
