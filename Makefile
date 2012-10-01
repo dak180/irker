@@ -14,6 +14,11 @@ irkerhook.1: irkerhook.xml
 irkerhook.html: irkerhook.xml
 	xmlto html-nochunks irkerhook.xml
 
+security.html: security.txt
+	asciidoc -o security.html security.txt
+hacking.html: hacking.txt
+	asciidoc -o hacking.html hacking.txt
+
 install: irkerd.8 irkerhook.1 uninstall
 	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/bin/
 	install -m 755 -o 0 -g 0 irkerd $(ROOT)/usr/bin/irkerd
@@ -48,5 +53,5 @@ irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
 
 dist: irker-$(VERS).tar.gz
 
-release: irker-$(VERS).tar.gz irkerd.html irkerhook.html
+release: irker-$(VERS).tar.gz irkerd.html irkerhook.html security.html hacking.html
 	shipper -u -m -t; make clean

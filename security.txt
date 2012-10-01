@@ -157,7 +157,7 @@ near resource limits.  An ordinary DoS attack would then be prevented
 from completely blocking all message traffic; the cost would be a
 whole lot of join/leave spam due to connection churn.
 
-= Authentication/Integrity =
+== Authentication/Integrity ==
 
 One way to help prevent DoS attacks would be in-band authentication -
 requiring irkerd submitters to present a credential along with each
