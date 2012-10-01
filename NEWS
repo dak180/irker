@@ -21,6 +21,8 @@
   irkerd now uses green threads, with much lower overhead.
   Fix a bug in handling of channel names with no prefix.
 
+1.4 @
+  Graceful handling of flood disconnects and kicks.
 
 
 
