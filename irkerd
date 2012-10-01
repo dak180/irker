@@ -137,10 +137,18 @@ class Connection:
     def handle_disconnect(self):
         "Server disconnected us for flooding or some other reason."
         self.connection = None
-    def handle_kick(self, channel):
+    def handle_kick(self, outof):
         "We've been kicked."
-        self.channels_joined.remove(channel)
-        # FIXME: Clear messages for this channel from the queue. 
+        self.status = "handshaking"
+        self.channels_joined.remove(outof)
+        qcopy = []
+        while not self.queue.empty():
+            (channel, message) = self.queue.get()
+            if channel != outof:
+                qcopy.append((channel, message))
+        for (channel, message) in qcopy:
+            self.queue.put((channel, message))
+        self.status = "ready"
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         self.queue.put((channel, message))
