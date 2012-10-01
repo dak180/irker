@@ -204,8 +204,6 @@ class Connection:
                 (channel, message) = self.queue.get()
                 if channel not in self.channels_joined:
                     self.channels_joined.append(channel)
-                    if channel[0] not in "#&+":
-                        channel = "#" + channel
                     self.connection.join(channel)
                 for segment in message.split("\n"):
                     self.connection.privmsg(channel, segment)
@@ -239,6 +237,8 @@ class Target():
             ircport = 6667
         self.servername = irchost
         self.channel = parsed.path.lstrip('/')
+        if self.channel[0] not in "#&+":
+            self.channel = "#" + self.channel
         self.port = int(ircport)
     def valid(self):
         "Both components must be present for a valid target."
