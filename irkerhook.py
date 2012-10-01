@@ -187,7 +187,7 @@ class GitExtractor(GenericExtractor):
 class SvnExtractor(GenericExtractor):
     "Metadata extraction for the svn version control system."
     def __init__(self, arguments):
-        GenericExtractor.__init__(self)
+        GenericExtractor.__init__(self, arguments)
         self.commit = None
         # Some things we need to have before metadata queries will work
         for tok in arguments:
