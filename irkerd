@@ -240,6 +240,9 @@ class Target():
         self.servername = irchost
         self.channel = parsed.path.lstrip('/')
         self.port = int(ircport)
+    def valid(self):
+        "Both components must be present for a valid target."
+        self.servername and self.channel
     def server(self):
         "Return a hashable tuple representing the destination server."
         return (self.servername, self.port)
@@ -351,6 +354,8 @@ class Irker:
                             self.logerr("malformed request - unexpected type: %s" % repr(request))
                         else:
                             target = Target(url)
+                            if not target.valid():
+                                return
                             if target.server() not in self.servers:
                                 self.servers[target.server()] = Dispatcher(self, target.servername, target.port)
                             self.servers[target.server()].dispatch(target.channel, message)
