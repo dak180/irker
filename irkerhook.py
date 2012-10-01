@@ -68,9 +68,10 @@ class GenericExtractor:
         self.logmsg = None
         self.rev = None
         self.color = False
+        # Color highlighting is disabled by default.
         self.bold = self.green = self.blue = ""
         self.yellow = self.brown = self.reset = ""
-    def activate_color(self)
+    def activate_color(self):
         "IRC color codes."
         self.bold = '\x02'
         self.green = '\x033'
