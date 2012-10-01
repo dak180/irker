@@ -24,6 +24,7 @@
 1.4 @
   Graceful handling of server disconnects and kicks.
   Distribution now inclues an installable irkerd plist for Mac OS/X.
+  The color variable is no longer boolean; may be miRC or ANSI.
 
 
 

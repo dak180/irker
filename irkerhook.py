@@ -49,7 +49,7 @@ def do(command):
 
 class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
-    booleans = ["tcp", "color"]
+    booleans = ["tcp"]
     numerics = ["maxchannels"]
     def __init__(self, arguments):
         self.arguments = arguments
@@ -69,18 +69,26 @@ class GenericExtractor:
         self.files = None
         self.logmsg = None
         self.rev = None
-        self.color = False
+        self.color = None
         # Color highlighting is disabled by default.
         self.bold = self.green = self.blue = ""
         self.yellow = self.brown = self.reset = ""
-    def activate_color(self):
+    def activate_color(self, style):
         "IRC color codes."
-        self.bold = '\x02'
-        self.green = '\x033'
-        self.blue = '\x032'
-        self.yellow = '\x037'
-        self.brown = '\x035'
-        self.reset = '\x0F'
+        if style == 'mIRC':
+            self.bold = '\x02'
+            self.green = '\x033'
+            self.blue = '\x032'
+            self.yellow = '\x037'
+            self.brown = '\x035'
+            self.reset = '\x0F'
+        if style == 'ANSI':
+            self.bold = '\x1b[1m;'
+            self.green = '\x1b[1;2m;'
+            self.blue = '\x1b[1;4m;'
+            self.yellow = '\x1b[1;3m;'
+            self.brown = '\x1b[3m;'
+            self.reset = '\x1b[0m;'
     def load_preferences(self, conf):
         "Load preferences from a file in the repository root."
         if not os.path.exists(conf):
@@ -148,8 +156,8 @@ class GenericExtractor:
                     self.url = webview
             except IOError:
                 self.url = ""
-        if self.color:
-            self.activate_color()
+        if self.color and self.color.lower() != "none":
+            self.activate_color(self.color)
 
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
@@ -162,7 +170,7 @@ class GitExtractor(GenericExtractor):
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
-        self.color = do("git config --bool --get irker.color")
+        self.color = do("git config --get irker.color")
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
         # This one is git-specific
         self.revformat = do("git config --get irker.revformat")
