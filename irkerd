@@ -134,6 +134,9 @@ class Connection:
         # next trial name in order to block us from completing the handshake.
         self.nick_trial += random.randint(1, 3)
         self.connection.nick(self.nickname())
+    def handle_disconnect(self):
+        "Server disconnected us for flooding or some other reason."
+        self.connection = None
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         self.queue.put((channel, message))
@@ -208,10 +211,10 @@ class Connection:
                     self.connection.join(channel)
                 for segment in message.split("\n"):
                     self.connection.privmsg(channel, segment)
+                    time.sleep(ANTI_FLOOD_DELAY)
                 self.last_xmit = time.time()
                 self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                 self.queue.task_done()
-                time.sleep(ANTI_FLOOD_DELAY)
     def live(self):
         "Should this connection not be scavenged?"
         return self.status != "expired"
@@ -285,6 +288,7 @@ class Irker:
         self.irc.add_global_handler("nickcollision", self._handle_badnick)
         self.irc.add_global_handler("unavailresource", self._handle_badnick)
         self.irc.add_global_handler("featurelist", self._handle_features)
+        self.irc.add_global_handler("disconnect", self._handle_disconnect)
         thread = threading.Thread(target=self.irc.process_forever)
         self.irc._thread = thread
         thread.start()
@@ -333,6 +337,11 @@ class Irker:
                                    % (connection.server, cxt.channel_limits))
                     except ValueError:
                         self.logerr("ill-formed CHANLIMIT property")
+    def _handle_disconnect(self, connection, _event):
+        "Server hung up the connection."
+        self.debug(1, "server disconnected")
+        if connection.context:
+            connection.context.handle_disconnect()
     def handle(self, line):
         "Perform a JSON relay request."
         try:
