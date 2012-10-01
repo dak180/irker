@@ -142,7 +142,7 @@ class GenericExtractor:
             except:
                 self.url = prefix + self.commit
         if self.color:
-            self.activate.colors()
+            self.activate_color()
 
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
