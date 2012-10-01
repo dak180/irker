@@ -43,13 +43,14 @@ pylint:
 
 
 SOURCES = README COPYING NEWS BUGS install.txt security.txt hacking.txt \
-	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml irker-logo.png
+	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml 
+EXTRA_DIST = irker-logo.png org.catb.irkerd.plist
 
 version:
 	@echo $(VERS)
 
 irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
-	tar --transform='s:^:irker-$(VERS)/:' --show-transformed-names -cvzf irker-$(VERS).tar.gz $(SOURCES)
+	tar --transform='s:^:irker-$(VERS)/:' --show-transformed-names -cvzf irker-$(VERS).tar.gz $(SOURCES) $(EXTRA_DIST)
 
 dist: irker-$(VERS).tar.gz
 

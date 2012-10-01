@@ -34,6 +34,9 @@ threading implementation that is faster and has much lower space
 overhead than system threads, making irkerd more resistant to
 potential DoS attacks.
 
+The file org.catb.irkerd.plist is a Mac OS/X plist that can be
+installed to launch irkerd as a boot-time service on that system.
+
 == Installing irkerhook.py ==
 
 irkerhook.py should be called from the post-commit hook of each 

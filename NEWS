@@ -22,7 +22,8 @@
   Fix a bug in handling of channel names with no prefix.
 
 1.4 @
-  Graceful handling of flood disconnects and kicks.
+  Graceful handling of server disconnects and kicks.
+  Distribution now inclues an installable irkerd plist for Mac OS/X.
 
 
 
