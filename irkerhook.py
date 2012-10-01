@@ -105,12 +105,14 @@ class GenericExtractor:
                         setattr(self, key, int(val))
                     else:
                         setattr(self, key, val)
-        if not self.channels:
-            self.channels = default_channels % self.__dict__
-        # Other defaults get set here
+        if not self.project:
+            sys.stderr.write("irkerhook.py: no project name set!\n")
+            raise SystemExit,1
         if not self.repo:
             self.repo = self.project.lower()
-        if self.urlprefix == "None":
+        if not self.channels:
+            self.channels = default_channels % self.__dict__
+        if self.urlprefix.lower() == "None":
             self.url = ""
         else:
             self.urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
@@ -120,9 +122,6 @@ class GenericExtractor:
                 self.url = open(urllib.urlretrieve(self.tinyifier + prefix + self.commit)[0]).read()
             except:
                 self.url = prefix + self.commit
-        if not self.project:
-            sys.stderr.write("irkerhook.py: no project name set!\n")
-            raise SystemExit,1
 
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
