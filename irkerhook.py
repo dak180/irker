@@ -138,8 +138,7 @@ class GenericExtractor:
             prefix = self.urlprefix % self.__dict__
             try:
                 webview = prefix + self.commit
-                txt = open(urllib.urlretrieve(webview)[0]).read()
-                if "404" in txt or "not found" in txt:
+                if urllib.urlopen(webview).getcode() == 404:
                     raise IOError
                 try:
                     # Didn't get a retrieval error or 404 on the web
