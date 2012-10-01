@@ -47,7 +47,7 @@ try:
     green_threads = True
     # With greenlets we don't worry about thread exhaustion, only the
     # file descriptor limit (typically 1024 on modern Unixes). Thus we
-    # can handle a lot more concurrent sessions and generare less
+    # can handle a lot more concurrent sessions and generate less
     # join/leave spam under heavy load.
     CONNECTION_MAX = 1000
 except ImportError:
