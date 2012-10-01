@@ -17,7 +17,9 @@
   Support for an irker.conf file to set irkerhook variables under Subversion.
   Color highlighting of notification fields can be enabled. 
   irkerhook.py now has its own manual page.
-  Added channelmax variable for rate-limiting
+  Added channelmax variable for rate-limiting.
+  irkerd now uses green threads, with much lower overhead.
+
 
 
 
