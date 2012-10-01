@@ -2,5 +2,3 @@
 
 * Despite what the header comment implies, the URL prefix and message template
   in irkerhook.py can at present only be modified by hacking the script.
-
-* We shouldn't generate bogus URLS when the repo doesm't have a web view.
