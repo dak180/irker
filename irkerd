@@ -43,7 +43,8 @@ ANTI_BUZZ_DELAY = 0.09		# Anti-buzz delay after queue-empty check
 # "threading" with a coroutine-using impostor.  Threads then become
 # ultra-light-weight and cooperatively scheduled.
 try:
-    import eventlet; eventlet.monkey_patch()
+    import eventlet
+    eventlet.monkey_patch()
     green_threads = True
     # With greenlets we don't worry about thread exhaustion, only the
     # file descriptor limit (typically 1024 on modern Unixes). Thus we
