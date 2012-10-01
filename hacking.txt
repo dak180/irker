@@ -1,0 +1,44 @@
+= Hacker's Guide to irker ==
+
+== Design philosopy ==
+
+Points to you if some of this seems familiar from GPSD...
+
+=== Keep mechanism and policy separate ===
+
+Mechanism goes in irkerd.  Policy goes in irkerhook.py
+
+irkerd is intended to be super-simple and completely indifferent to
+what content passes through it.  It doesn't know, in any sense, that
+the use-case it was designed for is broadcasting notifications from
+version control systems. irkerhook.py is the part that knows about how
+to mine data from repositories and sets the format of notifications.
+
+=== If you think the mechanism needs an option, think again ===
+
+Because irkerhook.py does policy, it takes policy options. Because
+irkerd is pure mechanism. it shouldn't need any.  If you think it
+does, you have almost certainly got a bug in your thinking.  Fix
+that before you modify code.
+
+=== Never configure what you can autoconfigure ===
+
+Human attention is more expensive than machine time.  Humans are
+careless and failure-prone.  Therefore, whenever you make a user tell
+your code something the code can deduce for itself, you are
+introducing unnecessary inefficiency and unnecessary failure modes.
+
+This, in particular, is why irkerhook.py doesn't have a repository
+type switch. It can deduce the repo type by looking, so it should.
+
+== Release procedure ==
+
+1. Do 'make pylint' to audit the code.
+
+2. Run irkerd and irkerhook.py; look at #irker on freenode to verify.
+
+3. Bump the version numbers in irkerd and irkerhook.py
+
+4. Update the NEWS file
+
+5. make dist; make release

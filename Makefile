@@ -37,7 +37,7 @@ pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irkerhook.py
 
 
-SOURCES = README COPYING NEWS BUGS install.txt security.txt \
+SOURCES = README COPYING NEWS BUGS install.txt security.txt hacking.txt \
 	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml irker-logo.png
 
 version:
