@@ -59,7 +59,25 @@ class GenericExtractor:
         self.server = None
         self.channels = None
         self.maxchannels = 0
+        self.template = None
+        self.urlprefix = None
         self.host = socket.getfqdn()
+        # Per-commit data begins
+        self.author = None
+        self.files = None
+        self.logmsg = None
+        self.rev = None
+        self.color = False
+        self.bold = self.green = self.blue = ""
+        self.yellow = self.brown = self.reset = ""
+    def activate_color(self)
+        "IRC color codes."
+        self.bold = '\x02'
+        self.green = '\x033'
+        self.blue = '\x032'
+        self.yellow = '\x037'
+        self.brown = '\x035'
+        self.reset = '\x0F'
     def load_preferences(self, conf):
         "Load preferences from a file in the repository root."
         if not os.path.exists(conf):
@@ -90,7 +108,7 @@ class GenericExtractor:
             setattr(self, fld, val)
     def do_overrides(self):
         "Make command-line overrides possible."
-        booleans = ["tcp"]
+        booleans = ["tcp", "color"]
         numerics = ["maxchannels"]
         for tok in self.arguments:
             for key in self.__dict__:
@@ -112,7 +130,7 @@ class GenericExtractor:
             self.repo = self.project.lower()
         if not self.channels:
             self.channels = default_channels % self.__dict__
-        if self.urlprefix.lower() == "None":
+        if self.urlprefix.lower() == "none":
             self.url = ""
         else:
             self.urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
@@ -122,6 +140,8 @@ class GenericExtractor:
                 self.url = open(urllib.urlretrieve(self.tinyifier + prefix + self.commit)[0]).read()
             except:
                 self.url = prefix + self.commit
+        if self.color:
+            self.activate.colors()
 
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
@@ -133,7 +153,8 @@ class GitExtractor(GenericExtractor):
         self.server = do("git config --get irker.server")
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
-        self.template = '%(project)s: %(author)s %(repo)s:%(branch)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+        self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
+        self.color = do("git config --bool --get irker.color")
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
         # This one is git-specific
         self.revformat = do("git config --get irker.revformat")
@@ -198,7 +219,7 @@ class SvnExtractor(GenericExtractor):
         self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         self.logmsg = self.svnlook("log")
         self.rev = "r%s" % self.commit
-        self.template = '%(project)s: %(author)s %(repo)s * %(rev)s / %(files)s: %(logmsg)s %(url)s'
+        self.template = '%(bold)s%(project)s%(reset)s: %(green)s%(author)s%(reset)s %(repo)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.urlprefix = "viewcvs"
         self.load_preferences(os.path.join(self.repository, "irker.conf"))
         self.do_overrides()

@@ -115,6 +115,17 @@ will take up less space in the notification line.</para>
 </listitem>
 </varlistentry>
 <varlistentry>
+<term>color</term>
+<listitem>
+<para>If "true", highlight notification fields with IRC colors.
+Defaults to "false". Note: if you turn this on and notifications stop
+appearing on your channel, you need to turn off IRC's color filter
+on that channel.  To do this you will need op privileges; issue
+the command "/mode #irker -c".  You may need to first issue
+the command "/msg chanserv set #irker MLOCK +nt-slk".</para>
+</listitem>
+</varlistentry>
+<varlistentry>
 <term>maxchannels</term>
 <listitem>
 <para>Interpreted as an integer. If not zero, limits the number of
