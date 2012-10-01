@@ -39,6 +39,16 @@ CONNECTION_MAX = 200		# Avoid pushing per-process thread or fd limits
 
 # No user-serviceable parts below this line
 
+# This black magic imports support for green threads (coroutines),
+# then has kinky sex with the threading library internals.
+# Threads then become ultra-light-weight and cooperatively
+# scheduled.
+try:
+    import eventlet; eventlet.monkey_patch()
+    green_threads = True
+except ImportError:
+    green_threads = False
+
 import sys, json, getopt, urlparse, time, random
 import threading, Queue, SocketServer
 import irc.client, logging
@@ -394,5 +404,10 @@ if __name__ == '__main__':
     udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
     threading.Thread(target=tcpserver.serve_forever).start()
     threading.Thread(target=udpserver.serve_forever).start()
+    # Main thread has to stay alive forever for the cooperative
+    # scheduling of the green threads to work.
+    if green_threads:
+        while True:
+            time.sleep(10)
 
 # end
