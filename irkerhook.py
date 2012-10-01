@@ -199,8 +199,11 @@ class GitExtractor(GenericExtractor):
         # Extract the meta-information for the commit
         self.files = do("git diff-tree -r --name-only " + shellquote(self.commit))
         self.files = " ".join(self.files.strip().split("\n")[1:])
-        metainfo = do("git log -1 '--pretty=format:%an <%ae>%n%s' " + shellquote(self.commit))
-        (self.author, self.logmsg) = metainfo.split("\n")
+        # Design choice: for git we ship only the first line, which is
+        # conventionally supposed to be a summary of the commit.  Under
+        # other VCSes a different choice may be appropriate.
+        metainfo = do("git log -1 '--pretty=format:%an <%ae>|%s' " + shellquote(self.commit))
+        (self.author, self.logmsg) = metainfo.split("|")
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
         # for spammers' address harvesters - getting this wrong
