@@ -41,6 +41,8 @@ pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irkerd
 	@pylint --output-format=parseable $(PYLINTOPTS) irkerhook.py
 
+loc:
+	grep -v "^#" irkerd irkerhook.py | wc -l
 
 SOURCES = README COPYING NEWS BUGS install.txt security.txt hacking.txt \
 	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml 
