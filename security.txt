@@ -9,8 +9,9 @@ it derives from a code audit and report by Daniel Franke.
 We begin by stating some assumptions about how irker will be deployed,
 and articulating a set of security goals.
 
-Communication flow in an irker deployment will looks like this:
+Communication flow in an irker deployment will look like this:
 
+-----------------------------------------------------------------------------
              Committers
                  |
                  |
@@ -24,6 +25,7 @@ Communication flow in an irker deployment will looks like this:
                  |
                  |
              IRC servers
+-----------------------------------------------------------------------------
 
 Here are our assumptions:
 
