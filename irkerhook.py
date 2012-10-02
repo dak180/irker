@@ -339,7 +339,7 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     extractor = HgExtractor([(ui, repo, node)])
     ship(extractor)
 
-def ship(commit, debug):
+def ship(extractor, commit, debug):
     "Ship a notification for the sspecified commit."
     metadata = extractor.commit_factory(commit) 
     # Message reduction.  The assumption here is that IRC can't handle
@@ -417,6 +417,6 @@ if __name__ == "__main__":
         commits = [extractor.head()]
 
     for commit in commits:
-        ship(commit, not notify)
+        ship(extractor, commit, not notify)
 
 #End
