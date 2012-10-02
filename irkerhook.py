@@ -269,25 +269,23 @@ class HgExtractor(GenericExtractor):
         # file is exercised).  In the first case, we already get repository and
         # ui objects from Mercurial, in the second case, we have to create them
         # from the root path.
+        self.repository = None
+        self.node = None
         if arguments and type(arguments[0]) == type(()):
             # Called from hg_hook function
-            ui, repo, self.node = arguments[0]
+            ui, self.repository, self.node = arguments[0]
             arguments = []  # Should not be processed further by do_overrides
         else:
             # Called from command line: create repo/ui objects
             from mercurial import hg, ui as uimod
 
             repopath = '.'
-            commit = '-1'   # i.e. tip
             for tok in arguments:
                 if tok.startswith('--repository='):
                     repopath = tok[13:]
-                elif tok.startswith('--commit='):
-                    commit = tok[9:]
             ui = uimod.ui()
             ui.readconfig(os.path.join(repopath, '.hg', 'hgrc'), repopath)
-            repo = hg.repository(ui, repopath)
-            node = repo.lookup(commit)
+            self.repository = hg.repository(ui, repopath)
 
         GenericExtractor.__init__(self, arguments)
 
@@ -297,7 +295,7 @@ class HgExtractor(GenericExtractor):
 
         if arguments and type(arguments[0]) == type(()):
             # Called from hg_hook function
-            ui, repo, node = arguments[0]
+            ui, self.repository, self.node = arguments[0]
 
         # Extract global values from the hg configuration file(s)
         self.project = ui.config('irker', 'project')
@@ -313,20 +311,24 @@ class HgExtractor(GenericExtractor):
             self.urlprefix = self.urlprefix.rstrip('/') + '/rev'
             # self.commit is appended to this by do_overrides
         if not self.project:
-            self.project = os.path.basename(repo.root.rstrip('/'))
-
-        # Extract commit-specific values from a "context" object
-        ctx = repo.changectx(node)
-        self.commit = short(node)
-        self.rev = '%d:%s' % (ctx.rev(), self.commit)
-        self.branch = ctx.branch()
-        self.author = person(ctx.user())
-        self.logmsg = ctx.description()
-
-        st = repo.status(ctx.p1().node(), ctx.node())
-        self.files = ' '.join(st[0] + st[1] + st[2])
-
+            self.project = os.path.basename(self.repo.root.rstrip('/'))
         self.do_overrides()
+    def commit_factory(self, commit_id=None):
+        # Extract commit-specific values from a "context" object
+        if commit_id is None:
+            node = self.node
+            commit_id = short(self.node)
+        else:
+            node = self.repository.lookup(commit_id) 
+        commit = Commit(self, commit_id)        
+        ctx = self.repository.changectx(node)
+        commit.rev = '%d:%s' % (ctx.rev(), commit_id)
+        commit.branch = ctx.branch()
+        commit.author = person(ctx.user())
+        commit.logmsg = ctx.description()
+        st = self.repository.status(ctx.p1().node(), ctx.node())
+        commit.files = ' '.join(st[0] + st[1] + st[2])
+        return commit
     def head(self):
         "Return a symbolic reference to the tip commit of the current branch."
         return "-1"
@@ -337,9 +339,9 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     # [hooks]
     # incoming.irker = python:/path/to/irkerhook.py:hg_hook
     extractor = HgExtractor([(ui, repo, node)])
-    ship(extractor)
+    ship(extractor.commit_factory())
 
-def ship(commit, debug):
+def ship(commit, debug=False):
     "Ship a notification for the sspecified commit."
     metadata = extractor.commit_factory(commit) 
     # Message reduction.  The assumption here is that IRC can't handle

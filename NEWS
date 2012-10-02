@@ -27,6 +27,10 @@
   The color variable is no longer boolean; may be miRC or ANSI.
   The installation instructions for irkerhook.py have changed!
 
+1.5 @
+  Mercurial support.
+
+
 
 
 
