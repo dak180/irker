@@ -40,7 +40,7 @@ ANTI_BUZZ_DELAY = 0.09		# Anti-buzz delay after queue-empty check
 
 # This black magic imports support for green threads (coroutines),
 # then has kinky sex with the import library internals, replacing
-# "threading" with a coroutine-using impostor.  Threads then become
+# "threading" with a coroutine-using imposter.  Threads then become
 # ultra-light-weight and cooperatively scheduled.
 try:
     import eventlet
