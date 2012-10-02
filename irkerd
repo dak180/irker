@@ -141,7 +141,11 @@ class Connection:
     def handle_kick(self, outof):
         "We've been kicked."
         self.status = "handshaking"
-        self.channels_joined.remove(outof)
+        try:
+            self.channels_joined.remove(outof)
+        except ValueError:
+            self.irker.logerr("kicked by %s from %s that's not joined" \
+                              % (self.servername, outof))
         qcopy = []
         while not self.queue.empty():
             (channel, message) = self.queue.get()
@@ -255,7 +259,12 @@ class Target():
         if not ircport:
             ircport = 6667
         self.servername = irchost
-        self.channel = parsed.path.lstrip('/')
+        # IRC channel names are case-insensitive.  If we don't smash
+        # case here we may run into problems later. There was a bug
+        # observed on irc.rizon.net where an irkerd user specified #Channel,
+        # got kicked, and irkerd crashed because the server returned
+        # "#channel" in the notification that our kick handler saw.
+        self.channel = parsed.path.lstrip('/').lower()
         if self.channel and self.channel[0] not in "#&+":
             self.channel = "#" + self.channel
         self.port = int(ircport)
