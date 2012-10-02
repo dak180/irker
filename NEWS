@@ -21,7 +21,7 @@
   irkerd now uses green threads, with much lower overhead.
   Fix a bug in handling of channel names with no prefix.
 
-1.4 @
+1.4 @ 2012-10-01
   Graceful handling of server disconnects and kicks.
   Distribution now inclues an installable irkerd plist for Mac OS/X.
   The color variable is no longer boolean; may be miRC or ANSI.
