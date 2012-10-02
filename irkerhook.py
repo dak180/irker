@@ -69,8 +69,8 @@ class GenericExtractor:
         self.files = None
         self.logmsg = None
         self.rev = None
-        self.color = None
         # Color highlighting is disabled by default.
+        self.color = None
         self.bold = self.green = self.blue = ""
         self.yellow = self.brown = self.reset = ""
     def activate_color(self, style):
