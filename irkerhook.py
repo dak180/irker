@@ -99,6 +99,9 @@ class GenericExtractor:
         self.color = None
         self.bold = self.green = self.blue = ""
         self.yellow = self.brown = self.reset = ""
+    def head(self):
+        "Return a symbolic reference to the tip commit of the current branch."
+        return "HEAD"
     def activate_color(self, style):
         "IRC color codes."
         if style == 'mIRC':
@@ -324,6 +327,9 @@ class HgExtractor(GenericExtractor):
         self.files = ' '.join(st[0] + st[1] + st[2])
 
         self.do_overrides()
+    def head(self):
+        "Return a symbolic reference to the tip commit of the current branch."
+        return "1"
 
 def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
@@ -335,7 +341,7 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
 
 if __name__ == "__main__":
     notify = True
-    repository = None
+    repository = "."
     refname = None
     commits = []
     for arg in sys.argv[1:]:
@@ -362,16 +368,12 @@ if __name__ == "__main__":
     # Someday we'll have extractors for several version-control systems
     if vcs == "svn":
         extractor = SvnExtractor(sys.argv[1:])
-        if not commits:
-            commits = ['HEAD']
     elif vcs == "hg":
         extractor = HgExtractor(sys.argv[1:])
-        if not commits:
-            commits = ['-1']
     else:
         extractor = GitExtractor(sys.argv[1:])
-        if not commits:
-            commits = [do("git rev-parse HEAD")]
+    if not commits:
+        commits = [extractor.head()]
 
     for commit in commits:
         metadata = extractor.commit_factory(commit) 

@@ -217,10 +217,15 @@ may have the following values:</para>
 <refsect2 id="svn"><title>Subversion</title>
 
 <para>Under Subversion, <application>irkerhook.py</application>
-requires a --repository option with value (the absolute pathname of the
+accepts a --repository option with value (the absolute pathname of the
 Subversion repository) and a commit argument (the numeric revision level of
-the commit).  The values must be the two arguments that Subversion
-gives its post-commit hook. Thus, a typical invocation in the post-commit
+the commit).  The defaults are the current working directory and HEAD,
+respectively.
+
+<para>Note, however, that you <emphasis>cannot</emphasis> default the
+repository argumment inside a Subversion post-commit hook.  Instead,
+the values must be the two arguments that Subversion passes to that
+hook as arguments. Thus, a typical invocation in the post-commit
 script will look like this:</para>
 
 <programlisting>
@@ -234,8 +239,8 @@ given on the command line, and will override any settings in an
 <filename>irker.conf</filename> file.</para>
 
 <para>The default for the project variable is the basename of the
-(required) --repository argument.The default value of the "urlprefix"
-variable is "viewcvs".</para>
+repository. The default value of the "urlprefix" variable is
+"viewcvs".</para>
 
 <para>If an <filename>irker.conf</filename> file exists in the repository
 root directory (not the checkout directory but where internals such as the
@@ -265,10 +270,21 @@ this will be fixed in the next release.</para>
 invoked in two ways: either as a Python hook (preferred) or as a
 script.</para>
 
-<para>When called as a script, the hook requires a --repository option
-with value (the absolute pathname of the Subversion repository) and can take a
-commit argument (the Mercurial hash ID of the commit or a reference to it). 
-The default commit argument is '-1', designating the current tip commit.</para>
+<para>To call it as a Python hook, add the collowing to the 
+"commit" or "incoming" hook declaration in your Mercurial
+repository:</para>
+
+<programlisting>
+[hooks]
+	incoming.irker = python:/path/to/irkerhook.py:hg_hook
+</programlisting>
+
+<para>When called as a script, the hook accepts a --repository option
+with value (the absolute pathname of the Mercurial repository) and can
+take a commit argument (the Mercurial hash ID of the commit or a
+reference to it). The default for the repository argument is the 
+current directory. The default commit argument is '-1', designating
+the current tip commit.</para>
 
 <para>As for git, in both cases all variables may be set in the repo
 <filename>hgrc</filename> file in an [irker] section.  Command-line
