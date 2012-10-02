@@ -53,3 +53,7 @@ to an irkerd instance.
 
 Then, start irkerd and call irkerhook.py while watching the freenode
 #commits channel.
+
+If you need help, there's a project chat channel at 
+
+   irc://chat.freenode.net/#irker
