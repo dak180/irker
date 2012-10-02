@@ -323,7 +323,7 @@ class HgExtractor(GenericExtractor):
         "Return a symbolic reference to the tip commit of the current branch."
         return "-1"
 
-def hg_hook(ui, repo, hooktype, node=None, url=None, **_kwds):
+def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
     # configuration:
     # [hooks]
