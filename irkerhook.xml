@@ -146,8 +146,6 @@ a value less than 2, however, would probably be unwise.</para>
 
 <refsect2 id="git"><title>git</title>
 
-<application>irkerhook.py</application>
-
 <para>Under git, the normal way to invoke this hook (from within the
 update hook) passes with a refname followed by a list of commits.  Because 
 <command>git rev-list</command> normally lists from most recent to oldest,
@@ -166,7 +164,7 @@ irkerhook.py --refname=${refname} $(git rev-list --reverse ${old}..${new})
 <para>For testing purposes and backward compatibility, if you invoke
 <application>irkerhook.py</application> with no arguments (as in a
 post-commit hook) it will behave as though it had been called like
-this:
+this:</para>
 
 <programlisting>
 irkerhook.py --refname=refs/heads/master HEAD
