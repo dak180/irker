@@ -20,7 +20,8 @@
   <command>irkerhook.py</command>
      <arg>-n</arg>
      <arg>-V</arg>
-     <arg rep='repeat'><replaceable>variable=value</replaceable></arg>
+     <group><arg rep='repeat'><replaceable>--variable=value</replaceable></arg></group>
+     <group><arg rep='repeat'><replaceable>commit-id</replaceable></arg></group>
 </cmdsynopsis>
 </refsynopsisdiv>
 
@@ -45,7 +46,7 @@ variables, variables with the prefix "irker.".</para></listitem>
 <listitem><para>In other VCSes, a configuration file, "irker.conf", in the
 repository's internals directory.</para></listitem>
 <listitem><para>Command-line arguments of the form
-variable=value.</para></listitem>
+--variable=value.</para></listitem>
 </orderedlist>
 
 <para>The following variables are general to all supported VCSes:</para>
@@ -145,10 +146,38 @@ a value less than 2, however, would probably be unwise.</para>
 
 <refsect2 id="git"><title>git</title>
 
-<para>Under git, <application>irkerhook.py</application> does not
-require any arguments.  Preferences may be set in the repo
-<filename>config</filename> file in an [irker] section. Here
-is an example of what that can look like:</para>
+<application>irkerhook.py</application>
+
+<para>Under git, the normal way to invoke this hook (from within the
+update hook) passes with a refname followed by a list of commits.  Because 
+<command>git rev-list</command> normally lists from most recent to oldest,
+you'll want to use --reverse to make notifications be omitted in chronological
+order. In a normal update script, the invocation should look like this</para>
+
+<programlisting>
+refname=$1
+old=$2
+new=$3
+irkerhook.py --refname=${refname} $(git rev-list --reverse ${old}..${new})
+</programlisting>
+
+<para>except that you'll need an absolute path for irkerhook.py.</para>
+
+<para>For testing purposes and backward compatibility, if you invoke
+<application>irkerhook.py</application> with no arguments (as in a
+post-commit hook) it will behave as though it had been called like
+this:
+
+<programlisting>
+irkerhook.py --refname=refs/heads/master HEAD
+</programlisting>
+
+<para>However, this will not give the right result when you push to 
+a non-default branch of a bare repo.</para>
+
+<para>Preferences may be set in the repo <filename>config</filename>
+file in an [irker] section. Here is an example of what that can look
+like:</para>
 
 <programlisting>
 [irker]
@@ -157,10 +186,9 @@ is an example of what that can look like:</para>
     channels = {irc://chat.freenode.net/gpsd, irc://chat.freenode.net/commits}
 </programlisting>
 
-<para>Command-line variable=value arguments are accepted but not
-required.  No attempt is made to interpret an
-<filename>irker.conf</filename> file.  You should not set the
-"repository" variable (an equivalent will be computed).</para>
+<para> You should not set the "repository" variable (an equivalent
+will be computed). No attempt is made to interpret an
+<filename>irker.conf</filename> file.</para>
 
 <para>The default value of the "project" variable is the basename
 of the repository directory. The default value of the "urlprefix"
@@ -198,15 +226,17 @@ gives its post-commit hook. Thus, a typical invocation in the post-commit
 script will look like this:</para>
 
 <programlisting>
-irkerhook.py repository=$1 commit=$2
+REPO=$1
+REV=$2
+irkerhook.py --repository=$REPO $REV
 </programlisting>
 
-<para>Other variable=value settings may also be
+<para>Other --variable=value settings may also be
 given on the command line, and will override any settings in an
 <filename>irker.conf</filename> file.</para>
 
 <para>The default for the project variable is the basename of the
-(required) repository= argument.The default value of the "urlprefix"
+(required) --repository argument.The default value of the "urlprefix"
 variable is "viewcvs".</para>
 
 <para>If an <filename>irker.conf</filename> file exists in the repository
@@ -221,7 +251,7 @@ channels  = irc://chat.freenode/irker,irc://chat.freenode/commits
 tcp = false
 </programlisting>
 
-<para>Don't the "repository" or "commit" variables in this file;
+<para>Don't set the "repository" or "commit" variables in this file;
 that would have unhappy results.</para>
 
 <para>There are no Subversion-specific variables.</para>

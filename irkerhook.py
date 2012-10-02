@@ -147,8 +147,8 @@ class GenericExtractor:
         "Make command-line overrides possible."
         for tok in self.arguments:
             for key in self.__dict__:
-                if tok.startswith(key + "="):
-                    val = tok[len(key)+1:]
+                if tok.startswith("--" + key + "="):
+                    val = tok[len(key)+3:]
                     setattr(self, key, val)
         for (key, val) in self.__dict__.items():
             if key in GenericExtractor.booleans:
@@ -181,7 +181,8 @@ class GitExtractor(GenericExtractor):
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.color = do("git config --get irker.color")
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
-        # This one is git-specific
+        # These are git-specific
+        self.refname = do("git symbolic-ref HEAD 2>/dev/null")
         self.revformat = do("git config --get irker.revformat")
         # The project variable defaults to the name of the repository toplevel.
         if not self.project:
@@ -201,13 +202,10 @@ class GitExtractor(GenericExtractor):
                 here = os.path.dirname(here)
         # Get overrides
         self.do_overrides()
-    def commit_factory(self, _id):
-        commit = Commit(self, _id)
+    def commit_factory(self, commit_id):
         "Make a Commit object holding data for a specified commit ID."
-        # FIXME: Next two lines will have to change soon
-        refname = do("git symbolic-ref HEAD 2>/dev/null")
-        commit.commit = do("git rev-parse HEAD")
-        commit.branch = os.path.basename(refname)
+        commit = Commit(self, commit_id)
+        commit.branch = os.path.basename(self.refname)
         # Compute a description for the revision
         if self.revformat == 'raw':
             commit.rev = commit.commit
@@ -236,19 +234,19 @@ class SvnExtractor(GenericExtractor):
     "Metadata extraction for the svn version control system."
     def __init__(self, arguments):
         GenericExtractor.__init__(self, arguments)
-        self.id = None
         # Some things we need to have before metadata queries will work
+        self.repository = None
         for tok in arguments:
-            if tok.startswith("repository="):
-                self.repository = tok[11:]
+            if tok.startswith("--repository="):
+                self.repository = tok[13:]
         self.project = os.path.basename(self.repository)
         self.template = '%(bold)s%(project)s%(reset)s: %(green)s%(author)s%(reset)s %(repo)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.urlprefix = "viewcvs"
         self.load_preferences(os.path.join(self.repository, "irker.conf"))
         self.do_overrides()
-    def commit_factory(self, id):
-        self.id = id
-        commit = Commit(self, id)
+    def commit_factory(self, commit_id):
+        self.id = commit_id
+        commit = Commit(self, commit_id)
         commit.branch = ""
         commit.rev = "r%s" % self.id
         commit.author = self.svnlook("author")
@@ -259,84 +257,79 @@ class SvnExtractor(GenericExtractor):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.id)))
 
 if __name__ == "__main__":
-    import getopt
-
-    try:
-        (options, arguments) = getopt.getopt(sys.argv[1:], "nV")
-    except getopt.GetoptError, msg:
-        print "irkerhook.py: " + str(msg)
-        raise SystemExit, 1
-
     notify = True
-    channels = ""
-    commit = ""
-    repository = ""
-    for (switch, val) in options:
-        if switch == '-n':
+    repository = None
+    refname = None
+    commits = []
+    for arg in sys.argv[1:]:
+        if arg == '-n':
             notify = False
-        elif switch == '-V':
+        elif arg == '-V':
             print "irkerhook.py: version", version
             sys.exit(0)
-
-    # Gather info for repo type discrimination
-    for tok in arguments:
-        if tok.startswith("repository="):
-            repository = tok[11:]
-        if tok.startswith("commit="):
-            commit = tok[7:]
+        elif arg.startswith("--refname="):
+            refname = arg[10:]
+        elif arg.startswith("--repository="):
+            repository = arg[13:]
+        elif not arg.startswith("--"):
+            commits.append(arg)
 
     # Determine the repository type. Default to git unless user has pointed
     # us at a repo with identifiable internals.
     vcs = "git"
-    if os.path.exists(os.path.join(repository, "format")):
+    if repository and os.path.exists(os.path.join(repository, "format")):
         vcs = "svn"
 
     # Someday we'll have extractors for several version-control systems
     if vcs == "svn":
-        if commit is None or repository is None:
-            sys.stderr.write("irkerhook: svn requires 'repository' and 'commit' variables.")
+        if repository is None or not commits:
+            sys.stderr.write("irkerhook: svn requires a repository and a commit.")
             sys.exit(1)
-        extractor = SvnExtractor(arguments)
+        extractor = SvnExtractor(sys.argv[1:])
     else:
-        extractor = GitExtractor(arguments)
-    metadata = extractor.commit_factory(commit) 
+        extractor = GitExtractor(sys.argv[1:])
+        if not commits:
+            commits = [do("git rev-parse HEAD")]
 
-    # Message reduction.  The assumption here is that IRC can't handle
-    # lines more than 510 characters long. If we exceed that length, we
-    # try knocking out the file list, on the theory that for notification
-    # purposes the commit text is more important.  If it's still too long
-    # there's nothing much can be done other than ship it expecting the IRC
-    # server to truncate.
-    privmsg = str(metadata)
-    if len(privmsg) > 510:
-        metadata.files = ""
+    for commit in commits:
+        metadata = extractor.commit_factory(commit) 
+
+        # Message reduction.  The assumption here is that IRC can't handle
+        # lines more than 510 characters long. If we exceed that length, we
+        # try knocking out the file list, on the theory that for notification
+        # purposes the commit text is more important.  If it's still too long
+        # there's nothing much can be done other than ship it expecting the IRC
+        # server to truncate.
         privmsg = str(metadata)
+        if len(privmsg) > 510:
+            metadata.files = ""
+            privmsg = str(metadata)
 
-    # Anti-spamming guard.
-    channel_list = extractor.channels.split(",")
-    if extractor.maxchannels != 0:
-        channel_list = channel_list[:extractor.maxchannels]
+        # Anti-spamming guard.
+        channel_list = extractor.channels.split(",")
+        if extractor.maxchannels != 0:
+            channel_list = channel_list[:extractor.maxchannels]
 
-    # Ready to ship.
-    message = json.dumps({"to":channel_list, "privmsg":privmsg})
-    if not notify:
-        print message
-    else:
-        try:
-            if extractor.tcp:
-                try:
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.connect((extractor.server or default_server, IRKER_PORT))
-                    sock.sendall(message + "\n")
-                finally:
-                    sock.close()
-            else:
-                try:
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    sock.sendto(message + "\n", (extractor.server or default_server, IRKER_PORT))
-                finally:
-                    sock.close()
-        except socket.error, e:
-            sys.stderr.write("%s\n" % e)
+        # Ready to ship.
+        message = json.dumps({"to":channel_list, "privmsg":privmsg})
+        if not notify:
+            print message
+        else:
+            try:
+                if extractor.tcp:
+                    try:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        sock.connect((extractor.server or default_server, IRKER_PORT))
+                        sock.sendall(message + "\n")
+                    finally:
+                        sock.close()
+                else:
+                    try:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        sock.sendto(message + "\n", (extractor.server or default_server, IRKER_PORT))
+                    finally:
+                        sock.close()
+            except socket.error, e:
+                sys.stderr.write("%s\n" % e)
 
 #End

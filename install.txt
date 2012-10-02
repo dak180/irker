@@ -39,34 +39,9 @@ installed to launch irkerd as a boot-time service on that system.
 
 == Installing irkerhook.py ==
 
-irkerhook.py should be called from the post-commit hook of each 
-repository.  See its header comment for detailed installation 
-instructions.
-
-You should set the server and (for Subversion) repository variables
-from the command line in your post-commit hook.  The server variable
-should be set to the inside-the-firewall host running your irker
-instance.
-
-A git invocation line should look something like this:
-
-/usr/local/bin/irkerhook.py server=internal.foobar.net
-
-Each project will be able to set its own channel URLs, provided it
-has access to its git config file.
-
-A Subversion invocation should look something like this:
-
-REPOSITORY=$1
-REV=$2
-irkerhook.py repository=$REPOSITORY commit=$REV server=internal.foobar.net
-
-Note that unless you supply additional overrides of project= and
-channels= in the hook, the basename of the repository will be used as
-the project name and will also be used as the IRC channel name on
-freenode.  This is not a limitation of irker.irkerhook, but a
-result of the absence of a git-config equivalent that the hook can
-mine stuff out of.
+Under git, a call to irkerhook.py should be installed in the update 
+hook script of your repo.  Under Subversion, the call goes in your
+repo's post-commit script. See the irkerhook manual page for details.
 
 == Testing ==
 
