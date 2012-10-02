@@ -414,7 +414,7 @@ class Irker:
                                 del self.servers[oldest]
         except ValueError:
             self.logerr("can't recognize JSON on input: %s" % repr(line))
-        except RuntimeException:
+        except RuntimeError:
             self.logerr("wildly malformed JSON blew the parser stack.")
 
 class IrkerTCPHandler(SocketServer.StreamRequestHandler):
