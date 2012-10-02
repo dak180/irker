@@ -104,7 +104,7 @@ class Connection:
         self.irker = irkerd
         self.servername = servername
         self.port = port
-        self.nick_trial = random.randint(1, 990)
+        self.nick_trial = None
         self.connection = None
         self.status = "unseen"
         self.last_xmit = time.time()
@@ -165,7 +165,8 @@ class Connection:
             if not self.connection:
                 self.connection = self.irker.irc.server()
                 self.connection.context = self
-                self.nick_trial = 1
+                # Try to avoid colliding with other instances
+                self.nick_trial = random.randint(1, 990)
                 self.channels_joined = []
                 # This will throw irc.client.ServerConnectionError on failure
                 try:
