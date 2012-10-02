@@ -1,6 +1,6 @@
 # Makefile for the irker relaying tool
 
-VERS=$(shell irkerd -V | sed 's/irkerd version //')
+VERS=$(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
 
 docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1
 
@@ -20,17 +20,17 @@ hacking.html: hacking.txt
 	asciidoc -o hacking.html hacking.txt
 
 install: irkerd.8 irkerhook.1 uninstall
-	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/bin/
-	install -m 755 -o 0 -g 0 irkerd $(ROOT)/usr/bin/irkerd
-	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/share/man/man1/
-	install -m 755 -o 0 -g 0 irkerd.8 $(ROOT)/usr/share/man/man1/irkerd.8
-	install -m 755 -o 0 -g 0 -d $(ROOT)/usr/share/man/man8/
-	install -m 755 -o 0 -g 0 irkerd.8 $(ROOT)/usr/share/man/man1/irkerhook.1
+	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/bin/
+	install -m 755 -o 0 -g 0 irkerd $(DESTDIR)/usr/bin/irkerd
+	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/share/man/man8/
+	install -m 755 -o 0 -g 0 irkerd.8 $(DESTDIR)/usr/share/man/man8/irkerd.8
+	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/share/man/man1/
+	install -m 755 -o 0 -g 0 irkerhook.1 $(DESTDIR)/usr/share/man/man1/irkerhook.1
 
 uninstall:
-	rm -f ${ROOT}/usr/bin/irkerd 
-	rm -f ${ROOT}/usr/share/man/man1/irkerd.8
-	rm -f ${ROOT}/usr/share/man/man1/irkerhook.1
+	rm -f $(DESTDIR)/usr/bin/irkerd
+	rm -f $(DESTDIR)/usr/share/man/man8/irkerd.8
+	rm -f $(DESTDIR)/usr/share/man/man1/irkerhook.1
 
 clean:
 	rm -f irkerd.8 irker-*.tar.gz *~
@@ -45,7 +45,7 @@ loc:
 	grep -v "^#" irkerd irkerhook.py | wc -l
 
 SOURCES = README COPYING NEWS BUGS install.txt security.txt hacking.txt \
-	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml 
+	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml
 EXTRA_DIST = irker-logo.png org.catb.irkerd.plist
 
 version:
