@@ -1,4 +1,5 @@
 			KNOWN BUGS
 
-* Despite what the header comment implies, the URL prefix and message template
-  in irkerhook.py can at present only be modified by hacking the script.
+* When eventlet is not installed, ^C fauls to cleasnly terminate the script.
+  This is doubtless some side  effect of the threading. 
+

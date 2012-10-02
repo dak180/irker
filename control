@@ -7,7 +7,7 @@ Description: An IRC client that runs as a daemon accepting notification requests
  as JSON objects presented to a listening socket. It is meant to be
  used by hook scripts in version-control repositories, allowing them
  to send commit notifications to project IRC channels.  A hook script 
- that works with git and svn is included in the distribution.
+ that works with git, hg, and svn is included in the distribution.
 
 XBS-Gitorious-URL: https://gitorious.org/irker
 

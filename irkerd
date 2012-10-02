@@ -221,6 +221,7 @@ class Connection:
                 if channel not in self.channels_joined:
                     self.channels_joined.append(channel)
                     self.connection.join(channel)
+                    self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
                 for segment in message.split("\n"):
                     self.connection.privmsg(channel, segment)
                     time.sleep(ANTI_FLOOD_DELAY)
@@ -352,12 +353,12 @@ class Irker:
                         self.logerr("ill-formed CHANLIMIT property")
     def _handle_disconnect(self, connection, _event):
         "Server hung up the connection."
-        self.debug(1, "server disconnected")
+        self.debug(1, "server %s disconnected" % connection.server)
         if connection.context:
             connection.context.handle_disconnect()
     def _handle_kick(self, connection, event):
         "Server hung up the connection."
-        self.debug(1, "irker has been kicked from %s" % event.target())
+        self.debug(1, "irker has been kicked from %s on %s" % (event.target(), connection.server))
         if connection.context:
             connection.context.handle_kick(event.target())
     def handle(self, line):

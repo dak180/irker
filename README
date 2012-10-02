@@ -6,7 +6,7 @@ listening socket.
 
 It is meant to be used by hook scripts in version-control
 repositories, allowing them to send commit notifications to project
-IRC channels.  A hook script, irkerhook.py, supporting git and
+IRC channels.  A hook script, irkerhook.py, supporting git, hg, and
 Subversion is included in the distribution; see the install.txt file
 for installation instructions.
 

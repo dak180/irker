@@ -220,7 +220,7 @@ may have the following values:</para>
 accepts a --repository option with value (the absolute pathname of the
 Subversion repository) and a commit argument (the numeric revision level of
 the commit).  The defaults are the current working directory and HEAD,
-respectively.
+respectively.</para>
 
 <para>Note, however, that you <emphasis>cannot</emphasis> default the
 repository argumment inside a Subversion post-commit hook.  Instead,
@@ -262,9 +262,6 @@ that would have unhappy results.</para>
 </refsect2>
 
 <refsect2 id="hg"><title>Mercurial</title>
-
-<para>NOTE: Mercurial support is currently broken.  It is expected
-this will be fixed in the next release.</para>
 
 <para>Under Mercurial, <application>irkerhook.py</application> can be
 invoked in two ways: either as a Python hook (preferred) or as a

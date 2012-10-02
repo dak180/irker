@@ -269,9 +269,10 @@ class HgExtractor(GenericExtractor):
         # file is exercised).  In the first case, we already get repository and
         # ui objects from Mercurial, in the second case, we have to create them
         # from the root path.
+        self.repository = None
         if arguments and type(arguments[0]) == type(()):
             # Called from hg_hook function
-            ui, repo = arguments[0]
+            ui, self.repository = arguments[0]
             arguments = []  # Should not be processed further by do_overrides
         else:
             # Called from command line: create repo/ui objects
@@ -283,11 +284,9 @@ class HgExtractor(GenericExtractor):
                     repopath = tok[13:]
             ui = uimod.ui()
             ui.readconfig(os.path.join(repopath, '.hg', 'hgrc'), repopath)
-            repo = hg.repository(ui, repopath)
+            self.repository = hg.repository(ui, repopath)
 
         GenericExtractor.__init__(self, arguments)
-        # Keep the hg object for commit_factory()
-        self.hg_repo = repo
         # Extract global values from the hg configuration file(s)
         self.project = ui.config('irker', 'project')
         self.repo = ui.config('irker', 'repo')
@@ -302,22 +301,22 @@ class HgExtractor(GenericExtractor):
             self.urlprefix = self.urlprefix.rstrip('/') + '/rev'
             # self.commit is appended to this by do_overrides
         if not self.project:
-            self.project = os.path.basename(repo.root.rstrip('/'))
+            self.project = os.path.basename(self.repository.root.rstrip('/'))
         self.do_overrides()
     def commit_factory(self, commit_id):
         "Make a Commit object holding data for a specified commit ID."
         from mercurial.node import short
         from mercurial.templatefilters import person
-        node = self.hg_repo.lookup(commit_id)
+        node = self.repository.lookup(commit_id)
         commit = Commit(self, short(node))
         # Extract commit-specific values from a "context" object
-        ctx = self.hg_repo.changectx(node)
+        ctx = self.repository.changectx(node)
         commit.rev = '%d:%s' % (ctx.rev(), commit.commit)
         commit.branch = ctx.branch()
         commit.author = person(ctx.user())
         commit.logmsg = ctx.description()
         # Extract changed files from status against first parent
-        st = self.hg_repo.status(ctx.p1().node(), ctx.node())
+        st = self.repository.status(ctx.p1().node(), ctx.node())
         commit.files = ' '.join(st[0] + st[1] + st[2])
         return commit
     def head(self):

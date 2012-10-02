@@ -41,7 +41,8 @@ installed to launch irkerd as a boot-time service on that system.
 
 Under git, a call to irkerhook.py should be installed in the update 
 hook script of your repo.  Under Subversion, the call goes in your
-repo's post-commit script. See the irkerhook manual page for details.
+repo's post-commit script. Under Mercurial there are twi different
+ways to install it. See the irkerhook manual page for details.
 
 == Testing ==
 
