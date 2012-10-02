@@ -47,6 +47,37 @@ def shellquote(s):
 def do(command):
     return commands.getstatusoutput(command)[1]
 
+class Commit:
+    def __init__(self, extractor, commit):
+        "Per-commit data."
+        self.commit = commit
+        self.branch = None
+        self.rev = None
+        self.author = None
+        self.files = None
+        self.logmsg = None
+        self.url = None
+        self.__dict__.update(extractor.__dict__)
+    def __str__(self):
+        "Produce a notification string from this commit."
+        if self.urlprefix.lower() == "none":
+            self.url = ""
+        else:
+            urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
+            webview = (urlprefix % self.__dict__) + self.commit
+            try:
+                if urllib.urlopen(webview).getcode() == 404:
+                    raise IOError
+                try:
+                    # Didn't get a retrieval error or 404 on the web
+                    # view, so try to tinyify a reference to it.
+                    self.url = open(urllib.urlretrieve(self.tinyifier + webview)[0]).read()
+                except IOError:
+                    self.url = webview
+            except IOError:
+                self.url = ""
+        return self.template % self.__dict__
+
 class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
     booleans = ["tcp"]
@@ -64,11 +95,6 @@ class GenericExtractor:
         self.template = None
         self.urlprefix = None
         self.host = socket.getfqdn()
-        # Per-commit data begins
-        self.author = None
-        self.files = None
-        self.logmsg = None
-        self.rev = None
         # Color highlighting is disabled by default.
         self.color = None
         self.bold = self.green = self.blue = ""
@@ -126,9 +152,9 @@ class GenericExtractor:
                     setattr(self, key, val)
         for (key, val) in self.__dict__.items():
             if key in GenericExtractor.booleans:
-                if val.lower() == "true":
+                if type(val) == type("") and val.lower() == "true":
                     setattr(self, key, True)
-                elif val.lower() == "false":
+                elif type(val) == type("") and val.lower() == "false":
                     setattr(self, key, False)
                 elif key in GenericExtractor.numerics:
                     setattr(self, key, int(val))
@@ -139,23 +165,6 @@ class GenericExtractor:
             self.repo = self.project.lower()
         if not self.channels:
             self.channels = default_channels % self.__dict__
-        if self.urlprefix.lower() == "none":
-            self.url = ""
-        else:
-            self.urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
-            prefix = self.urlprefix % self.__dict__
-            try:
-                webview = prefix + self.commit
-                if urllib.urlopen(webview).getcode() == 404:
-                    raise IOError
-                try:
-                    # Didn't get a retrieval error or 404 on the web
-                    # view, so try to tinyify a reference to it.
-                    self.url = open(urllib.urlretrieve(self.tinyifier + webview)[0]).read()
-                except IOError:
-                    self.url = webview
-            except IOError:
-                self.url = ""
         if self.color and self.color.lower() != "none":
             self.activate_color(self.color)
 
@@ -190,60 +199,64 @@ class GitExtractor(GenericExtractor):
                     sys.stderr.write("irkerhook.py: no git repo below root!\n")
                     sys.exit(1)
                 here = os.path.dirname(here)
-        # Revision level
-        self.refname = do("git symbolic-ref HEAD 2>/dev/null")
-        self.commit = do("git rev-parse HEAD")
-        self.branch = os.path.basename(self.refname)
+        # Get overrides
+        self.do_overrides()
+    def commit_factory(self, _id):
+        commit = Commit(self, _id)
+        "Make a Commit object holding data for a specified commit ID."
+        # FIXME: Next two lines will have to change soon
+        refname = do("git symbolic-ref HEAD 2>/dev/null")
+        commit.commit = do("git rev-parse HEAD")
+        commit.branch = os.path.basename(refname)
         # Compute a description for the revision
         if self.revformat == 'raw':
-            self.rev = self.commit
+            commit.rev = commit.commit
         elif self.revformat == 'short':
-            self.rev = ''
+            commit.rev = ''
         else: # self.revformat == 'describe'
-            self.rev = do("git describe %s 2>/dev/null" % shellquote(self.commit))
-        if not self.rev:
-            self.rev = self.commit[:12]
+            commit.rev = do("git describe %s 2>/dev/null" % shellquote(commit.commit))
+        if not commit.rev:
+            commit.rev = commit.commit[:12]
         # Extract the meta-information for the commit
-        self.files = do("git diff-tree -r --name-only " + shellquote(self.commit))
-        self.files = " ".join(self.files.strip().split("\n")[1:])
+        commit.files = do("git diff-tree -r --name-only " + shellquote(commit.commit))
+        commit.files = " ".join(commit.files.strip().split("\n")[1:])
         # Design choice: for git we ship only the first line, which is
         # conventionally supposed to be a summary of the commit.  Under
         # other VCSes a different choice may be appropriate.
-        metainfo = do("git log -1 '--pretty=format:%an <%ae>|%s' " + shellquote(self.commit))
-        (self.author, self.logmsg) = metainfo.split("|")
+        metainfo = do("git log -1 '--pretty=format:%an <%ae>|%s' " + shellquote(commit.commit))
+        (commit.author, commit.logmsg) = metainfo.split("|")
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
         # for spammers' address harvesters - getting this wrong
         # would make the freenode #commits channel into harvester heaven.
-        self.author = self.author.replace("<", "").split("@")[0].split()[-1]
-        # Get overrides
-        self.do_overrides()
+        commit.author = commit.author.replace("<", "").split("@")[0].split()[-1]
+        return commit
 
 class SvnExtractor(GenericExtractor):
     "Metadata extraction for the svn version control system."
     def __init__(self, arguments):
         GenericExtractor.__init__(self, arguments)
-        self.commit = None
+        self.id = None
         # Some things we need to have before metadata queries will work
         for tok in arguments:
             if tok.startswith("repository="):
                 self.repository = tok[11:]
-            elif tok.startswith("commit="):
-                self.commit = tok[7:]
-        if self.commit is None or self.repository is None:
-            sys.stderr.write("irkerhook: svn requires 'repository' and 'commit' variables.")
-            sys.exit(1)
         self.project = os.path.basename(self.repository)
-        self.author = self.svnlook("author")
-        self.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
-        self.logmsg = self.svnlook("log")
-        self.rev = "r%s" % self.commit
         self.template = '%(bold)s%(project)s%(reset)s: %(green)s%(author)s%(reset)s %(repo)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.urlprefix = "viewcvs"
         self.load_preferences(os.path.join(self.repository, "irker.conf"))
         self.do_overrides()
+    def commit_factory(self, id):
+        self.id = id
+        commit = Commit(self, id)
+        commit.branch = ""
+        commit.rev = "r%s" % self.id
+        commit.author = self.svnlook("author")
+        commit.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
+        commit.logmsg = self.svnlook("log")
+        return commit
     def svnlook(self, info):
-        return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.commit)))
+        return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.id)))
 
 if __name__ == "__main__":
     import getopt
@@ -269,6 +282,8 @@ if __name__ == "__main__":
     for tok in arguments:
         if tok.startswith("repository="):
             repository = tok[11:]
+        if tok.startswith("commit="):
+            commit = tok[7:]
 
     # Determine the repository type. Default to git unless user has pointed
     # us at a repo with identifiable internals.
@@ -278,9 +293,13 @@ if __name__ == "__main__":
 
     # Someday we'll have extractors for several version-control systems
     if vcs == "svn":
+        if commit is None or repository is None:
+            sys.stderr.write("irkerhook: svn requires 'repository' and 'commit' variables.")
+            sys.exit(1)
         extractor = SvnExtractor(arguments)
     else:
         extractor = GitExtractor(arguments)
+    metadata = extractor.commit_factory(commit) 
 
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
@@ -288,10 +307,10 @@ if __name__ == "__main__":
     # purposes the commit text is more important.  If it's still too long
     # there's nothing much can be done other than ship it expecting the IRC
     # server to truncate.
-    privmsg = extractor.template % extractor.__dict__
+    privmsg = str(metadata)
     if len(privmsg) > 510:
-        extractor.files = ""
-        privmsg = extractor.template % extractor.__dict__
+        metadata.files = ""
+        privmsg = str(metadata)
 
     # Anti-spamming guard.
     channel_list = extractor.channels.split(",")
