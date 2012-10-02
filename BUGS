@@ -1,5 +1,5 @@
 			KNOWN BUGS
 
-* When eventlet is not installed, ^C fauls to cleasnly terminate the script.
-  This is doubtless some side  effect of the threading. 
+* There is a rare crash on kick events which is probably due to a thread race.
+
 
