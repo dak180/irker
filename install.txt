@@ -16,7 +16,7 @@ humans watching irkerd's output, are mere spam).
 See the security.txt document for a detailed discussion of security
 and DoS vulnerabilities related to irker.
 
-== Installing irker ==
+== Installing irkerd ==
 
 irker needs to run constantly, watching for TCP and UDP traffic on
 port 6659.  Install it accordingly.
@@ -46,6 +46,10 @@ ways to install it. See the irkerhook manual page for details.
 
 == Testing ==
 
-Go to a project repo and call irkerhook.py as indicated above while
-watching the freenode #commits channel.
- 
+To verify that your repo produces well-formed JSON notifications,
+you can run irkerhook.py in the repo directory using the -n switch,
+which emits JSON to standard output rather than attempting to ship
+to an irkerd instance.
+
+Then, start irkerd and call irkerhook.py while watching the freenode
+#commits channel.
