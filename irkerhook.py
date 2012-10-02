@@ -294,7 +294,7 @@ class HgExtractor(GenericExtractor):
 
         if arguments and type(arguments[0]) == type(()):
             # Called from hg_hook function
-            ui, repo, self.node = arguments[0]
+            ui, repo, node = arguments[0]
 
         # Extract global values from the hg configuration file(s)
         self.project = ui.config('irker', 'project')
@@ -354,15 +354,20 @@ if __name__ == "__main__":
     # Determine the repository type. Default to git unless user has pointed
     # us at a repo with identifiable internals.
     vcs = "git"
-    if repository and os.path.exists(os.path.join(repository, "format")):
+    if repository and os.path.exists(os.path.join(repository, ".hg")):
+        vcs = "hg"
+    elif repository and os.path.exists(os.path.join(repository, "format")):
         vcs = "svn"
 
     # Someday we'll have extractors for several version-control systems
     if vcs == "svn":
-        if repository is None or not commits:
-            sys.stderr.write("irkerhook: svn requires a repository and a commit.")
-            sys.exit(1)
         extractor = SvnExtractor(sys.argv[1:])
+        if not commits:
+            commits = ['HEAD']
+    elif vcs == "hg":
+        extractor = HgExtractor(sys.argv[1:])
+        if not commits:
+            commits = ['-1']
     else:
         extractor = GitExtractor(sys.argv[1:])
         if not commits:

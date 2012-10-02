@@ -217,8 +217,8 @@ may have the following values:</para>
 <refsect2 id="svn"><title>Subversion</title>
 
 <para>Under Subversion, <application>irkerhook.py</application>
-requires two arguments: "repository=" (the absolute pathname of the
-Subversion repository) and "commit=" (the numeric revision level of
+requires a --repository option with value (the absolute pathname of the
+Subversion repository) and a commit argument (the numeric revision level of
 the commit).  The values must be the two arguments that Subversion
 gives its post-commit hook. Thus, a typical invocation in the post-commit
 script will look like this:</para>
@@ -263,7 +263,14 @@ this will be fixed in the next release.</para>
 
 <para>Under Mercurial, <application>irkerhook.py</application> can be
 invoked in two ways: either as a Python hook (preferred) or as a
-script.  As for git, in both cases all variables may be set in the repo
+script.</para>
+
+<para>When called as a script, the hook requires a --repository option
+with value (the absolute pathname of the Subversion repository) and can take a
+commit argument (the Mercurial hash ID of the commit or a reference to it). 
+The default commit argument is '-1', designating the current tip commit.</para>
+
+<para>As for git, in both cases all variables may be set in the repo
 <filename>hgrc</filename> file in an [irker] section.  Command-line
 variable=value arguments are accepted but not required for script
 invocation.  No attempt is made to interpret an
