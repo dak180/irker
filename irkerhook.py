@@ -337,7 +337,47 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     # [hooks]
     # incoming.irker = python:/path/to/irkerhook.py:hg_hook
     extractor = HgExtractor([(ui, repo, node)])
-    generate_and_send(extractor)
+    ship(extractor)
+
+def ship(commit, debug):
+    metadata = extractor.commit_factory(commit) 
+    # Message reduction.  The assumption here is that IRC can't handle
+    # lines more than 510 characters long. If we exceed that length, we
+    # try knocking out the file list, on the theory that for notification
+    # purposes the commit text is more important.  If it's still too long
+    # there's nothing much can be done other than ship it expecting the IRC
+    # server to truncate.
+    privmsg = str(metadata)
+    if len(privmsg) > 510:
+        metadata.files = ""
+        privmsg = str(metadata)
+
+    # Anti-spamming guard.
+    channel_list = extractor.channels.split(",")
+    if extractor.maxchannels != 0:
+        channel_list = channel_list[:extractor.maxchannels]
+
+    # Ready to ship.
+    message = json.dumps({"to":channel_list, "privmsg":privmsg})
+    if debug:
+        print message
+    else:
+        try:
+            if extractor.tcp:
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.connect((extractor.server or default_server, IRKER_PORT))
+                    sock.sendall(message + "\n")
+                finally:
+                    sock.close()
+            else:
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    sock.sendto(message + "\n", (extractor.server or default_server, IRKER_PORT))
+                finally:
+                    sock.close()
+        except socket.error, e:
+            sys.stderr.write("%s\n" % e)
 
 if __name__ == "__main__":
     notify = True
@@ -376,44 +416,6 @@ if __name__ == "__main__":
         commits = [extractor.head()]
 
     for commit in commits:
-        metadata = extractor.commit_factory(commit) 
-
-        # Message reduction.  The assumption here is that IRC can't handle
-        # lines more than 510 characters long. If we exceed that length, we
-        # try knocking out the file list, on the theory that for notification
-        # purposes the commit text is more important.  If it's still too long
-        # there's nothing much can be done other than ship it expecting the IRC
-        # server to truncate.
-        privmsg = str(metadata)
-        if len(privmsg) > 510:
-            metadata.files = ""
-            privmsg = str(metadata)
-
-        # Anti-spamming guard.
-        channel_list = extractor.channels.split(",")
-        if extractor.maxchannels != 0:
-            channel_list = channel_list[:extractor.maxchannels]
-
-        # Ready to ship.
-        message = json.dumps({"to":channel_list, "privmsg":privmsg})
-        if not notify:
-            print message
-        else:
-            try:
-                if extractor.tcp:
-                    try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        sock.connect((extractor.server or default_server, IRKER_PORT))
-                        sock.sendall(message + "\n")
-                    finally:
-                        sock.close()
-                else:
-                    try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                        sock.sendto(message + "\n", (extractor.server or default_server, IRKER_PORT))
-                    finally:
-                        sock.close()
-            except socket.error, e:
-                sys.stderr.write("%s\n" % e)
+        ship(commit, not notify)
 
 #End
