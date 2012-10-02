@@ -270,10 +270,9 @@ class HgExtractor(GenericExtractor):
         # ui objects from Mercurial, in the second case, we have to create them
         # from the root path.
         self.repository = None
-        self.node = None
         if arguments and type(arguments[0]) == type(()):
             # Called from hg_hook function
-            ui, self.repository, self.node = arguments[0]
+            ui, self.repository = arguments[0]
             arguments = []  # Should not be processed further by do_overrides
         else:
             # Called from command line: create repo/ui objects
@@ -288,15 +287,6 @@ class HgExtractor(GenericExtractor):
             self.repository = hg.repository(ui, repopath)
 
         GenericExtractor.__init__(self, arguments)
-
-        # Using local imports; not pretty but necessary here
-        from mercurial.node import short
-        from mercurial.templatefilters import person
-
-        if arguments and type(arguments[0]) == type(()):
-            # Called from hg_hook function
-            ui, self.repository, self.node = arguments[0]
-
         # Extract global values from the hg configuration file(s)
         self.project = ui.config('irker', 'project')
         self.repo = ui.config('irker', 'repo')
@@ -304,28 +294,28 @@ class HgExtractor(GenericExtractor):
         self.channels = ui.config('irker', 'channels')
         self.tcp = str(ui.configbool('irker', 'tcp'))  # converted to bool again in do_overrides
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
-        self.color = str(ui.configbool('irker', 'color'))
+        self.color = ui.config('irker', 'color')
         self.urlprefix = (ui.config('irker', 'urlprefix') or
                           ui.config('web', 'baseurl') or '')
         if self.urlprefix:
             self.urlprefix = self.urlprefix.rstrip('/') + '/rev'
             # self.commit is appended to this by do_overrides
         if not self.project:
-            self.project = os.path.basename(self.repo.root.rstrip('/'))
+            self.project = os.path.basename(self.repository.root.rstrip('/'))
         self.do_overrides()
-    def commit_factory(self, commit_id=None):
+    def commit_factory(self, commit_id):
+        "Make a Commit object holding data for a specified commit ID."
+        from mercurial.node import short
+        from mercurial.templatefilters import person
+        node = self.repository.lookup(commit_id)
+        commit = Commit(self, short(node))
         # Extract commit-specific values from a "context" object
-        if commit_id is None:
-            node = self.node
-            commit_id = short(self.node)
-        else:
-            node = self.repository.lookup(commit_id) 
-        commit = Commit(self, commit_id)        
         ctx = self.repository.changectx(node)
-        commit.rev = '%d:%s' % (ctx.rev(), commit_id)
+        commit.rev = '%d:%s' % (ctx.rev(), commit.commit)
         commit.branch = ctx.branch()
         commit.author = person(ctx.user())
         commit.logmsg = ctx.description()
+        # Extract changed files from status against first parent
         st = self.repository.status(ctx.p1().node(), ctx.node())
         commit.files = ' '.join(st[0] + st[1] + st[2])
         return commit
@@ -333,17 +323,17 @@ class HgExtractor(GenericExtractor):
         "Return a symbolic reference to the tip commit of the current branch."
         return "-1"
 
-def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
+def hg_hook(ui, repo, hooktype, node=None, url=None, **_kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
     # configuration:
     # [hooks]
     # incoming.irker = python:/path/to/irkerhook.py:hg_hook
-    extractor = HgExtractor([(ui, repo, node)])
-    ship(extractor.commit_factory())
+    extractor = HgExtractor([(ui, repo)])
+    ship(extractor, node, False)
 
-def ship(commit, debug=False):
-    "Ship a notification for the sspecified commit."
-    metadata = extractor.commit_factory(commit) 
+def ship(extractor, commit, debug):
+    "Ship a notification for the specified commit."
+    metadata = extractor.commit_factory(commit)
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
     # try knocking out the file list, on the theory that for notification
@@ -419,6 +409,6 @@ if __name__ == "__main__":
         commits = [extractor.head()]
 
     for commit in commits:
-        ship(commit, not notify)
+        ship(extractor, commit, not notify)
 
 #End
