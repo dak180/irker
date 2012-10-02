@@ -156,8 +156,8 @@ class GenericExtractor:
                     setattr(self, key, True)
                 elif type(val) == type("") and val.lower() == "false":
                     setattr(self, key, False)
-                elif key in GenericExtractor.numerics:
-                    setattr(self, key, int(val))
+            elif key in GenericExtractor.numerics:
+                setattr(self, key, int(val))
         if not self.project:
             sys.stderr.write("irkerhook.py: no project name set!\n")
             raise SystemExit, 1
