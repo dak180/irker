@@ -102,7 +102,7 @@ discarded. </para>
 <refsect1 id='authors'><title>AUTHOR</title>
 <para>Eric S. Raymond <email>esr@snark.thyrsus.com</email>.  See the
 project page at <ulink
-url='http://www.catb.org/~esr/'>http://www.catb.org/~esr/irker</ulink>
+url='http://www.catb.org/~esr/irker'>http://www.catb.org/~esr/irker</ulink>
 for updates and other resources, including an installable repository
 hook script. The implementation uses the Python IRC library by Joe
 Rosdahl and Jason R. Coombs.</para>
