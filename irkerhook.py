@@ -329,7 +329,7 @@ class HgExtractor(GenericExtractor):
         self.do_overrides()
     def head(self):
         "Return a symbolic reference to the tip commit of the current branch."
-        return "1"
+        return "-1"
 
 def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
@@ -340,6 +340,7 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     ship(extractor)
 
 def ship(commit, debug):
+    "Ship a notification for the sspecified commit."
     metadata = extractor.commit_factory(commit) 
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
