@@ -114,6 +114,7 @@ class Connection:
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
+        self.thread.daemon = True
         self.thread.start()
     def nickname(self, n=None):
         "Return a name for the nth server connection."
@@ -303,6 +304,7 @@ class Irker:
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
         self.irc.add_global_handler("kick", self._handle_kick)
         thread = threading.Thread(target=self.irc.process_forever)
+        thread.daemon = True
         self.irc._thread = thread
         thread.start()
         self.servers = {}
@@ -444,13 +446,17 @@ if __name__ == '__main__':
             sys.exit(0)
     irker = Irker(debuglevel=debuglvl)
     tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
+    tcpserver = threading.Thread(target=tcpserver.serve_forever)
+    tcpserver.daemon = True
+    tcpserver.start()
     udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
-    threading.Thread(target=tcpserver.serve_forever).start()
-    threading.Thread(target=udpserver.serve_forever).start()
-    # Main thread has to stay alive forever for the cooperative
-    # scheduling of the green threads to work.
-    if green_threads:
+    udpserver = threading.Thread(target=udpserver.serve_forever)
+    udpserver.daemon = True
+    udpserver.start()
+    try:
         while True:
             time.sleep(10)
+    except KeyboardInterrupt:
+        raise SystemExit, 1
 
 # end
