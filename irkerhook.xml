@@ -256,6 +256,26 @@ that would have unhappy results.</para>
 
 </refsect2>
 
+<refsect2 id="hg"><title>Mercurial</title>
+
+<para>NOTE: Mercurial support is currently broken.  It is expected
+this will be fixed in the next release.</para>
+
+<para>Under Mercurial, <application>irkerhook.py</application> can be
+invoked in two ways: either as a Python hook (preferred) or as a
+script.  As for git, in both cases all variables may be set in the repo
+<filename>hgrc</filename> file in an [irker] section.  Command-line
+variable=value arguments are accepted but not required for script
+invocation.  No attempt is made to interpret an
+<filename>irker.conf</filename> file.</para>
+
+<para>The default value of the "project" variable is the basename
+of the repository directory. The default value of the "urlprefix"
+variable is the value of the "web.baseurl" config value, if it
+exists.</para>
+
+</refsect2>
+
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
