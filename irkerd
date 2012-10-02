@@ -100,11 +100,11 @@ version = "1.4"
 # draft-brocklesby-irc-isupport-03 at <http://www.mirc.com/isupport.html>.
 
 class Connection:
-    def __init__(self, irkerd, servername, port, nick_base=1):
+    def __init__(self, irkerd, servername, port):
         self.irker = irkerd
         self.servername = servername
         self.port = port
-        self.nick_trial = nick_base
+        self.nick_trial = random.randint(1, 990)
         self.connection = None
         self.status = "unseen"
         self.last_xmit = time.time()
@@ -279,8 +279,7 @@ class Dispatcher:
         if not eligibles:
             newconn = Connection(self.irker,
                                  self.servername,
-                                 self.port,
-                                 len(self.connections)+1)
+                                 self.port)
             self.connections.append(newconn)
             eligibles = [newconn]
         eligibles[0].enqueue(channel, message)
