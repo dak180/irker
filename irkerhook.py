@@ -271,34 +271,23 @@ class HgExtractor(GenericExtractor):
         # from the root path.
         if arguments and type(arguments[0]) == type(()):
             # Called from hg_hook function
-            ui, repo, self.node = arguments[0]
+            ui, repo = arguments[0]
             arguments = []  # Should not be processed further by do_overrides
         else:
             # Called from command line: create repo/ui objects
             from mercurial import hg, ui as uimod
 
             repopath = '.'
-            commit = '-1'   # i.e. tip
             for tok in arguments:
                 if tok.startswith('--repository='):
                     repopath = tok[13:]
-                elif tok.startswith('--commit='):
-                    commit = tok[9:]
             ui = uimod.ui()
             ui.readconfig(os.path.join(repopath, '.hg', 'hgrc'), repopath)
             repo = hg.repository(ui, repopath)
-            node = repo.lookup(commit)
 
         GenericExtractor.__init__(self, arguments)
-
-        # Using local imports; not pretty but necessary here
-        from mercurial.node import short
-        from mercurial.templatefilters import person
-
-        if arguments and type(arguments[0]) == type(()):
-            # Called from hg_hook function
-            ui, repo, node = arguments[0]
-
+        # Keep the hg object for commit_factory()
+        self.hg_repo = repo
         # Extract global values from the hg configuration file(s)
         self.project = ui.config('irker', 'project')
         self.repo = ui.config('irker', 'repo')
@@ -306,7 +295,7 @@ class HgExtractor(GenericExtractor):
         self.channels = ui.config('irker', 'channels')
         self.tcp = str(ui.configbool('irker', 'tcp'))  # converted to bool again in do_overrides
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
-        self.color = str(ui.configbool('irker', 'color'))
+        self.color = ui.config('irker', 'color')
         self.urlprefix = (ui.config('irker', 'urlprefix') or
                           ui.config('web', 'baseurl') or '')
         if self.urlprefix:
@@ -314,30 +303,34 @@ class HgExtractor(GenericExtractor):
             # self.commit is appended to this by do_overrides
         if not self.project:
             self.project = os.path.basename(repo.root.rstrip('/'))
-
-        # Extract commit-specific values from a "context" object
-        ctx = repo.changectx(node)
-        self.commit = short(node)
-        self.rev = '%d:%s' % (ctx.rev(), self.commit)
-        self.branch = ctx.branch()
-        self.author = person(ctx.user())
-        self.logmsg = ctx.description()
-
-        st = repo.status(ctx.p1().node(), ctx.node())
-        self.files = ' '.join(st[0] + st[1] + st[2])
-
         self.do_overrides()
+    def commit_factory(self, commit_id):
+        "Make a Commit object holding data for a specified commit ID."
+        from mercurial.node import short
+        from mercurial.templatefilters import person
+        node = self.hg_repo.lookup(commit_id)
+        commit = Commit(self, short(node))
+        # Extract commit-specific values from a "context" object
+        ctx = self.hg_repo.changectx(node)
+        commit.rev = '%d:%s' % (ctx.rev(), commit.commit)
+        commit.branch = ctx.branch()
+        commit.author = person(ctx.user())
+        commit.logmsg = ctx.description()
+        # Extract changed files from status against first parent
+        st = self.hg_repo.status(ctx.p1().node(), ctx.node())
+        commit.files = ' '.join(st[0] + st[1] + st[2])
+        return commit
     def head(self):
         "Return a symbolic reference to the tip commit of the current branch."
         return "-1"
 
-def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
+def hg_hook(ui, repo, hooktype, node=None, url=None, **_kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
     # configuration:
     # [hooks]
     # incoming.irker = python:/path/to/irkerhook.py:hg_hook
-    extractor = HgExtractor([(ui, repo, node)])
-    ship(extractor)
+    extractor = HgExtractor([(ui, repo)])
+    ship(extractor, node, False)
 
 def ship(extractor, commit, debug):
     "Ship a notification for the sspecified commit."
