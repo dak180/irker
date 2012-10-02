@@ -146,12 +146,21 @@ a value less than 2, however, would probably be unwise.</para>
 <refsect2 id="git"><title>git</title>
 
 <para>Under git, <application>irkerhook.py</application> does not
-require any arguments.  All variables may be set in the repo
-<filename>config</filename> file in an [irker] section.  Command-line
-variable=value arguments are accepted but not required.  No attempt is
-made to interpret an <filename>irker.conf</filename> file.  You should
-not set the "repository" variable (an equivalent will be
-computed).</para>
+require any arguments.  Preferences may be set in the repo
+<filename>config</filename> file in an [irker] section. Here
+is an example of what that can look like:</para>
+
+<programlisting>
+[irker]
+    project = gpsd
+    color = ANSI
+    channels = {irc://chat.freenode.net/gpsd, irc://chat.freenode.net/commits}
+</programlisting>
+
+<para>Command-line variable=value arguments are accepted but not
+required.  No attempt is made to interpret an
+<filename>irker.conf</filename> file.  You should not set the
+"repository" variable (an equivalent will be computed).</para>
 
 <para>The default value of the "project" variable is the basename
 of the repository directory. The default value of the "urlprefix"
