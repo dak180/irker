@@ -44,6 +44,15 @@ hook script of your repo.  Under Subversion, the call goes in your
 repo's post-commit script. Under Mercurial there are two different
 ways to install it. See the irkerhook manual page for details.
 
+Note that if you wee using the CIA service and have ciabot.py in your
+git update script, you can simply replace this
+
+/path/to/ciabot.py ${refname} $(git rev-list ${oldhead}..${newhead} | tac)
+
+with this:
+
+/path/to/irkerhook.py --refname=${refname} $(git rev-list ${oldhead}..${newhead} | tac)
+
 == Testing ==
 
 To verify that your repo produces well-formed JSON notifications,
