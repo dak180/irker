@@ -66,3 +66,19 @@ Then, start irkerd and call irkerhook.py while watching the freenode
 If you need help, there's a project chat channel at 
 
    irc://chat.freenode.net/#irker
+
+== Read-only access ==
+
+If, for whatever reason, you can't modify the hook scripts in your 
+repository, there is still hope.
+
+There's a proxy that takes CIA XML-RPC notifications 
+and passes them to a local irker instance. Find it here:
+
+    https://github.com/nenolod/irker-cia-proxy
+
+There's also a poller daemon that can watch activity in a Subversion
+repository and ship notifications via an irker instance.
+
+    https://github.com/shikadilord/irker-svnpoller
+
