@@ -61,8 +61,10 @@ except ImportError:
 import sys, getopt, urlparse, time, random
 import threading, Queue, SocketServer
 import irc.client, logging
-try: import simplejson as json
-except ImportError: import json
+try:
+    import simplejson as json	# Faster, also makes us Python-2.4-compatible
+except ImportError:
+    import json
 
 version = "1.5"
 
