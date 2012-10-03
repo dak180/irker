@@ -1,17 +1,15 @@
 			irker history 
 
-1.0 @ 2012-09-27
-  First production version, somewhat rushed by the sudden death of cia.vc
-  on 24 September.
+1.5 @ 2012-10-03
+  Mercurial support.
+  Shorten nick negotiation by choosing a random bick base from a large range.
+  Make irkerd exit cleanly on control-C.
 
-1.1 @ 2012-09-28
-  Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
-  Fix a bug in reporting of multi-file commits.
-
-1.2 @ 2012-09-30
-  All segments of a message with embedded newlines are now transmitted.
-  Message reduction - irkerhook drops the filelist on excessively long ones.
-  Shell quote hardening in irkerhook.py and some anti-DoS logic.
+1.4 @ 2012-10-02
+  Graceful handling of server disconnects and kicks.
+  Distribution now inclues an installable irkerd plist for Mac OS/X.
+  The color variable is no longer boolean; may be miRC or ANSI.
+  The installation instructions for irkerhook.py have changed!
 
 1.3 @ 2012-10-01
   Support for an irker.conf file to set irkerhook variables under Subversion.
@@ -21,16 +19,23 @@
   irkerd now uses green threads, with much lower overhead.
   Fix a bug in handling of channel names with no prefix.
 
-1.4 @ 2012-10-02
-  Graceful handling of server disconnects and kicks.
-  Distribution now inclues an installable irkerd plist for Mac OS/X.
-  The color variable is no longer boolean; may be miRC or ANSI.
-  The installation instructions for irkerhook.py have changed!
+1.2 @ 2012-09-30
+  All segments of a message with embedded newlines are now transmitted.
+  Message reduction - irkerhook drops the filelist on excessively long ones.
+  Shell quote hardening in irkerhook.py and some anti-DoS logic.
 
-1.5 @ 2012-10-03
-  Mercurial support.
-  Shorten nick negotiation by choosing a random bick base from a large range.
-  Make irkerd exit cleanly on control-C.
+1.1 @ 2012-09-28
+  Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
+  Fix a bug in reporting of multi-file commits.
+
+1.0 @ 2012-09-27
+  First production version, somewhat rushed by the sudden death of cia.vc
+  on 24 September.
+
+
+
+
+
 
 
 
