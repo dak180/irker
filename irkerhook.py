@@ -5,11 +5,11 @@
 # This script contains git porcelain and porcelain byproducts.
 # Requires Python 2.6, or 2.4 with the 2.6 json library installed.
 #
-# usage: irkerhook.py [-V] [-n]
+# usage: irkerhook.py [-V] [-n] [--variable=value...] [commit_id...]
 #
-# This script is meant to be run in a post-commit hook.  Try it with
-# -n to see the notification dumped to stdout and verify that it looks
-# sane. With -V this script dumps its version and exits.
+# This script is meant to be run in an update or post-commit hook.
+# Try it with -n to see the notification dumped to stdout and verify
+# that it looks sane. With -V this script dumps its version and exits.
 #
 # See the irkerhook manual page in the distribution for a detailed
 # explanation of how to configure this hook.
