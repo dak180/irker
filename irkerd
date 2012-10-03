@@ -146,7 +146,7 @@ class Connection:
         try:
             self.channels_joined.remove(outof)
         except ValueError:
-            self.irker.logerr("kicked by %s from %s that's not joined" \
+            self.irker.logerr("kicked by %s from %s that's not joined"
                               % (self.servername, outof))
         qcopy = []
         while not self.queue.empty():
@@ -353,7 +353,7 @@ class Irker:
                     m = int(lump[12:])
                     for pref in "#&+":
                         cxt.channel_limits[pref] = m
-                    self.debug(1, "%s maxchannels is %d" \
+                    self.debug(1, "%s maxchannels is %d"
                                % (connection.server, m))
                 elif lump.startswith("CHANLIMIT=#:"):
                     limits = lump[10:].split(",")
@@ -363,7 +363,7 @@ class Irker:
                             limit = int(limit)
                             for c in prefixes:
                                 cxt.channel_limits[c] = limit
-                        self.debug(1, "%s channel limit map is %s" \
+                        self.debug(1, "%s channel limit map is %s"
                                    % (connection.server, cxt.channel_limits))
                     except ValueError:
                         self.logerr("ill-formed CHANLIMIT property")
