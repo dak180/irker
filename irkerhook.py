@@ -99,9 +99,6 @@ class GenericExtractor:
         self.color = None
         self.bold = self.green = self.blue = ""
         self.yellow = self.brown = self.reset = ""
-    def head(self):
-        "Return a symbolic reference to the tip commit of the current branch."
-        return "HEAD"
     def activate_color(self, style):
         "IRC color codes."
         if style == 'mIRC':
@@ -215,6 +212,9 @@ class GitExtractor(GenericExtractor):
                 here = os.path.dirname(here)
         # Get overrides
         self.do_overrides()
+    def head(self):
+        "Return a symbolic reference to the tip commit of the current branch."
+        return "HEAD"
     def commit_factory(self, commit_id):
         "Make a Commit object holding data for a specified commit ID."
         commit = Commit(self, commit_id)
@@ -260,6 +260,9 @@ class SvnExtractor(GenericExtractor):
         self.urlprefix = "viewcvs"
         self.load_preferences(os.path.join(self.repository, "irker.conf"))
         self.do_overrides()
+    def head(self):
+        sys.stderr.write("irker: under svn, hook requires a commit argument.\n")
+        raise SystemExit, 1
     def commit_factory(self, commit_id):
         self.id = commit_id
         commit = Commit(self, commit_id)
@@ -319,6 +322,9 @@ class HgExtractor(GenericExtractor):
         if not self.project:
             self.project = os.path.basename(self.repository.root.rstrip('/'))
         self.do_overrides()
+    def head(self):
+        "Return a symbolic reference to the tip commit of the current branch."
+        return "-1"
     def commit_factory(self, commit_id):
         "Make a Commit object holding data for a specified commit ID."
         from mercurial.node import short
@@ -335,9 +341,6 @@ class HgExtractor(GenericExtractor):
         st = self.repository.status(ctx.p1().node(), ctx.node())
         commit.files = ' '.join(st[0] + st[1] + st[2])
         return commit
-    def head(self):
-        "Return a symbolic reference to the tip commit of the current branch."
-        return "-1"
 
 def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
