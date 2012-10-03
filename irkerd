@@ -463,13 +463,11 @@ if __name__ == '__main__':
             sys.exit(0)
     irker = Irker(debuglevel=debuglvl)
     tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
-    tcpserver = threading.Thread(target=tcpserver.serve_forever)
-    tcpserver.setDaemon(True)
-    tcpserver.start()
     udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
-    udpserver = threading.Thread(target=udpserver.serve_forever)
-    udpserver.setDaemon(True)
-    udpserver.start()
+    for server in [tcpserver, udpserver]:
+        server = threading.Thread(target=server.serve_forever)
+        server.setDaemon(True)
+        server.start()
     try:
         while True:
             time.sleep(10)
