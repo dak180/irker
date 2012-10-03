@@ -382,9 +382,9 @@ class Irker:
         try:
             request = json.loads(line.strip())
             if not isinstance(request, dict):
-                self.logerr("request in tot a JSON dictionary: %r" % request)
+                self.logerr("request is not a JSON dictionary: %r" % request)
             elif "to" not in request or "privmsg" not in request:
-                self.logerr("malformed reqest - 'to' or 'privmsg' missing: %r" % request)
+                self.logerr("malformed request - 'to' or 'privmsg' missing: %r" % request)
             else:
                 channels = request['to']
                 message = request['privmsg']
