@@ -398,7 +398,6 @@ def ship(extractor, commit, debug):
 if __name__ == "__main__":
     notify = True
     repository = "."
-    refname = None
     commits = []
     for arg in sys.argv[1:]:
         if arg == '-n':
@@ -406,8 +405,6 @@ if __name__ == "__main__":
         elif arg == '-V':
             print "irkerhook.py: version", version
             sys.exit(0)
-        elif arg.startswith("--refname="):
-            refname = arg[10:]
         elif arg.startswith("--repository="):
             repository = arg[13:]
         elif not arg.startswith("--"):
