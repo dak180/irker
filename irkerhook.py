@@ -401,7 +401,7 @@ def ship(extractor, commit, debug):
 
 if __name__ == "__main__":
     notify = True
-    repository = "."
+    repository = os.getcwd()
     commits = []
     for arg in sys.argv[1:]:
         if arg == '-n':
