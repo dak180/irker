@@ -51,6 +51,7 @@ class Commit:
         self.commit = commit
         self.branch = None
         self.rev = None
+        self.mail = None
         self.author = None
         self.files = None
         self.logmsg = None
@@ -93,6 +94,7 @@ class GenericExtractor:
         self.template = None
         self.urlprefix = None
         self.host = socket.getfqdn()
+        self.filtercmd = None
         # Color highlighting is disabled by default.
         self.color = None
         self.bold = self.green = self.blue = ""
@@ -190,6 +192,7 @@ class GitExtractor(GenericExtractor):
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.color = do("git config --get irker.color")
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
+        self.filtercmd = do("git config --get irker.filtercmd")
         # These are git-specific
         self.refname = do("git symbolic-ref HEAD 2>/dev/null")
         self.revformat = do("git config --get irker.revformat")
@@ -235,11 +238,12 @@ class GitExtractor(GenericExtractor):
         # other VCSes a different choice may be appropriate.
         metainfo = do("git log -1 '--pretty=format:%an <%ae>|%s' " + shellquote(commit.commit))
         (commit.author, commit.logmsg) = metainfo.split("|")
+        commit.mail = commit.author.split()[-1].strip("<>")
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
         # for spammers' address harvesters - getting this wrong
         # would make the freenode #commits channel into harvester heaven.
-        commit.author = commit.author.replace("<", "").split("@")[0].split()[-1]
+        commit.author = commit.mail.split("@")[0]
         return commit
 
 class SvnExtractor(GenericExtractor):
@@ -359,6 +363,12 @@ extractors = [GitExtractor, HgExtractor, SvnExtractor]
 def ship(extractor, commit, debug):
     "Ship a notification for the specified commit."
     metadata = extractor.commit_factory(commit)
+
+    # Run through an external filter if required.
+    channels = extractor.channels.split(",")
+    if extractor.filtercmd:
+        channels = filterc(extractor.filtercmd, channels, metadata) or []
+
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
     # try knocking out the file list, on the theory that for notification
@@ -371,15 +381,14 @@ def ship(extractor, commit, debug):
         privmsg = str(metadata)
 
     # Anti-spamming guard.
-    channel_list = extractor.channels.split(",")
     if extractor.maxchannels != 0:
-        channel_list = channel_list[:extractor.maxchannels]
+        channels = channels[:extractor.maxchannels]
 
     # Ready to ship.
-    message = json.dumps({"to":channel_list, "privmsg":privmsg})
+    message = json.dumps({"to": channels, "privmsg": privmsg})
     if debug:
         print message
-    else:
+    elif channels:
         try:
             if extractor.tcp:
                 try:
@@ -396,6 +405,13 @@ def ship(extractor, commit, debug):
                     sock.close()
         except socket.error, e:
             sys.stderr.write("%s\n" % e)
+
+def filterc(cmd, channels, commit):
+    channels, update = json.loads(do('%s %s %s' % (cmd,
+        shellquote(json.dumps(channels)),
+        shellquote(json.dumps(commit.__dict__)))))
+    commit.__dict__.update(update)
+    return channels
 
 if __name__ == "__main__":
     notify = True
