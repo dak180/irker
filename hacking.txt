@@ -45,6 +45,8 @@ type switch. It can deduce the repo type by looking, so it should.
 
 == Thanks where due == 
 
+Daniel Franke <dfoxfranke@gmail.com> perforned a security audit of irkerd.
+
 Alexander van Gessel (AI0867) <ai0867@gmail.com> contributed the
 Subversion support in irkerhook.py.
 
@@ -57,7 +59,7 @@ support.
 Laurent Bachelier <laurent@bachelier.name> fixed the Makefile so it 
 wouldn't break stuff.
 
-Other people on the freenode #irker channel (Kingpin, fpcfan,
+Other people on the freenode #irker channel (dak180, Kingpin, fpcfan,
 shadowm) smoked out bugs in irkerd before they could seriously
 bug anybody.
 
