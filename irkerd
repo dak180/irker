@@ -116,7 +116,7 @@ class Connection:
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
-        self.thread.daemon = True
+        self.thread.setDaemon(True)
         self.thread.start()
     def nickname(self, n=None):
         "Return a name for the nth server connection."
@@ -319,7 +319,7 @@ class Irker:
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
         self.irc.add_global_handler("kick", self._handle_kick)
         thread = threading.Thread(target=self.irc.process_forever)
-        thread.daemon = True
+        thread.setDaemon(True)
         self.irc._thread = thread
         thread.start()
         self.servers = {}
@@ -464,11 +464,11 @@ if __name__ == '__main__':
     irker = Irker(debuglevel=debuglvl)
     tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
     tcpserver = threading.Thread(target=tcpserver.serve_forever)
-    tcpserver.daemon = True
+    tcpserver.setDaemon(True)
     tcpserver.start()
     udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
     udpserver = threading.Thread(target=udpserver.serve_forever)
-    udpserver.daemon = True
+    udpserver.setDaemon(True)
     udpserver.start()
     try:
         while True:
