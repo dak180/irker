@@ -171,8 +171,18 @@ class GenericExtractor:
         if self.color and self.color.lower() != "none":
             self.activate_color(self.color)
 
+def has(dir, paths):
+    "Test for existence of a list of paths."
+    return all([os.path.exists(os.path.join(dir, x)) for x in paths])
+
+# VCS-dependent code begins here
+
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
+    @staticmethod
+    def is_repository(dir):
+        # Must detect both ordinary and bare repositories
+        return has(dir, [".git"]) or has(dir, ["HEAD", "refs", "objects"])
     def __init__(self, arguments):
         GenericExtractor.__init__(self, arguments)
         # Get all global config variables
@@ -235,10 +245,13 @@ class GitExtractor(GenericExtractor):
 
 class SvnExtractor(GenericExtractor):
     "Metadata extraction for the svn version control system."
+    @staticmethod
+    def is_repository(dir):
+        return has(dir, ["format", "hooks", "locks"])
     def __init__(self, arguments):
         GenericExtractor.__init__(self, arguments)
         # Some things we need to have before metadata queries will work
-        self.repository = None
+        self.repository = '.'
         for tok in arguments:
             if tok.startswith("--repository="):
                 self.repository = tok[13:]
@@ -261,6 +274,9 @@ class SvnExtractor(GenericExtractor):
 
 class HgExtractor(GenericExtractor):
     "Metadata extraction for the Mercurial version control system."
+    @staticmethod
+    def is_repository(directory):
+        return has(directory, [".hg"])
     def __init__(self, arguments):
         # This fiddling with arguments is necessary since the Mercurial hook can
         # be run in two different ways: either directly via Python (in which
@@ -331,6 +347,10 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     extractor = HgExtractor([(ui, repo)])
     ship(extractor, node, False)
 
+extractors = [GitExtractor, SvnExtractor, HgExtractor]
+
+# VCS-dependent code ends here
+
 def ship(extractor, commit, debug):
     "Ship a notification for the specified commit."
     metadata = extractor.commit_factory(commit)
@@ -390,24 +410,19 @@ if __name__ == "__main__":
         elif not arg.startswith("--"):
             commits.append(arg)
 
-    # Determine the repository type. Default to git unless user has pointed
-    # us at a repo with identifiable internals.
-    vcs = "git"
-    if repository and os.path.exists(os.path.join(repository, ".hg")):
-        vcs = "hg"
-    elif repository and os.path.exists(os.path.join(repository, "format")):
-        vcs = "svn"
-
-    # Someday we'll have extractors for several version-control systems
-    if vcs == "svn":
-        extractor = SvnExtractor(sys.argv[1:])
-    elif vcs == "hg":
-        extractor = HgExtractor(sys.argv[1:])
+    # Figure out which extractor we should be using
+    for candidate in extractors:
+        if candidate.is_repository(repository):
+            cls = candidate
+            break
     else:
-        extractor = GitExtractor(sys.argv[1:])
+        sys.stderr.write("irkerhook: cannot identify a repository type.\n")
+        raise SystemExit, 1
+    extractor = cls(sys.argv[1:])
+
+    # And apply it.
     if not commits:
         commits = [extractor.head()]
-
     for commit in commits:
         ship(extractor, commit, not notify)
 
