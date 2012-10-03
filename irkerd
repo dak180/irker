@@ -381,21 +381,21 @@ class Irker:
         "Perform a JSON relay request."
         try:
             request = json.loads(line.strip())
-            if type(request) != type({}):
+            if not isinstance(request, dict):
                 self.logerr("request in tot a JSON dictionary: %r" % request)
             elif "to" not in request or "privmsg" not in request:
                 self.logerr("malformed reqest - 'to' or 'privmsg' missing: %r" % request)
             else:
                 channels = request['to']
                 message = request['privmsg']
-                if type(channels) not in (type([]), type(u"")) \
-                       or type(message) != type(u""):
+                if not isinstance(channels, (list, unicode)) \
+                       or not isinstance(message, unicode):
                     self.logerr("malformed request - unexpected types: %r" % request)
                 else:
-                    if type(channels) == type(u""):
+                    if isinstance(channels, unicode):
                         channels = [channels]
                     for url in channels:
-                        if type(url) != type(u""):
+                        if not isinstance(url, unicode):
                             self.logerr("malformed request - unexpected type: %r" % request)
                         else:
                             target = Target(url)
