@@ -44,7 +44,7 @@ pylint:
 loc:
 	grep -vE '(^ *#|^ *$$)' irkerd irkerhook.py | wc -l
 
-SOURCES = README COPYING NEWS BUGS install.txt security.txt hacking.txt \
+SOURCES = README COPYING NEWS install.txt security.txt hacking.txt \
 	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml
 EXTRA_DIST = irker-logo.png org.catb.irkerd.plist
 

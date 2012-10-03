@@ -10,11 +10,8 @@ IRC channels.  A hook script, irkerhook.py, supporting git, hg, and
 Subversion is included in the distribution; see the install.txt file
 for installation instructions.
 
-Due to the abrupt death of cia.vc on September 24 2012 the
-initial release of this software was a bit rushed.  See the file
-BUGS for known problems.
-
-Please read the files security.txt and hacking.txt before modifying this code.
+Please read the files security.txt and hacking.txt before modifying
+this code.
 
 						Eric S. Raymond
-						August 2012
+						September 2012

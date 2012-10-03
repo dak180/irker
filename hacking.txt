@@ -42,3 +42,22 @@ type switch. It can deduce the repo type by looking, so it should.
 4. Update the NEWS file
 
 5. make dist; make release
+
+== Thanks where due == 
+
+Alexander van Gessel (AI0867) <ai0867@gmail.com> contributed the
+Subversion support in irkerhook.py.
+
+Georg Brandl <georg@python.org> contributed the Mercurial support in
+irkerhook.py and explained how to make Control-C work right.
+
+Peter Scott <pjscott@iastate.edu> contributed the original greenlet
+support.
+
+Laurent Bachelier <laurent@bachelier.name> fixed the Makefile so it 
+wouldn't break stuff.
+
+Other people on the freenode #irker channel (Kingpin, fpcfan,
+shadowm) smoked out bugs in irkerd before they could seriously
+bug anybody.
+

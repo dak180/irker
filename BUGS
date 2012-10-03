@@ -1,5 +1,0 @@
-			KNOWN BUGS
-
-* There is a rare crash on kick events which is probably due to a thread race.
-
-
