@@ -58,9 +58,11 @@ except ImportError:
     CONNECTION_MAX = 200
     green_threads = False
 
-import sys, json, getopt, urlparse, time, random
+import sys, getopt, urlparse, time, random
 import threading, Queue, SocketServer
 import irc.client, logging
+try: import simplejson as json
+except ImportError: import json
 
 version = "1.5"
 
