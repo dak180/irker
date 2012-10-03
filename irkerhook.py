@@ -162,7 +162,7 @@ class GenericExtractor:
                 setattr(self, key, int(val))
         if not self.project:
             sys.stderr.write("irkerhook.py: no project name set!\n")
-            raise SystemExit, 1
+            raise SystemExit(1)
         if not self.repo:
             self.repo = self.project.lower()
         if not self.channels:
@@ -267,7 +267,7 @@ class SvnExtractor(GenericExtractor):
         self.do_overrides()
     def head(self):
         sys.stderr.write("irker: under svn, hook requires a commit argument.\n")
-        raise SystemExit, 1
+        raise SystemExit(1)
     def commit_factory(self, commit_id):
         self.id = commit_id
         commit = Commit(self, commit_id)
@@ -437,7 +437,7 @@ if __name__ == "__main__":
             break
     else:
         sys.stderr.write("irkerhook: cannot identify a repository type.\n")
-        raise SystemExit, 1
+        raise SystemExit(1)
     extractor = cls(sys.argv[1:])
 
     # And apply it.
