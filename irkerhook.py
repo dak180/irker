@@ -168,18 +168,19 @@ class GenericExtractor:
         if self.color and self.color.lower() != "none":
             self.activate_color(self.color)
 
-def has(dir, paths):
+def has(dirname, paths):
     "Test for existence of a list of paths."
-    return all([os.path.exists(os.path.join(dir, x)) for x in paths])
+    return all([os.path.exists(os.path.join(dirname, x)) for x in paths])
 
 # VCS-dependent code begins here
 
 class GitExtractor(GenericExtractor):
     "Metadata extraction for the git version control system."
     @staticmethod
-    def is_repository(dir):
+    def is_repository(dirname):
         # Must detect both ordinary and bare repositories
-        return has(dir, [".git"]) or has(dir, ["HEAD", "refs", "objects"])
+        return has(dirname, [".git"]) or \
+               has(dirname, ["HEAD", "refs", "objects"])
     def __init__(self, arguments):
         GenericExtractor.__init__(self, arguments)
         # Get all global config variables
@@ -246,8 +247,8 @@ class GitExtractor(GenericExtractor):
 class SvnExtractor(GenericExtractor):
     "Metadata extraction for the svn version control system."
     @staticmethod
-    def is_repository(dir):
-        return has(dir, ["format", "hooks", "locks"])
+    def is_repository(dirname):
+        return has(dirname, ["format", "hooks", "locks"])
     def __init__(self, arguments):
         GenericExtractor.__init__(self, arguments)
         # Some things we need to have before metadata queries will work
