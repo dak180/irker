@@ -39,7 +39,7 @@ default_channels = "irc://chat.freenode.net/%(project)s,irc://chat.freenode.net/
 
 import os, sys, commands, socket, urllib, json
 
-version = "1.4"
+version = "1.5"
 
 def shellquote(s):
     return "'" + s.replace("'","'\\''") + "'"

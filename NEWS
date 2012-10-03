@@ -27,7 +27,7 @@
   The color variable is no longer boolean; may be miRC or ANSI.
   The installation instructions for irkerhook.py have changed!
 
-1.5 @
+1.5 @ 2012-10-03
   Mercurial support.
   Shorten nick negotiation by choosing a random bick base from a large range.
   Make irkerd exit cleanly on control-C.
