@@ -298,6 +298,9 @@ class Dispatcher:
         "Does this server-port combination have any live connections?"
         self.connections = [x for x in self.connections if x.live()]
         return len(self.connections) > 0
+    def last_xmit(self):
+        "Return the time of the most recent transmission."
+        return max([x.last_xmit for x in self.connections])
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -419,10 +422,12 @@ class Irker:
                             # assumption that message activity is likely
                             # to be clumpy.
                             oldest = None
+                            oldtime = float("inf")
                             if len(self.servers) >= CONNECTION_MAX:
                                 for (name, server) in self.servers.items():
-                                    if not oldest or server.last_xmit < self.servers[oldest].last_xmit:
+                                    if server.last_xmit() < oldtime:
                                         oldest = name
+                                        oldtime = server.last_xmit()
                                 del self.servers[oldest]
         except ValueError:
             self.logerr("can't recognize JSON on input: %s" % repr(line))
