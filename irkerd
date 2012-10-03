@@ -382,21 +382,21 @@ class Irker:
         try:
             request = json.loads(line.strip())
             if type(request) != type({}):
-                self.logerr("request in tot a JSON dictionary: %s" % repr(request))
+                self.logerr("request in tot a JSON dictionary: %r" % request)
             elif "to" not in request or "privmsg" not in request:
-                self.logerr("malformed reqest - 'to' or 'privmsg' missing: %s" % repr(request))
+                self.logerr("malformed reqest - 'to' or 'privmsg' missing: %r" % request)
             else:
                 channels = request['to']
                 message = request['privmsg']
                 if type(channels) not in (type([]), type(u"")) \
                        or type(message) != type(u""):
-                    self.logerr("malformed request - unexpected types: %s" % repr(request))
+                    self.logerr("malformed request - unexpected types: %r" % request)
                 else:
                     if type(channels) == type(u""):
                         channels = [channels]
                     for url in channels:
                         if type(url) != type(u""):
-                            self.logerr("malformed request - unexpected type: %s" % repr(request))
+                            self.logerr("malformed request - unexpected type: %r" % request)
                         else:
                             target = Target(url)
                             if not target.valid():
@@ -432,7 +432,7 @@ class Irker:
                                         oldtime = server.last_xmit()
                                 del self.servers[oldest]
         except ValueError:
-            self.logerr("can't recognize JSON on input: %s" % repr(line))
+            self.logerr("can't recognize JSON on input: %r" % line)
         except RuntimeError:
             self.logerr("wildly malformed JSON blew the parser stack.")
 
