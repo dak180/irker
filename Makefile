@@ -42,7 +42,8 @@ pylint:
 	@pylint --output-format=parseable $(PYLINTOPTS) irkerhook.py
 
 loc:
-	grep -vE '(^ *#|^ *$$)' irkerd irkerhook.py | wc -l
+	@echo "LOC:"; wc -l irkerd irkerhook.py
+	@echo -n "LLOC: "; grep -vE '(^ *#|^ *$$)' irkerd irkerhook.py | wc -l
 
 SOURCES = README COPYING NEWS install.txt security.txt hacking.txt \
 	irkerd irkerhook.py Makefile irkerd.xml irkerhook.xml
