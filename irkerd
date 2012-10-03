@@ -118,7 +118,7 @@ class Connection:
         # The consumer thread
         self.queue = Queue.Queue()
         self.thread = threading.Thread(target=self.dequeue)
-        self.thread.daemon = True
+        self.thread.setDaemon(True)
         self.thread.start()
     def nickname(self, n=None):
         "Return a name for the nth server connection."
@@ -148,7 +148,7 @@ class Connection:
         try:
             self.channels_joined.remove(outof)
         except ValueError:
-            self.irker.logerr("kicked by %s from %s that's not joined" \
+            self.irker.logerr("kicked by %s from %s that's not joined"
                               % (self.servername, outof))
         qcopy = []
         while not self.queue.empty():
@@ -321,7 +321,7 @@ class Irker:
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
         self.irc.add_global_handler("kick", self._handle_kick)
         thread = threading.Thread(target=self.irc.process_forever)
-        thread.daemon = True
+        thread.setDaemon(True)
         self.irc._thread = thread
         thread.start()
         self.servers = {}
@@ -355,7 +355,7 @@ class Irker:
                     m = int(lump[12:])
                     for pref in "#&+":
                         cxt.channel_limits[pref] = m
-                    self.debug(1, "%s maxchannels is %d" \
+                    self.debug(1, "%s maxchannels is %d"
                                % (connection.server, m))
                 elif lump.startswith("CHANLIMIT=#:"):
                     limits = lump[10:].split(",")
@@ -365,7 +365,7 @@ class Irker:
                             limit = int(limit)
                             for c in prefixes:
                                 cxt.channel_limits[c] = limit
-                        self.debug(1, "%s channel limit map is %s" \
+                        self.debug(1, "%s channel limit map is %s"
                                    % (connection.server, cxt.channel_limits))
                     except ValueError:
                         self.logerr("ill-formed CHANLIMIT property")
@@ -383,22 +383,22 @@ class Irker:
         "Perform a JSON relay request."
         try:
             request = json.loads(line.strip())
-            if type(request) != type({}):
-                self.logerr("request in tot a JSON dictionary: %s" % repr(request))
+            if not isinstance(request, dict):
+                self.logerr("request is not a JSON dictionary: %r" % request)
             elif "to" not in request or "privmsg" not in request:
-                self.logerr("malformed reqest - 'to' or 'privmsg' missing: %s" % repr(request))
+                self.logerr("malformed request - 'to' or 'privmsg' missing: %r" % request)
             else:
                 channels = request['to']
                 message = request['privmsg']
-                if type(channels) not in (type([]), type(u"")) \
-                       or type(message) != type(u""):
-                    self.logerr("malformed request - unexpected types: %s" % repr(request))
+                if not isinstance(channels, (list, unicode)) \
+                       or not isinstance(message, unicode):
+                    self.logerr("malformed request - unexpected types: %r" % request)
                 else:
-                    if type(channels) == type(u""):
+                    if isinstance(channels, unicode):
                         channels = [channels]
                     for url in channels:
-                        if type(url) != type(u""):
-                            self.logerr("malformed request - unexpected type: %s" % repr(request))
+                        if not isinstance(url, unicode):
+                            self.logerr("malformed request - unexpected type: %r" % request)
                         else:
                             target = Target(url)
                             if not target.valid():
@@ -434,7 +434,7 @@ class Irker:
                                         oldtime = server.last_xmit()
                                 del self.servers[oldest]
         except ValueError:
-            self.logerr("can't recognize JSON on input: %s" % repr(line))
+            self.logerr("can't recognize JSON on input: %r" % line)
         except RuntimeError:
             self.logerr("wildly malformed JSON blew the parser stack.")
 
@@ -465,17 +465,15 @@ if __name__ == '__main__':
             sys.exit(0)
     irker = Irker(debuglevel=debuglvl)
     tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
-    tcpserver = threading.Thread(target=tcpserver.serve_forever)
-    tcpserver.daemon = True
-    tcpserver.start()
     udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
-    udpserver = threading.Thread(target=udpserver.serve_forever)
-    udpserver.daemon = True
-    udpserver.start()
+    for server in [tcpserver, udpserver]:
+        server = threading.Thread(target=server.serve_forever)
+        server.setDaemon(True)
+        server.start()
     try:
         while True:
             time.sleep(10)
     except KeyboardInterrupt:
-        raise SystemExit, 1
+        raise SystemExit(1)
 
 # end
