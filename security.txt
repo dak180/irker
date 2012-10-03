@@ -89,11 +89,15 @@ Our security goals for irker can be enumerated as follows:
 == Control Issues ===
 
 We have audited the irker and irkerhook.py code for exploitable 
-vulnerabilities.  We have not found any in the code itself, but the
-fact that irkerhook.py relies on external binaries to mine data ought
-of its repository opens up a well-known set of vulnerabilities if a
-malicious user is able to insert binaries in a carelessly-set 
-execution path.  Normal precautions against this should be taken.
+vulnerabilities.  We have not found any in the code itself, and the
+use of Python gives us confidence in the absence of large classes of errors
+(such as buffer overruns) that afflict C programs.
+
+However, the fact that irkerhook.py relies on external binaries to
+mine data out of its repository opens up a well-known set of
+vulnerabilities if a malicious user is able to insert binaries in a
+carelessly-set execution path.  Normal precautions against this should
+be taken.
 
 == Availability ==
 
@@ -237,8 +241,8 @@ The principal advantages of CIA from a security point of view were (a)
 it provided a single point at which spam filtering and source blocking
 could be done with benefit to all projects using the service, and (b)
 since it had to have a database anyway for routing messages to project
-channels, the incremental overhead for an authentication feature will
-be relatively low.
+channels, the incremental overhead for an authentication feature would
+have been relatively low.
 
 As a matter of fact rather than theory CIA never fully exploited
 either possibility.  Anyone could create a CIA project entry with
