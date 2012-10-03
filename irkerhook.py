@@ -343,13 +343,13 @@ class HgExtractor(GenericExtractor):
         commit.files = ' '.join(st[0] + st[1] + st[2])
         return commit
 
-def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
+def hg_hook(ui, repo, **kwds):
     # To be called from a Mercurial "commit" or "incoming" hook.  Example
     # configuration:
     # [hooks]
     # incoming.irker = python:/path/to/irkerhook.py:hg_hook
     extractor = HgExtractor([(ui, repo)])
-    ship(extractor, node, False)
+    ship(extractor, kwds['node'], False)
 
 # The files we use to identify a Subversion repo might occur as content
 # in a git or hg repo, but the special subdirectories for those are more
