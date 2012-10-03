@@ -351,7 +351,10 @@ def hg_hook(ui, repo, _hooktype, node=None, _url=None, **_kwds):
     extractor = HgExtractor([(ui, repo)])
     ship(extractor, node, False)
 
-extractors = [GitExtractor, SvnExtractor, HgExtractor]
+# The files we use to identify a Subversion repo might occur as content
+# in a git or hg repo, but the special subdirectories for those are more
+# reliable indicators.  So test for Subversion last.
+extractors = [GitExtractor, HgExtractor, SvnExtractor]
 
 # VCS-dependent code ends here
 
