@@ -59,7 +59,9 @@ support.
 Laurent Bachelier <laurent@bachelier.name> fixed the Makefile so it 
 wouldn't break stuff.
 
-Other people on the freenode #irker channel (dak180, Kingpin, fpcfan,
+dak180 (name withheld by request) wrote the OS X launchd plist.
+
+Other people on the freenode #irker channel (Kingpin, fpcfan,
 shadowm) smoked out bugs in irkerd before they could seriously
 bug anybody.
 
