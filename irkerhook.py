@@ -39,8 +39,10 @@ default_channels = "irc://chat.freenode.net/%(project)s,irc://chat.freenode.net/
 
 import os, sys, commands, socket, urllib
 from pipes import quote as shellquote
-try: import simplejson as json
-except ImportError: import json
+try:
+    import simplejson as json	# Faster, also makes us Python-2.4-compatible
+except ImportError:
+    import json
 
 version = "1.5"
 
