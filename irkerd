@@ -399,9 +399,10 @@ class Irker:
             else:
                 channels = request['to']
                 message = request['privmsg']
-                if not isinstance(channels, (list, unicode)) \
-                       and not isinstance(message, unicode):
-                    self.logerr("malformed request - unexpected types: %r" % request)
+                if type(channels) not in (type([]), type(""), type(u"")):
+                    self.logerr("malformed request - unexpected channel type: %r" % channels)
+                if type(message) not in (type(""), type(u"")):
+                    self.logerr("malformed request - unexpected message type: %r" % message)
                 else:
                     if isinstance(channels, unicode):
                         channels = [channels]
