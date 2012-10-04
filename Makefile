@@ -1,4 +1,4 @@
-# Makefile for the irker relaying tool
+# Makefile for the irker relaying daemon
 
 VERS=$(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
 
