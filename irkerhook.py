@@ -37,7 +37,7 @@ default_channels = "irc://chat.freenode.net/%(project)s,irc://chat.freenode.net/
 # No user-serviceable parts below this line:
 #
 
-import os, sys, commands, socket, urllib
+import os, sys, commands, socket, urllib, subprocess
 from pipes import quote as shellquote
 try:
     import simplejson as json	# Faster, also makes us Python-2.4-compatible
@@ -370,8 +370,9 @@ def ship(extractor, commit, debug):
 
     # This is where we apply filtering
     if extractor.filtercmd:
-        data = do('%s %s' % (shellquote(extractor.filtercmd),
-                             shellquote(json.dumps(metadata.__dict__))))
+        cmd = '%s %s' % (shellquote(extractor.filtercmd),
+                         shellquote(json.dumps(metadata.__dict__)))
+        data = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
         try:
             metadata.__dict__.update(json.loads(data))
         except ValueError:
