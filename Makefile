@@ -46,7 +46,8 @@ loc:
 	@echo -n "LLOC: "; grep -vE '(^ *#|^ *$$)' irkerd irkerhook.py | wc -l
 
 SOURCES = README COPYING NEWS install.txt security.txt hacking.txt \
-	irkerd irkerhook.py filter-example.py Makefile irkerd.xml irkerhook.xml
+	irkerd irkerhook.py filter-example.py filter-test.py \
+	Makefile irkerd.xml irkerhook.xml
 EXTRA_DIST = irker-logo.png org.catb.irkerd.plist
 
 version:
