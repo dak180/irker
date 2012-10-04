@@ -464,6 +464,7 @@ if __name__ == '__main__':
             sys.stdout.write("irkerd version %s\n" % version)
             sys.exit(0)
     irker = Irker(debuglevel=debuglvl)
+    irker.debug(1, "irkerd version %s" % version)
     tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
     udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
     for server in [tcpserver, udpserver]:
