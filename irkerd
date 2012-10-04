@@ -158,7 +158,7 @@ class Connection:
         self.status = "ready"
     def enqueue(self, channel, message):
         "Enque a message for transmission."
-        if self.thread is None or not self.thread_is.alive():
+        if self.thread is None or not self.thread.is_alive():
             self.thread = threading.Thread(target=self.dequeue)
             self.thread.setDaemon(True)
             self.thread.start()
