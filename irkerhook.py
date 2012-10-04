@@ -406,13 +406,6 @@ def ship(extractor, commit, debug):
         except socket.error, e:
             sys.stderr.write("%s\n" % e)
 
-def filterc(cmd, channels, commit):
-    channels, update = json.loads(do('%s %s %s' % (cmd,
-        shellquote(json.dumps(channels)),
-        shellquote(json.dumps(commit.__dict__)))))
-    commit.__dict__.update(update)
-    return channels
-
 if __name__ == "__main__":
     notify = True
     repository = os.getcwd()
