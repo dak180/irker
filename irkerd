@@ -200,6 +200,7 @@ class Connection:
                        or now > self.last_ping + PING_TTL:
                     self.irker.debug(1, "timing out inactive connection to %s at %s" % (self.servername, time.asctime()))
                     self.connection.context = None
+                    self.connection.quit("transmission timeout")
                     self.connection.close()
                     self.connection = None
                     self.status = "disconnected"
