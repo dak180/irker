@@ -368,6 +368,16 @@ def ship(extractor, commit, debug):
     "Ship a notification for the specified commit."
     metadata = extractor.commit_factory(commit)
 
+    # This is where we apply filtering
+    if extractor.filtercmd:
+        data = do('%s %s' % (shellquote(extractor.filtercmd),
+                             shellquote(json.dumps(metadata.__dict__))))
+        try:
+            metadata.__dict__.update(json.loads(data))
+        except ValueError:
+            sys.stderr.write("irkerhook.py: could not decode JSON: %s\n" % data)
+            raise SystemExit, 1
+
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
     # try knocking out the file list, on the theory that for notification
@@ -379,8 +389,10 @@ def ship(extractor, commit, debug):
         metadata.files = ""
         privmsg = str(metadata)
 
-    # Anti-spamming guard.
-    channels = extractor.channels.split(",")
+    # Anti-spamming guard.  It's deliberate that we get maxchannels not from
+    # the user-filtered metadata but from the extractor data - means repo
+    # administrators can lock in that setting.
+    channels = metadata.channels.split(",")
     if extractor.maxchannels != 0:
         channels = channels[:extractor.maxchannels]
 

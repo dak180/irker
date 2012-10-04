@@ -296,6 +296,36 @@ exists.</para>
 
 </refsect2>
 
+<refsect2 id="filter"><title>Filtering</title>
+
+<para>It is possible to filter commits before sending them to
+<application>irkerd</application>.</para>
+
+<para>You have to specify the <option>filtercmd</option> option, which
+will be the command <application>irkerhook.py</application> will
+run. This command should accept one arguments, which is a JSON
+representation of commit and extractor metadata (including the
+channels variable). The command should emit to standard output a JSON
+representation of (possibly altered) metadata.</para>
+
+<para>Below is an example filter:</para>
+
+<programlisting>
+#!/usr/bin/env python
+# This is a trivial example of a metadata filter.
+# All it does is change the name of the commit's author.
+# 
+import sys, json
+metadata = json.loads(sys.argv[1])
+
+metadata['author'] = "The Great and Powerful Oz"
+
+print json.dumps(metadata)
+# end
+</programlisting>
+
+</refsect2>
+
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>

@@ -57,7 +57,8 @@ Peter Scott <pjscott@iastate.edu> contributed the original greenlet
 support.
 
 Laurent Bachelier <laurent@bachelier.name> fixed the Makefile so it 
-wouldn't break stuff and added the external filtering option.
+wouldn't break stuff and wrote the first version of the external 
+filtering option.
 
 dak180 (name withheld by request) wrote the OS X launchd plist.
 

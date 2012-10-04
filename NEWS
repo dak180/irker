@@ -1,5 +1,8 @@
 			irker history 
 
+1.7 @
+  Optional metadata filtering with a user-specified command.
+
 1.6 @ 2012-10-04
   This is a stable release.
   In 1.5 trying to appease pylint broke the Mercurial hook.
