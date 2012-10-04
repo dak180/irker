@@ -2,18 +2,17 @@
 #
 # Test hook to launch an irker instance (if it doesn't already exist)
 # just before shipping the notification. We start it in in another terminal
-# so you can watch the debug messages. Probably only of interest only to
+# so you can watch the debug messages. Intended to be used in the root
+# directory of the irker repo. Probably only of interest only to irker
 # developers
 #
-# To use it, set up irkerhook.py to file on each commit.
-# Then set the filtercmd variable in your repo config as follows:
+# To use this, set up irkerhook.py to fire on each commit.  Creating a
+# .git/hooks/post-commit file containing the line "irkerhook.py"; be
+# sure to make the opos-commit file executable.  Then set the
+# filtercmd variable in your repo config as follows:
 # 
 # [irker]
 # 	filtercmd = filter-test.py
-#
-# This is rather antisocial - imagine thousands of irkerds holding open
-# connections to IRCDs.  It's better to go through an instance running
-# at your forge or set up for shared use by your intranet administrator.
 
 import os, sys, json, subprocess, time
 metadata = json.loads(sys.argv[1])
