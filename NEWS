@@ -4,7 +4,6 @@
   In 1.5 trying to appease pylint broke the Mercurial hook.
   Added credits for contributors in hacking.txt.
   Fix the aging out of connections when we hit a resource limit.
-  Add option for external filtering.
 
 1.5 @ 2012-10-03
   Mercurial support.

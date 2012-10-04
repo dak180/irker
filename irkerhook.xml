@@ -296,33 +296,6 @@ exists.</para>
 
 </refsect2>
 
-<refsect2 id="filter"><title>Filtering</title>
-
-<para>It is possible to filter commits before sending them to <application>irkerd</application>.</para>
-
-<para>You have to specify the <option>filtercmd</option> option, which will be the command <application>irkerhook.py</application> will run. This command should accept two arguments: the first one being the commit metadata, the second one being the channel list. The command should then return a tuple, with the new channel list then an optional list of commit metadata updates.</para>
-
-<para>Below is an example filter:</para>
-
-<programlisting>
-#!/usr/bin/env python
-import sys, json
-channels = json.loads(sys.argv[1])
-commit = json.loads(sys.argv[2])
-update = {}
-# we have two bobs in the project
-if commit.get("mail", "") == "bob@foo":
-    update["author"] = "bobm"
-if commit.get("mail", "") == "bob@bar":
-    update["author"] = "bobp"
-# ignore some commits
-if 'automated commit' in commit['logmsg']:
-    channels = []
-print json.dumps([channels, update])
-</programlisting>
-
-</refsect2>
-
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>

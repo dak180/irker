@@ -368,11 +368,6 @@ def ship(extractor, commit, debug):
     "Ship a notification for the specified commit."
     metadata = extractor.commit_factory(commit)
 
-    # Run through an external filter if required.
-    channels = extractor.channels.split(",")
-    if extractor.filtercmd:
-        channels = filterc(extractor.filtercmd, channels, metadata) or []
-
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
     # try knocking out the file list, on the theory that for notification
@@ -385,6 +380,7 @@ def ship(extractor, commit, debug):
         privmsg = str(metadata)
 
     # Anti-spamming guard.
+    channels = extractor.channels.split(",")
     if extractor.maxchannels != 0:
         channels = channels[:extractor.maxchannels]
 
