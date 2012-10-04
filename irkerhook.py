@@ -44,7 +44,7 @@ try:
 except ImportError:
     import json
 
-version = "1.5"
+version = "1.6"
 
 def do(command):
     return commands.getstatusoutput(command)[1]
