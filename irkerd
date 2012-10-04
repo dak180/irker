@@ -58,7 +58,7 @@ except ImportError:
     CONNECTION_MAX = 200
     green_threads = False
 
-import sys, getopt, urlparse, time, random
+import sys, getopt, urlparse, time, random, exceptions
 import threading, Queue, SocketServer
 import irc.client, logging
 try:
@@ -110,7 +110,7 @@ class Connection:
         self.port = port
         self.nick_trial = None
         self.connection = None
-        self.status = "unseen"
+        self.status = None
         self.last_xmit = time.time()
         self.last_ping = time.time()
         self.channels_joined = []
@@ -159,88 +159,94 @@ class Connection:
     def enqueue(self, channel, message):
         "Enque a message for transmission."
         if self.thread is None or not self.thread.is_alive():
+            self.status = "unseen"
             self.thread = threading.Thread(target=self.dequeue)
             self.thread.setDaemon(True)
             self.thread.start()
         self.queue.put((channel, message))
     def dequeue(self):
         "Try to ship pending messages from the queue."
-        while True:
-            # We want to be kind to the IRC servers and not hold unused
-            # sockets open forever, so they have a time-to-live.  The
-            # loop is coded this particular way so that we can drop
-            # the actual server connection when its time-to-live
-            # expires, then reconnect and resume transmission if the
-            # queue fills up again.
-            if not self.connection:
-                self.connection = self.irker.irc.server()
-                self.connection.context = self
-                # Try to avoid colliding with other instances
-                self.nick_trial = random.randint(1, 990)
-                self.channels_joined = []
-                # This will throw irc.client.ServerConnectionError on failure
-                try:
-                    self.connection.connect(self.servername,
-                                        self.port,
-                                        nickname=self.nickname(),
-                                        username="irker",
-                                        ircname="irker relaying client")
-                    self.status = "handshaking"
-                    self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
-                    self.last_xmit = time.time()
-                except irc.client.ServerConnectionError:
-                    self.status = "disconnected"
-            elif self.status == "handshaking":
-                # Don't buzz on the empty-queue test while we're handshaking 
-                time.sleep(ANTI_BUZZ_DELAY)
-            elif self.queue.empty():
-                # Queue is empty, at some point we want to time out
-                # the connection rather than holding a socket open in
-                # the server forever.
-                now = time.time()
-                if now > self.last_xmit + XMIT_TTL \
-                       or now > self.last_ping + PING_TTL:
-                    self.irker.debug(1, "timing out inactive connection to %s at %s" % (self.servername, time.asctime()))
-                    self.connection.context = None
-                    self.connection.quit("transmission timeout")
-                    self.connection.close()
-                    self.connection = None
-                    self.status = "disconnected"
-                else:
-                    # Prevent this thread from hogging the CPU by pausing
-                    # for just a little bit after the queue-empty check.
-                    # As long as this is less that the duration of a human
-                    # reflex arc it is highly unlikely any human will ever
-                    # notice.
+        try:
+            while True:
+                # We want to be kind to the IRC servers and not hold unused
+                # sockets open forever, so they have a time-to-live.  The
+                # loop is coded this particular way so that we can drop
+                # the actual server connection when its time-to-live
+                # expires, then reconnect and resume transmission if the
+                # queue fills up again.
+                if not self.connection:
+                    self.connection = self.irker.irc.server()
+                    self.connection.context = self
+                    # Try to avoid colliding with other instances
+                    self.nick_trial = random.randint(1, 990)
+                    self.channels_joined = []
+                    # This will throw irc.client.ServerConnectionError on failure
+                    try:
+                        self.connection.connect(self.servername,
+                                            self.port,
+                                            nickname=self.nickname(),
+                                            username="irker",
+                                            ircname="irker relaying client")
+                        self.status = "handshaking"
+                        self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
+                        self.last_xmit = time.time()
+                    except irc.client.ServerConnectionError:
+                        self.status = "disconnected"
+                elif self.status == "handshaking":
+                    # Don't buzz on the empty-queue test while we're handshaking 
                     time.sleep(ANTI_BUZZ_DELAY)
-            elif self.status == "disconnected" \
-                     and time.time() > self.last_xmit + DISCONNECT_TTL:
-                # Queue is nonempty, but the IRC server might be down. Letting
-                # failed connections retain queue space forever would be a
-                # memory leak.  
-                self.status = "expired"
-                break
-            elif self.status == "unseen" \
-                     and time.time() > self.last_xmit + UNSEEN_TTL:
-                # Nasty people could attempt a denial-of-service
-                # attack by flooding us with requests with invalid
-                # servernames. We guard against this by rapidly
-                # expiring connections that have a nonempty queue but
-                # have never had a successful open.
-                self.status = "expired"
-                break
-            elif self.status == "ready":
-                (channel, message) = self.queue.get()
-                if channel not in self.channels_joined:
-                    self.channels_joined.append(channel)
-                    self.connection.join(channel)
-                    self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
-                for segment in message.split("\n"):
-                    self.connection.privmsg(channel, segment)
-                    time.sleep(ANTI_FLOOD_DELAY)
-                self.last_xmit = time.time()
-                self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
-                self.queue.task_done()
+                elif self.queue.empty():
+                    # Queue is empty, at some point we want to time out
+                    # the connection rather than holding a socket open in
+                    # the server forever.
+                    now = time.time()
+                    if now > self.last_xmit + XMIT_TTL \
+                           or now > self.last_ping + PING_TTL:
+                        self.irker.debug(1, "timing out inactive connection to %s at %s" % (self.servername, time.asctime()))
+                        self.connection.context = None
+                        self.connection.quit("transmission timeout")
+                        self.connection.close()
+                        self.connection = None
+                        self.status = "disconnected"
+                    else:
+                        # Prevent this thread from hogging the CPU by pausing
+                        # for just a little bit after the queue-empty check.
+                        # As long as this is less that the duration of a human
+                        # reflex arc it is highly unlikely any human will ever
+                        # notice.
+                        time.sleep(ANTI_BUZZ_DELAY)
+                elif self.status == "disconnected" \
+                         and time.time() > self.last_xmit + DISCONNECT_TTL:
+                    # Queue is nonempty, but the IRC server might be down. Letting
+                    # failed connections retain queue space forever would be a
+                    # memory leak.  
+                    self.status = "expired"
+                    break
+                elif self.status == "unseen" \
+                         and time.time() > self.last_xmit + UNSEEN_TTL:
+                    # Nasty people could attempt a denial-of-service
+                    # attack by flooding us with requests with invalid
+                    # servernames. We guard against this by rapidly
+                    # expiring connections that have a nonempty queue but
+                    # have never had a successful open.
+                    self.status = "expired"
+                    break
+                elif self.status == "ready":
+                    (channel, message) = self.queue.get()
+                    if channel not in self.channels_joined:
+                        self.channels_joined.append(channel)
+                        self.connection.join(channel)
+                        self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
+                    for segment in message.split("\n"):
+                        self.connection.privmsg(channel, segment)
+                        time.sleep(ANTI_FLOOD_DELAY)
+                    self.last_xmit = time.time()
+                    self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
+                    self.queue.task_done()
+        except:
+            (exc_type, exc_value, exc_traceback) = sys.exc_info()
+            self.logerr("exception %s in thread for %s" % \
+                        (exc_type, self.servername))
     def live(self):
         "Should this connection not be scavenged?"
         return self.status != "expired"
