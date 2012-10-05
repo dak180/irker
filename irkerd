@@ -217,9 +217,9 @@ class Connection:
                         time.sleep(ANTI_BUZZ_DELAY)
                 elif self.status == "disconnected" \
                          and time.time() > self.last_xmit + DISCONNECT_TTL:
-                    # Queue is nonempty, but the IRC server might be down. Letting
-                    # failed connections retain queue space forever would be a
-                    # memory leak.  
+                    # Queue is nonempty, but the IRC server might be
+                    # down. Letting failed connections retain queue
+                    # space forever would be a memory leak.
                     self.status = "expired"
                     break
                 elif self.status == "unseen" \
