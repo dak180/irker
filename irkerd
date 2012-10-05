@@ -141,6 +141,7 @@ class Connection:
     def handle_disconnect(self):
         "Server disconnected us for flooding or some other reason."
         self.connection = None
+        self.status = "disconnected"
     def handle_kick(self, outof):
         "We've been kicked."
         self.status = "handshaking"
