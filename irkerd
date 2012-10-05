@@ -174,28 +174,7 @@ class Connection:
                 # the actual server connection when its time-to-live
                 # expires, then reconnect and resume transmission if the
                 # queue fills up again.
-                if not self.connection:
-                    self.connection = self.irker.irc.server()
-                    self.connection.context = self
-                    # Try to avoid colliding with other instances
-                    self.nick_trial = random.randint(1, 990)
-                    self.channels_joined = []
-                    # This will throw irc.client.ServerConnectionError on failure
-                    try:
-                        self.connection.connect(self.servername,
-                                            self.port,
-                                            nickname=self.nickname(),
-                                            username="irker",
-                                            ircname="irker relaying client")
-                        self.status = "handshaking"
-                        self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
-                        self.last_xmit = time.time()
-                    except irc.client.ServerConnectionError:
-                        self.status = "disconnected"
-                elif self.status == "handshaking":
-                    # Don't buzz on the empty-queue test while we're handshaking 
-                    time.sleep(ANTI_BUZZ_DELAY)
-                elif self.queue.empty():
+                if self.queue.empty():
                     # Queue is empty, at some point we want to time out
                     # the connection rather than holding a socket open in
                     # the server forever.
@@ -216,6 +195,29 @@ class Connection:
                         # reflex arc it is highly unlikely any human will ever
                         # notice.
                         time.sleep(ANTI_BUZZ_DELAY)
+                elif not self.connection:
+                    # Queue is nonempty but server isn't connected.
+                    self.connection = self.irker.irc.server()
+                    self.connection.context = self
+                    # Try to avoid colliding with other instances
+                    self.nick_trial = random.randint(1, 990)
+                    self.channels_joined = []
+                    # This will throw irc.client.ServerConnectionError on failure
+                    try:
+                        self.connection.connect(self.servername,
+                                            self.port,
+                                            nickname=self.nickname(),
+                                            username="irker",
+                                            ircname="irker relaying client")
+                        self.status = "handshaking"
+                        self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
+                        self.last_xmit = time.time()
+                    except irc.client.ServerConnectionError:
+                        self.status = "disconnected"
+                elif self.status == "handshaking":
+                    # Don't buzz on the empty-queue test while we're
+                    # handshaking
+                    time.sleep(ANTI_BUZZ_DELAY)
                 elif self.status == "disconnected" \
                          and time.time() > self.last_xmit + DISCONNECT_TTL:
                     # Queue is nonempty, but the IRC server might be
