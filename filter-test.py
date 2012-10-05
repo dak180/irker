@@ -26,7 +26,7 @@ irkerd_count = len([x for x in data.split("\n") if x.find("irkerd") != -1])
 if not irkerd_count:
     os.system("gnome-terminal --title 'irkerd' -e 'irkerd -d 2' &")
 
-time.sleep(0.1)	# Avoid a race condition
+time.sleep(0.5)	# Avoid a race condition
 
 print json.dumps(metadata)
 # end
