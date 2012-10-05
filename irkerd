@@ -58,7 +58,7 @@ except ImportError:
     CONNECTION_MAX = 200
     green_threads = False
 
-import sys, getopt, urlparse, time, random, socket
+import sys, getopt, urlparse, time, random, socket, signal
 import threading, Queue, SocketServer
 import irc.client, logging
 try:
@@ -486,8 +486,7 @@ if __name__ == '__main__':
             server.setDaemon(True)
             server.start()
         try:
-            while True:
-                time.sleep(10)
+            signal.pause()
         except KeyboardInterrupt:
             raise SystemExit(1)
     except socket.error, e:
