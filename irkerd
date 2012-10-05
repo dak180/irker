@@ -30,6 +30,7 @@ PORT = 6659
 NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 PING_TTL = (15 * 60)		# Time to live, seconds from last PING
+HANDSHAKE_TIMEOUT = 60		# Time to live, seconds from nick transmit
 CHANNEL_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 UNSEEN_TTL = 60			# Time to live, seconds since first request
@@ -137,6 +138,7 @@ class Connection:
         # Randomness prevents a malicious user or bot from antcipating the
         # next trial name in order to block us from completing the handshake.
         self.nick_trial += random.randint(1, 3)
+        self.last_xmit = time.time()
         self.connection.nick(self.nickname())
     def handle_disconnect(self):
         "Server disconnected us for flooding or some other reason."
@@ -217,9 +219,12 @@ class Connection:
                     except irc.client.ServerConnectionError:
                         self.status = "disconnected"
                 elif self.status == "handshaking":
-                    # Don't buzz on the empty-queue test while we're
-                    # handshaking
-                    time.sleep(ANTI_BUZZ_DELAY)
+                    if time.time() > self.last_xmit + HANDSHAKE_TTL:
+                        self.status = "expired"
+                    else:
+                        # Don't buzz on the empty-queue test while we're
+                        # handshaking
+                        time.sleep(ANTI_BUZZ_DELAY)
                 elif self.status == "disconnected" \
                          and time.time() > self.last_xmit + DISCONNECT_TTL:
                     # Queue is nonempty, but the IRC server might be
