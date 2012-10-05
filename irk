@@ -1,0 +1,17 @@
+#!/bin/sh
+# Illustrates how to test irkerd.
+#
+# First argument must be a channel URL. If it does not begin with "irc", 
+# the base URL for freenode is prepended.
+#
+# Second argument must be a payload string.
+#
+channel=$1
+message=$2
+
+case $channel in
+irc:*) ;;
+*) channel="irc://chat.freenode.net/$channel"
+esac
+
+echo "{\"to\":\"$channel\",\"privmsg\":\"$message\"}" | netcat localhost 6659
