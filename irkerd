@@ -30,6 +30,7 @@ PORT = 6659
 NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 PING_TTL = (15 * 60)		# Time to live, seconds from last PING
+CHANNEL_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (default)
@@ -113,7 +114,7 @@ class Connection:
         self.status = None
         self.last_xmit = time.time()
         self.last_ping = time.time()
-        self.channels_joined = []
+        self.channels_joined = {}
         self.channel_limits = {}
         # The consumer thread
         self.queue = Queue.Queue()
@@ -144,8 +145,8 @@ class Connection:
         "We've been kicked."
         self.status = "handshaking"
         try:
-            self.channels_joined.remove(outof)
-        except ValueError:
+            del self.channels_joined[outof]
+        except KeyError:
             self.irker.logerr("kicked by %s from %s that's not joined"
                               % (self.servername, outof))
         qcopy = []
@@ -201,7 +202,7 @@ class Connection:
                     self.connection.context = self
                     # Try to avoid colliding with other instances
                     self.nick_trial = random.randint(1, 990)
-                    self.channels_joined = []
+                    self.channels_joined = {}
                     # This will throw irc.client.ServerConnectionError on failure
                     try:
                         self.connection.connect(self.servername,
@@ -237,13 +238,12 @@ class Connection:
                 elif self.status == "ready":
                     (channel, message) = self.queue.get()
                     if channel not in self.channels_joined:
-                        self.channels_joined.append(channel)
                         self.connection.join(channel)
                         self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
                     for segment in message.split("\n"):
                         self.connection.privmsg(channel, segment)
                         time.sleep(ANTI_FLOOD_DELAY)
-                    self.last_xmit = time.time()
+                    self.last_xmit = self.channels_joined[channel] = time.time()
                     self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                     self.queue.task_done()
         except:
@@ -300,16 +300,35 @@ class Dispatcher:
         self.connections = []
     def dispatch(self, channel, message):
         "Dispatch messages for our server-port combination."
+        # First, check if there is room for another channel
+        # on any of our existing connections.
         connections = [x for x in self.connections if x.live()]
         eligibles = [x for x in connections if x.joined_to(channel)] \
                     or [x for x in connections if x.accepting(channel)]
-        if not eligibles:
-            newconn = Connection(self.irker,
-                                 self.servername,
-                                 self.port)
-            self.connections.append(newconn)
-            eligibles = [newconn]
-        eligibles[0].enqueue(channel, message)
+        if eligibles:
+            eligibles[0].enqueue(channel, message)
+            return
+        # All connections are full up. Look for one old enough to be
+        # scavenged.
+        ancients = []
+        for connection in connections:
+            for (chan, age) in connections.channels_joined.items():
+                if age < time.time() - CHANNEL_TTL:
+                    ancients.append((connection, chan, age))
+        if ancients:
+            ancients.sort(key=lambda x: x[2]) 
+            (found_connection, drop_channel, _drop_age) = ancients[0]
+            found_connection.part(drop_channel, "scavenged by irkerd")
+            del found_connection.channels_joined[drop_channel]
+            #time.sleep(ANTI_FLOOD_DELAY)
+            found_connection.enqueue(channel, message)
+            return
+        # Didn't find any channels with no recent activity
+        newconn = Connection(self.irker,
+                             self.servername,
+                             self.port)
+        self.connections.append(newconn)
+        newconn.enqueue(channel, message)
     def live(self):
         "Does this server-port combination have any live connections?"
         self.connections = [x for x in self.connections if x.live()]
