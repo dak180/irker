@@ -58,7 +58,7 @@ except ImportError:
     CONNECTION_MAX = 200
     green_threads = False
 
-import sys, getopt, urlparse, time, random, exceptions
+import sys, getopt, urlparse, time, random
 import threading, Queue, SocketServer
 import irc.client, logging
 try:
@@ -247,7 +247,7 @@ class Connection:
                     self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                     self.queue.task_done()
         except:
-            (exc_type, exc_value, exc_traceback) = sys.exc_info()
+            (exc_type, _exc_value, _exc_traceback) = sys.exc_info()
             self.irker.logerr("exception %s in thread for %s" % \
                               (exc_type, self.servername))
     def live(self):
