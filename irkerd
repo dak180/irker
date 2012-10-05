@@ -200,8 +200,9 @@ class Connection:
                     # the connection rather than holding a socket open in
                     # the server forever.
                     now = time.time()
-                    if now > self.last_xmit + XMIT_TTL \
-                           or now > self.last_ping + PING_TTL:
+                    if (now > self.last_xmit + XMIT_TTL \
+                           or now > self.last_ping + PING_TTL) \
+                           and self.status != "disconnected":
                         self.irker.debug(1, "timing out inactive connection to %s at %s" % (self.servername, time.asctime()))
                         self.connection.context = None
                         self.connection.quit("transmission timeout")
