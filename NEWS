@@ -1,6 +1,6 @@
 			irker history 
 
-1.7 @
+1.7 @ 2012-10-05
   This is a stable release.
   Optional metadata filtering with a user-specified command.
   irkerd code is now armored against IRC library errors in the delivery threads.
