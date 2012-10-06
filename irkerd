@@ -428,15 +428,15 @@ class Irker:
             else:
                 channels = request['to']
                 message = request['privmsg']
-                if type(channels) not in (type([]), type(""), type(u"")):
+                if not isinstance(channels, (list, basestring)):
                     self.logerr("malformed request - unexpected channel type: %r" % channels)
-                if type(message) not in (type(""), type(u"")):
+                if not isinstance(message, basestring):
                     self.logerr("malformed request - unexpected message type: %r" % message)
                 else:
-                    if type(channels) != type([]):
+                    if not isinstance(channels, list):
                         channels = [channels]
                     for url in channels:
-                        if not type(url) in (type(""), type(u"")): 
+                        if not isinstance(url, basestring):
                             self.logerr("malformed request - URL has unexpected type: %r" % url)
                         else:
                             target = Target(url)
