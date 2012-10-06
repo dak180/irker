@@ -221,6 +221,7 @@ class Connection:
                 elif self.status == "handshaking":
                     if time.time() > self.last_xmit + HANDSHAKE_TTL:
                         self.status = "expired"
+                        break
                     else:
                         # Don't buzz on the empty-queue test while we're
                         # handshaking
