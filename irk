@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env python
 # Illustrates how to test irkerd.
 #
 # First argument must be a channel URL. If it does not begin with "irc", 
@@ -6,12 +6,14 @@
 #
 # Second argument must be a payload string.
 #
-channel=$1
-message=$2
+import json
+import socket
+import sys
 
-case $channel in
-irc:*) ;;
-*) channel="irc://chat.freenode.net/$channel"
-esac
-
-echo "{\"to\":\"$channel\",\"privmsg\":\"$message\"}" | netcat localhost 6659
+s = socket.create_connection(("localhost", 6659))
+target = sys.argv[1]
+if not "irc:" in target:
+    target = "irc://chat.freenode.net/{0}".format(target)
+data = {"to": target, "privmsg" : " ".join(sys.argv[2:])}
+print(json.dumps(data))
+s.sendall(json.dumps(data))
