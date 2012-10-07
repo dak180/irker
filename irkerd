@@ -62,7 +62,7 @@ except ImportError:
     CONNECTION_MAX = 200
     green_threads = False
 
-import sys, getopt, urlparse, time, random, socket
+import sys, getopt, urlparse, time, random, socket, signal
 import threading, Queue, SocketServer
 import irc.client, logging
 try:
