@@ -187,7 +187,7 @@ receiving requests from instances of irkerhook.py.
 If this is *not* the case (e.g. the network between a hook and irkerd
 has to be considered hostile) we could hide irkerd behind an instance
 of spiped <http://www.tarsnap.com/spiped.html> or an instance of
-stunnel <http://www.stunnel.orgproxy>. These would be far superior to
+stunnel <http://www.stunnel.org>. These would be far superior to
 in-band authentication in that they would leave the job to specialist
 code not in any way coupled to irkerd's internals, minimizing
 global complexity and failure modes.
