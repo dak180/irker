@@ -1,0 +1,12 @@
+# Copyright 2012 Wulf C. Krueger <philantrop@exherbo.org>
+# Distributed under the terms of the BSD LICENSE
+
+[Unit]
+Description=irker daemon
+Requires=network.target
+
+[Service]
+ExecStart=/usr/bin/irkerd
+
+[Install]
+WantedBy=multi-user.target

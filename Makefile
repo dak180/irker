@@ -1,6 +1,7 @@
 # Makefile for the irker relaying daemon
 
 VERS=$(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
+SYSTEMDSYSTEMUNITDIR:=$(shell pkg-config --variable=systemdsystemunitdir systemd)
 
 docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1
 
@@ -22,6 +23,10 @@ hacking.html: hacking.txt
 install: irkerd.8 irkerhook.1 uninstall
 	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/bin/
 	install -m 755 -o 0 -g 0 irkerd $(DESTDIR)/usr/bin/irkerd
+ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
+	install -m 755 -o 0 -g 0 -d $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)
+	install -m 644 -o 0 -g 0 irkerd.service $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)
+endif
 	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/share/man/man8/
 	install -m 755 -o 0 -g 0 irkerd.8 $(DESTDIR)/usr/share/man/man8/irkerd.8
 	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/share/man/man1/
@@ -29,6 +34,9 @@ install: irkerd.8 irkerhook.1 uninstall
 
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/irkerd
+ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
+	rm -f $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)/irkerd.service
+endif
 	rm -f $(DESTDIR)/usr/share/man/man8/irkerd.8
 	rm -f $(DESTDIR)/usr/share/man/man1/irkerhook.1
 
@@ -48,7 +56,7 @@ loc:
 SOURCES = README COPYING NEWS install.txt security.txt hacking.txt \
 	irkerd irkerhook.py filter-example.py filter-test.py irk \
 	Makefile irkerd.xml irkerhook.xml
-EXTRA_DIST = irker-logo.png org.catb.irkerd.plist
+EXTRA_DIST = irker-logo.png org.catb.irkerd.plist irkerd.service
 
 version:
 	@echo $(VERS)
