@@ -144,7 +144,7 @@ ineffective - just sets a target for the DoS attack.
 
 3. Limit the number of requests that can be queued by source IP address.
 This might be worth doing; it would stymie a single-source DoS attack through
-a publicly-exposed irkerd, though not a DDoS by a bitnet.  But there isn't
+a publicly-exposed irkerd, though not a DDoS by a botnet.  But there isn't
 a lot of win here for a properly installed irker (e.g. behind a firewall), 
 which is typically going to get all its requests from a single repo host
 anyway.
