@@ -15,6 +15,8 @@ irkerhook.1: irkerhook.xml
 irkerhook.html: irkerhook.xml
 	xmlto html-nochunks irkerhook.xml
 
+install.html: install.txt
+	asciidoc -o install.html install.txt
 security.html: security.txt
 	asciidoc -o security.html security.txt
 hacking.html: hacking.txt
@@ -66,5 +68,5 @@ irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
 
 dist: irker-$(VERS).tar.gz
 
-release: irker-$(VERS).tar.gz irkerd.html irkerhook.html security.html hacking.html
+release: irker-$(VERS).tar.gz irkerd.html irkerhook.html install.html security.html hacking.html
 	shipper -u -m -t; make clean
