@@ -1,5 +1,8 @@
 			irker history 
 
+1.8 @
+  It's now possible to send to nick URLs.
+
 1.7 @ 2012-10-05
   This is a stable release.
   Optional metadata filtering with a user-specified command.

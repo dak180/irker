@@ -104,6 +104,8 @@ except ImportError:
 # DEAF and CHANLIMIT and (obsolete) MAXCHANNELS features.  CHANLIMIT
 # is as described in the Internet RFC draft
 # draft-brocklesby-irc-isupport-03 at <http://www.mirc.com/isupport.html>.
+# The ",isnick" feature is as described in
+# <http://ftp.ics.uci.edu/pub/ietf/uri/draft-mirashi-url-irc-01.txt>.
 
 class Connection:
     def __init__(self, irkerd, servername, port):
@@ -292,7 +294,10 @@ class Target():
         # got kicked, and irkerd crashed because the server returned
         # "#channel" in the notification that our kick handler saw.
         self.channel = parsed.path.lstrip('/').lower()
-        if self.channel and self.channel[0] not in "#&+":
+        isnick = self.channel.endswith(",isnick")
+        if isnick:
+            self.channel = self.channel[:-7]
+        if self.channel and not isnick and self.channel[0] not in "#&+":
             self.channel = "#" + self.channel
         self.port = int(ircport)
     def valid(self):

@@ -43,9 +43,11 @@ Examples:
 {"to":"irc://chat.hypothetical.net:6668/git-ciabot", "privmsg":"Hello, world!"}
 </programlisting></para>
 
-<para>If the channel part of the URL does not have one of the prefix characters
-<quote>#</quote>, <quote>&amp;</quote>, or <quote>+</quote>, a <quote>#</quote>
-will be prepended to it before shipping.</para>
+<para>If the channel part of the URL does not have one of the prefix
+characters <quote>#</quote>, <quote>&amp;</quote>, or
+<quote>+</quote>, a <quote>#</quote> will be prepended to it before
+shipping - <emphasis>unless</emphasis>the channel part has the suffix
+",isnick" (which is unconditionally removed).</para>
 
 <para>The host part of the URL may have a port-number suffix separated by a
 colon, as shown in the third example; otherwise
