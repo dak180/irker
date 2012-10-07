@@ -62,7 +62,7 @@ except ImportError:
     CONNECTION_MAX = 200
     green_threads = False
 
-import sys, getopt, urlparse, time, random, socket, signal
+import sys, getopt, urlparse, time, random, socket
 import threading, Queue, SocketServer
 import irc.client, logging
 try:
@@ -262,7 +262,7 @@ class Connection:
             # This is so we can see tracebacks for errors inside the thread
             # when we need to be able to for debugging purposes.
             if debuglvl > 0:
-                raise exc_type, exc_value, exc_traceback
+                raise exc_type, _exc_value, exc_traceback
     def live(self):
         "Should this connection not be scavenged?"
         return self.status != "expired"
