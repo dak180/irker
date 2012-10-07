@@ -200,10 +200,10 @@ One larger issue (not unique to irker) is that because of the
 insecured nature of IRC it is essentially impossible to secure
 #commits against commit notifications that are either garbled by
 software errors and misconfigurations or maliciously crafted to
-confuse anyone attempting to gather statistics from that.  The lesson
-here is that IRC monitoring isn't a good method for that purpose;
-going direct to the repositories via a toolkit such as Ohloh is
-a far better idea.
+confuse anyone attempting to gather statistics from that channel.  The
+lesson here is that IRC monitoring isn't a good method for that
+purpose; going direct to the repositories via a toolkit such as Ohloh
+is a far better idea.
 
 === Future directions ===
 
