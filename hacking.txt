@@ -1,4 +1,4 @@
-= Hacker's Guide to irker ==
+= Hacker's Guide to irker =
 
 == Design philosopy ==
 
