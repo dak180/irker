@@ -250,7 +250,7 @@ class Connection:
                         self.connection.join(channel)
                         self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
                     for segment in message.split("\n"):
-                        self.connection.privmsg(channel, segment + "\n")
+                        self.connection.privmsg(channel, segment)
                         time.sleep(ANTI_FLOOD_DELAY)
                     self.last_xmit = self.channels_joined[channel] = time.time()
                     self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
