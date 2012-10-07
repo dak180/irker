@@ -53,6 +53,11 @@ shipping - <emphasis>unless</emphasis>the channel part has the suffix
 colon, as shown in the third example; otherwise
 <application>irkerd</application> sends messages to the the default 6667 IRC
 port of each server.</para>
+
+<para>An empty message is legal and will cause 
+<application>irkerd</application> to join the target channels without
+actually emitting a message.  This may be useful for advertising that
+an instance is up and running.</para>
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
