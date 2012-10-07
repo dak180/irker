@@ -419,6 +419,7 @@ class Irker:
     def _handle_disconnect(self, connection, _event):
         "Server hung up the connection."
         self.debug(1, "server %s disconnected" % connection.server)
+        connection.close()
         if connection.context:
             connection.context.handle_disconnect()
     def _handle_kick(self, connection, event):
