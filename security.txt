@@ -71,7 +71,7 @@ Our security goals for irker can be enumerated as follows:
 * Availability: Only group A should be able to to deny or degrade
   irkerd's ability to receive commit messages and relay them to the
   IRC server. We recognize and accept as inevitable that MITMs (groups
-  4 and 5) can do this too (by ARP spoofing, cable-cutting, etc.).
+  E and F) can do this too (by ARP spoofing, cable-cutting, etc.).
   But, in particular, we would like irker-mediated services to be
   resilient against DoS (denial of service) attacks.
 
@@ -86,7 +86,7 @@ Our security goals for irker can be enumerated as follows:
 * Auditability: If people abuse irkerd, we want to be able to identify
   the abusive account or IP address.
 
-== Control Issues ===
+== Control Issues ==
 
 We have audited the irker and irkerhook.py code for exploitable 
 vulnerabilities.  We have not found any in the code itself, and the
