@@ -521,11 +521,8 @@ if __name__ == '__main__':
             server.setDaemon(True)
             server.start()
         try:
-            if green_threads:
-                while True:
-                    eventlet.sleep()
-            else:
-                signal.pause()
+            while True:
+                time.sleep(10)
         except KeyboardInterrupt:
             raise SystemExit(1)
     except socket.error, e:
