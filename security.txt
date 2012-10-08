@@ -233,6 +233,21 @@ project.  The only other competitor to replace CIA known to us
 In the general case we cannot guarantee this property against
 groups A and F.
 
+== Why there is no support for passworded channels ==
+
+We've had support for password authentication to IRC requested, but it
+would be a rather bad fit for irkerd’s usage pattern. The problem
+isn’t that credentials would be difficult to pass to irkerd – an 
+optional password field wiuld ve easily enough added to the JSON. 
+
+No, the problem is that once irkerd were to acquire such a credential,
+it would have to do source-address IP checking to know (at a minimum)
+whether the source host of any given notification request is the same
+as one that has presented the password.
+
+It seems best not gong to go there; the potential for IRC access controls
+becoming leaky seems too high.
+
 == Risks relative to centralized services ==
 
 irker and irkerhook.py were written as a replacement for the
