@@ -23,10 +23,13 @@ ps = subprocess.Popen("ps -U %s uh" % os.getenv("LOGNAME"),
 data = ps.stdout.read()
 irkerd_count = len([x for x in data.split("\n") if x.find("irkerd") != -1])
 
-if not irkerd_count:
+if irkerd_count:
+    sys.stderr.write("Using a running irker instance...")
+else:
+    sys.stderr.write("Launching a new irker instance...")
     os.system("gnome-terminal --title 'irkerd' -e 'irkerd -d 2' &")
 
-time.sleep(0.5)	# Avoid a race condition
+time.sleep(1.5)	# Avoid a race condition
 
 print json.dumps(metadata)
 # end
