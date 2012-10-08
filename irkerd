@@ -188,7 +188,11 @@ class Connection:
                     now = time.time()
                     xmit_timeout = now > self.last_xmit + XMIT_TTL
                     ping_timeout = now > self.last_ping + PING_TTL
-                    if (xmit_timeout or ping_timeout) and self.status != "disconnected":
+                    if self.status == "disconnected":
+                        # If the queue is empty, we can drop this connection.
+                        self.status = "expired"
+                        break
+                    elif xmit_timeout or ping_timeout:
                         self.irker.debug(1, "timing out connection to %s at %s (ping_timeout=%s, xmit_timeout=%s)" % (self.servername, time.asctime(), ping_timeout, xmit_timeout))
                         with self.irker.library_lock:
                             self.connection.context = None
@@ -202,6 +206,13 @@ class Connection:
                         # reflex arc it is highly unlikely any human will ever
                         # notice.
                         time.sleep(ANTI_BUZZ_DELAY)
+                elif self.status == "disconnected" \
+                         and time.time() > self.last_xmit + DISCONNECT_TTL:
+                    # Queue is nonempty, but the IRC server might be
+                    # down. Letting failed connections retain queue
+                    # space forever would be a memory leak.
+                    self.status = "expired"
+                    break
                 elif not self.connection:
                     # Queue is nonempty but server isn't connected.
                     with self.irker.library_lock:
@@ -231,13 +242,6 @@ class Connection:
                         # Don't buzz on the empty-queue test while we're
                         # handshaking
                         time.sleep(ANTI_BUZZ_DELAY)
-                elif self.status == "disconnected" \
-                         and time.time() > self.last_xmit + DISCONNECT_TTL:
-                    # Queue is nonempty, but the IRC server might be
-                    # down. Letting failed connections retain queue
-                    # space forever would be a memory leak.
-                    self.status = "expired"
-                    break
                 elif self.status == "unseen" \
                          and time.time() > self.last_xmit + UNSEEN_TTL:
                     # Nasty people could attempt a denial-of-service
