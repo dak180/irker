@@ -100,7 +100,7 @@ except ImportError:
 # same problem - there is little point in reliable delivery to a relay
 # that is down or unreliable.
 #
-# This code uses only NICK, JOIN, MODE, and PRIVMSG. It is strictly
+# This code uses only NICK, JOIN, PART, MODE, and PRIVMSG. It is strictly
 # compliant to RFC1459, except for the interpretation and use of the
 # DEAF and CHANLIMIT and (obsolete) MAXCHANNELS features.  CHANLIMIT
 # is as described in the Internet RFC draft
@@ -282,6 +282,9 @@ class Connection:
         if self.channel_limits:
             match_count = 0
             for already in self.channels_joined:
+                # This obscure code is because the RFCs allow separate limits
+                # by channel type (indicated by the first character of the name)
+                # a feature that is almost never actually used.
                 if already[0] == channel[0]:
                     match_count += 1
             return match_count < self.channel_limits.get(channel[0], CHANNEL_MAX)
