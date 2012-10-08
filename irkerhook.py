@@ -104,23 +104,19 @@ class GenericExtractor:
         self.filtercmd = None
         # Color highlighting is disabled by default.
         self.color = None
-        self.bold = self.green = self.blue = ""
-        self.yellow = self.brown = self.reset = ""
+        self.bold = self.green = self.blue = self.yellow = ""
+        self.brown = self.magenta = self.cyan = self.reset = ""
     def activate_color(self, style):
         "IRC color codes."
-        if style == 'mIRC':
-            self.bold = '\x02'
-            self.green = '\x033'
-            self.blue = '\x032'
-            self.yellow = '\x037'
-            self.brown = '\x035'
-            self.reset = '\x0F'
         if style == 'ANSI':
             self.bold = '\x1b[1m'
             self.green = '\x1b[1;32m'
             self.blue = '\x1b[1;34m'
+            self.red =  '\x1b[1;31m'
             self.yellow = '\x1b[1;33m'
             self.brown = '\x1b[33m'
+            self.magenta = '\x1b[35m'
+            self.cyan = '\x1b[36m'
             self.reset = '\x1b[0m'
     def load_preferences(self, conf):
         "Load preferences from a file in the repository root."
