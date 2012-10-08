@@ -355,7 +355,7 @@ class Dispatcher:
         return len(self.connections) > 0
     def last_xmit(self):
         "Return the time of the most recent transmission."
-        return max([x.last_xmit for x in self.connections])
+        return max(x.last_xmit for x in self.connections)
 
 class Irker:
     "Persistent IRC multiplexer."
@@ -485,13 +485,8 @@ class Irker:
                             # choose the one longest idle on the
                             # assumption that message activity is likely
                             # to be clumpy.
-                            oldest = None
-                            oldtime = float("inf")
                             if len(self.servers) >= CONNECTION_MAX:
-                                for (name, server) in self.servers.items():
-                                    if server.last_xmit() < oldtime:
-                                        oldest = name
-                                        oldtime = server.last_xmit()
+                                oldest = min(self.servers.keys(), key=lambda name: self.servers[name].last_xmit())
                                 del self.servers[oldest]
         except ValueError:
             self.logerr("can't recognize JSON on input: %r" % line)
