@@ -71,11 +71,14 @@ class Commit:
             try:
                 if urllib.urlopen(webview).getcode() == 404:
                     raise IOError
-                try:
-                    # Didn't get a retrieval error or 404 on the web
-                    # view, so try to tinyify a reference to it.
-                    self.url = open(urllib.urlretrieve(self.tinyifier + webview)[0]).read()
-                except IOError:
+                if self.tinyifier and self.tinyifier.lower() != "none":
+                    try:
+                        # Didn't get a retrieval error or 404 on the web
+                        # view, so try to tinyify a reference to it.
+                        self.url = open(urllib.urlretrieve(self.tinyifier + webview)[0]).read()
+                    except IOError:
+                        self.url = webview
+                else:
                     self.url = webview
             except IOError:
                 self.url = ""
@@ -194,7 +197,7 @@ class GitExtractor(GenericExtractor):
         self.channels = do("git config --get irker.channels")
         self.tcp = do("git config --bool --get irker.tcp")
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
-        self.tinyifier = do("git config --get irker.tinyifier")
+        self.tinyifier = do("git config --get irker.tinyifier") or default_tinyifier
         self.color = do("git config --get irker.color")
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
         self.filtercmd = do("git config --get irker.filtercmd")
@@ -321,7 +324,7 @@ class HgExtractor(GenericExtractor):
         self.channels = ui.config('irker', 'channels')
         self.tcp = str(ui.configbool('irker', 'tcp'))  # converted to bool again in do_overrides
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
-        self.tinyifier = ui.config('tinyifier', 'color')
+        self.tinyifier = ui.config('irker', 'tinyifier') or default_tinyifier
         self.color = ui.config('irker', 'color')
         self.urlprefix = (ui.config('irker', 'urlprefix') or
                           ui.config('web', 'baseurl') or '')
