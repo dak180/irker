@@ -388,7 +388,7 @@ class Irker:
         self.debug(1, "process_forever()")
         while True:
             with self.library_lock:
-                self.irc.process_once()
+                self.irc.process_once(ANTI_BUZZ_DELAY)
     def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
         if connection.context:
