@@ -1,6 +1,6 @@
 			irker history 
 
-1.9 @
+1.9 @ 2012-10-08
   This is a stable release.
   Proper mutex locks prevent an occasional thread crash on session timeout.
   There's now systemd installation support for irkerd.
