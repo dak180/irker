@@ -18,7 +18,8 @@ developers). The -V option prints the program version and exits.
 Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
 resource page at <http://www.catb.org/~esr/irker/>.
 
-Requires Python 2.6 and the irc client library at version >= 2.0.2: see
+Requires Python 2.6 or 2.5 with the simplejson library installed, and
+the irc client library at version >= 2.0.2: see
 
 http://pypi.python.org/pypi/irc/
 """

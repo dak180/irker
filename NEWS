@@ -1,8 +1,13 @@
 			irker history 
 
+1.9 @
+  This is a stable release.
+  Proper mutex locks prevent an occasional thread crash on session timeout.
+  There's now systemd installation support for irkerd.
+
 1.8 @ 2012-10-06
   It's now possible to send to nick URLs.
-  Cope gracefully if an IRC server dies or hands during the nick handshake.
+  Cope gracefully if an IRC server dies or hangs during the nick handshake.
 
 1.7 @ 2012-10-05
   This is a stable release.

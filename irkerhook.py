@@ -3,7 +3,7 @@
 # Distributed under BSD terms.
 #
 # This script contains git porcelain and porcelain byproducts.
-# Requires Python 2.6, or 2.4 with the 2.6 json library installed.
+# Requires Python 2.6, or 2.5 with the simplejson library installed.
 #
 # usage: irkerhook.py [-V] [-n] [--variable=value...] [commit_id...]
 #
@@ -42,7 +42,7 @@ version = "1.8"
 import os, sys, commands, socket, urllib, subprocess
 from pipes import quote as shellquote
 try:
-    import simplejson as json	# Faster, also makes us Python-2.4-compatible
+    import simplejson as json	# Faster, also makes us Python-2.5-compatible
 except ImportError:
     import json
 

@@ -111,8 +111,9 @@ expanded to the value of the "repo" variable.</para>
 <varlistentry>
 <term>tinyifier</term>
 <listitem>
-<para>URL template pointing to a service for compressing URLs so they 
-will take up less space in the notification line.</para>
+<para>URL template pointing to a service for compressing URLs so they
+will take up less space in the notification line. If the value of this
+variable is "None", no compression will be attempted.</para>
 </listitem>
 </varlistentry>
 <varlistentry>

@@ -62,7 +62,10 @@ filtering option.
 
 dak180 (name withheld by request) wrote the OS X launchd plist.
 
+Wulf C. Krueger <philantrop@exherbo.org> wrote the systemd 
+installation support.
+
 Other people on the freenode #irker channel (Kingpin, fpcfan,
-shadowm) smoked out bugs in irkerd before they could seriously
+shadowm, Rick) smoked out bugs in irkerd before they could seriously
 bug anybody.
 
