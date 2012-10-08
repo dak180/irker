@@ -116,12 +116,12 @@ class GenericExtractor:
             self.brown = '\x035'
             self.reset = '\x0F'
         if style == 'ANSI':
-            self.bold = '\x1b[1m;'
-            self.green = '\x1b[1;2m;'
-            self.blue = '\x1b[1;4m;'
-            self.yellow = '\x1b[1;3m;'
-            self.brown = '\x1b[3m;'
-            self.reset = '\x1b[0m;'
+            self.bold = '\x1b[1m'
+            self.green = '\x1b[1;32m'
+            self.blue = '\x1b[1;34m'
+            self.yellow = '\x1b[1;33m'
+            self.brown = '\x1b[33m'
+            self.reset = '\x1b[0m'
     def load_preferences(self, conf):
         "Load preferences from a file in the repository root."
         if not os.path.exists(conf):
