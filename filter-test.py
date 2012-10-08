@@ -24,9 +24,9 @@ data = ps.stdout.read()
 irkerd_count = len([x for x in data.split("\n") if x.find("irkerd") != -1])
 
 if irkerd_count:
-    sys.stderr.write("Using a running irker instance...")
+    sys.stderr.write("Using a running irker instance...\n")
 else:
-    sys.stderr.write("Launching a new irker instance...")
+    sys.stderr.write("Launching a new irker instance...\n")
     os.system("gnome-terminal --title 'irkerd' -e 'irkerd -d 2' &")
 
 time.sleep(1.5)	# Avoid a race condition
