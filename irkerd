@@ -192,7 +192,6 @@ class Connection:
                         with self.irker.library_lock:
                             self.connection.context = None
                             self.connection.quit("transmission timeout")
-                            self.connection.close()
                             self.connection = None
                         self.status = "disconnected"
                     else:
