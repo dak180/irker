@@ -39,7 +39,7 @@ default_channels = "irc://chat.freenode.net/%(project)s,irc://chat.freenode.net/
 
 version = "1.10"
 
-import os, sys, commands, socket, urllib, subprocess
+import os, sys, commands, socket, urllib, subprocess, locale
 from pipes import quote as shellquote
 try:
     import simplejson as json	# Faster, also makes us Python-2.5-compatible
@@ -47,7 +47,7 @@ except ImportError:
     import json
 
 def do(command):
-    return commands.getstatusoutput(command)[1]
+    return unicode(commands.getstatusoutput(command)[1], locale.getpreferredencoding() or 'UTF-8')
 
 class Commit:
     def __init__(self, extractor, commit):
@@ -61,7 +61,7 @@ class Commit:
         self.logmsg = None
         self.url = None
         self.__dict__.update(extractor.__dict__)
-    def __str__(self):
+    def __unicode__(self):
         "Produce a notification string from this commit."
         if self.urlprefix.lower() == "none":
             self.url = ""
@@ -401,10 +401,10 @@ def ship(extractor, commit, debug):
     # purposes the commit text is more important.  If it's still too long
     # there's nothing much can be done other than ship it expecting the IRC
     # server to truncate.
-    privmsg = str(metadata)
+    privmsg = unicode(metadata)
     if len(privmsg) > 510:
         metadata.files = ""
-        privmsg = str(metadata)
+        privmsg = unicode(metadata)
 
     # Anti-spamming guard.  It's deliberate that we get maxchannels not from
     # the user-filtered metadata but from the extractor data - means repo
