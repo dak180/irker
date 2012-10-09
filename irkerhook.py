@@ -109,12 +109,16 @@ class GenericExtractor:
     def activate_color(self, style):
         "IRC color codes."
         if style == 'mIRC':
-            # mIRC colors are mapped as closely to the ANSI colors as possible.
+            # mIRC colors are mapped as closely to the ANSI colors as
+            # possible.  However, bright colors (green, blue, red,
+            # yellow) have been made their dark counterparts since
+            # ChatZilla does not properly darken mIRC colors in the
+            # Light Motif color scheme.
             self.bold = '\x02'
-            self.green = '\x0309'
-            self.blue = '\x0312'
-            self.red = '\x0304'
-            self.yellow = '\x0308'
+            self.green = '\x0303'
+            self.blue = '\x0302'
+            self.red = '\x0305'
+            self.yellow = '\x0307'
             self.brown = '\x0305'
             self.magenta = '\x0306'
             self.cyan = '\x0310'
