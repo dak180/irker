@@ -119,7 +119,8 @@ variable is "None", no compression will be attempted.</para>
 <varlistentry>
 <term>color</term>
 <listitem>
-<para>If "ANSI", highlight notification fields with ANSI color escape sequences.
+<para>If "mIRC", highlight notification fields with mIRC color codes.
+If "ANSI", highlight notification fields with ANSI color escape sequences.
 Defaults to "none" (no colors). Note: if you turn this on and
 notifications stop appearing on your channel, you need to turn off
 IRC's color filter on that channel.  To do this you will need op

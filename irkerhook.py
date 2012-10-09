@@ -108,6 +108,17 @@ class GenericExtractor:
         self.brown = self.magenta = self.cyan = self.reset = ""
     def activate_color(self, style):
         "IRC color codes."
+        if style == 'mIRC':
+            # mIRC colors are mapped as closely to the ANSI colors as possible.
+            self.bold = '\x02'
+            self.green = '\x0309'
+            self.blue = '\x0312'
+            self.red = '\x0304'
+            self.yellow = '\x0308'
+            self.brown = '\x0305'
+            self.magenta = '\x0306'
+            self.cyan = '\x0310'
+            self.reset = '\x0F'
         if style == 'ANSI':
             self.bold = '\x1b[1m'
             self.green = '\x1b[1;32m'
