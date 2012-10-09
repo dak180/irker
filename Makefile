@@ -70,4 +70,4 @@ dist: irker-$(VERS).tar.gz
 
 release: irker-$(VERS).tar.gz irkerd.html irkerhook.html install.html security.html hacking.html
 	shipper -u -m -t; make clean
-	git push --tags
+	git push && git push --tags
