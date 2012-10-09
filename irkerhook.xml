@@ -126,7 +126,8 @@ notifications stop appearing on your channel, you need to turn off
 IRC's color filter on that channel.  To do this you will need op
 privileges; issue the command "/mode #irker -c".  You may need to
 first issue the command "/msg chanserv set #irker MLOCK
-+nt-slk".</para>
++nt-slk". Further note: ANSI codes are supported on Chatzilla and 
+irssi, but not on xchat or kvirc or konversation.</para>
 </listitem>
 </varlistentry>
 <varlistentry>
