@@ -19,14 +19,17 @@ and DoS vulnerabilities related to irker.
 == Installing irkerd ==
 
 irker needs to run constantly, watching for TCP and UDP traffic on
-port 6659.  Install it accordingly.
+port 6659.  Install it accordingly. It has no config file; you can
+just start it up with no arguments.  If you want to see what it's
+doing, give it command-line options -d 1 for sparse messages and -d 2
+to show all traffic with IRC servers.
 
 You should *not* make irker visible from outside the site firewall, as
 it can be used to spam IRC channels while masking the source address.
 
 You will need to have Jason Coombs's irc library where Python can see
-it.  See <http://pypi.python.org/pypi/irc/>; use version 3.0, not the
-older code from SourceForge.
+it.  See <http://pypi.python.org/pypi/irc/>; use version 3.0 or later,
+not the older code from SourceForge.
 
 The file org.catb.irkerd.plist is a Mac OS/X plist that can be
 installed to launch irkerd as a boot-time service on that system.
