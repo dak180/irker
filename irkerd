@@ -38,30 +38,11 @@ UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (default)
 ANTI_FLOOD_DELAY = 0.5		# Anti-flood delay after transmissions, seconds
 ANTI_BUZZ_DELAY = 0.09		# Anti-buzz delay after queue-empty check
+CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 # No user-serviceable parts below this line
 
 version = "1.9"
-
-# This black magic imports support for green threads (coroutines),
-# then has kinky sex with the import library internals, replacing
-# "threading" with a coroutine-using imposter.  Threads then become
-# ultra-light-weight and cooperatively scheduled.
-try:
-    import eventlet
-    eventlet.monkey_patch()
-    green_threads = True
-    # With greenlets we don't worry about thread exhaustion, only the
-    # file descriptor limit (typically 1024 on modern Unixes). Thus we
-    # can handle a lot more concurrent sessions and generate less
-    # join/leave spam under heavy load.
-    CONNECTION_MAX = 1000
-except ImportError:
-    # Threads are more expensive if we have to use OS-level ones
-    # rather than greenlets.  We need to avoid pushing thread limits
-    # as well as fd limits.  See security.txt for discussion.
-    CONNECTION_MAX = 200
-    green_threads = False
 
 import sys, getopt, urlparse, time, random, socket
 import threading, Queue, SocketServer

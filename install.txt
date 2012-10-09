@@ -28,12 +28,6 @@ You will need to have Jason Coombs's irc library where Python can see
 it.  See <http://pypi.python.org/pypi/irc/>; use version 3.0, not the
 older code from SourceForge.
 
-For higher performance, also install the eventlet library from
-<http://pypi.python.org/pypi/eventlet/>.  This merges in a cooperative
-threading implementation that is faster and has much lower space
-overhead than system threads, making irkerd more resistant to
-potential DoS attacks.
-
 The file org.catb.irkerd.plist is a Mac OS/X plist that can be
 installed to launch irkerd as a boot-time service on that system.
 
