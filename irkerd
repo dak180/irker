@@ -69,12 +69,16 @@ except ImportError:
 # even if the queue is nonempty but efforts to connect have failed for
 # a long time.
 #
-# There are multiple threads. One accepts incoming traffic from all servers.
-# Each Connection also has a consumer thread and a thread-safe message queue.
-# The program main appends messages to queues as JSON requests are received;
-# the consumer threads try to ship them to servers.  When a socket write
-# stalls, it only blocks an individual consumer thread; if it stalls long
-# enough, the session will be timed out.
+# There are multiple threads. One accepts incoming traffic from all
+# servers.  Each Connection also has a consumer thread and a
+# thread-safe message queue.  The program main appends messages to
+# queues as JSON requests are received; the consumer threads try to
+# ship them to servers.  When a socket write stalls, it only blocks an
+# individual consumer thread; if it stalls long enough, the session
+# will be timed out. This solves the biggest problem with a
+# single-threaded implementation, which is that you can't count on a
+# single stalled write not hanging all other traffic - you're at the
+# mercy of the length of the buffers in the TCP/IP layer.
 #
 # Message delivery is thus not reliable in the face of network stalls,
 # but this was considered acceptable because IRC (notoriously) has the
