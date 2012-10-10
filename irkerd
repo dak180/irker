@@ -19,7 +19,7 @@ Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
 resource page at <http://www.catb.org/~esr/irker/>.
 
 Requires Python 2.6 or 2.5 with the simplejson library installed, and
-the irc client library at version >= 2.0.2: see
+the irc client library at version >= 3.2: see
 
 http://pypi.python.org/pypi/irc/
 """
@@ -179,7 +179,7 @@ class Connection:
                         break
                     elif xmit_timeout or ping_timeout:
                         self.irker.debug(1, "timing out connection to %s at %s (ping_timeout=%s, xmit_timeout=%s)" % (self.servername, time.asctime(), ping_timeout, xmit_timeout))
-                        with self.irker.library_lock:
+                        with self.irker.irc.mutex:
                             self.connection.context = None
                             self.connection.quit("transmission timeout")
                             self.connection = None
@@ -200,7 +200,7 @@ class Connection:
                     break
                 elif not self.connection:
                     # Queue is nonempty but server isn't connected.
-                    with self.irker.library_lock:
+                    with self.irker.irc.mutex:
                         self.connection = self.irker.irc.server()
                         self.connection.context = self
                         # Try to avoid colliding with other instances
@@ -238,7 +238,7 @@ class Connection:
                     self.status = "expired"
                     break
                 elif self.status == "ready":
-                    with self.irker.library_lock:
+                    with self.irker.irc.mutex:
                         (channel, message) = self.queue.get()
                         if channel not in self.channels_joined:
                             self.connection.join(channel)
@@ -364,8 +364,7 @@ class Irker:
         self.irc.add_global_handler("featurelist", self._handle_features)
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
         self.irc.add_global_handler("kick", self._handle_kick)
-        self.library_lock = threading.Lock()
-        thread = threading.Thread(target=self._process_forever)
+        thread = threading.Thread(target=self.irc.process_forever)
         thread.setDaemon(True)
         self.irc._thread = thread
         thread.start()
@@ -377,12 +376,6 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irkerd: %s\n" % errmsg)
-    def _process_forever(self):
-        "IRC library process_forever with mutex."
-        self.debug(1, "process_forever()")
-        while True:
-            with self.library_lock:
-                self.irc.process_once(ANTI_BUZZ_DELAY)
     def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
         if connection.context:

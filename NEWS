@@ -1,5 +1,8 @@
 			irker history 
 
+1.12 @
+  The IRC library at version 3.2 or later is required for this version!
+
 1.11 @ 2012-10-10
   Code is now fully Unicode-safe.
   A 'cialike' option emulates the file-summary behavior on the old CIA service.
