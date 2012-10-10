@@ -10,16 +10,24 @@
 import json
 import socket
 import sys
+import fileinput
+
+def send(target, message):
+    data = {"to": target, "privmsg" : message}
+    print(json.dumps(data))
+    try:
+        s = socket.create_connection(("localhost", 6659))
+        s.sendall(json.dumps(data))
+    except socket.error, e:
+        sys.stderr.write("irkerd: server launch failed: %r\n" % e)
 
 target = sys.argv[1]
 if not "irc:" in target:
     target = "irc://chat.freenode.net/{0}".format(target)
 message = " ".join(sys.argv[2:])
 message = message.decode('string_escape')
-data = {"to": target, "privmsg" : message}
-print(json.dumps(data))
-try:
-    s = socket.create_connection(("localhost", 6659))
-    s.sendall(json.dumps(data))
-except socket.error, e:
-    sys.stderr.write("irkerd: server launch failed: %r\n" % e)
+if message == '-':
+    for line in fileinput.input('-'):
+        send(target, line.rstrip('\n'))
+else:
+    send(target, message)
