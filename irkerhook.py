@@ -226,6 +226,8 @@ class GitExtractor(GenericExtractor):
             while True:
                 if os.path.exists(os.path.join(here, keyfile)):
                     self.project = os.path.basename(here)
+                    if self.project.endswith('.git'):
+                        self.project = self.project[0:-4]
                     break
                 elif here == '/':
                     sys.stderr.write("irkerhook.py: no git repo below root!\n")
