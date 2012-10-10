@@ -33,7 +33,7 @@ type switch. It can deduce the repo type by looking, so it should.
 
 == Release procedure ==
 
-1. Check for merge requests at gitorious
+1. Check for merge requests at https://gitorious.org/irker
 
 2. Do 'make pylint' to audit the code.
 

@@ -1,5 +1,8 @@
 			irker history 
 
+1.11 @
+  Code is now fully Unicode-safe.
+
 1.10 @ 2012-10-09
   Expire disconnected connections if they aren't needed or can't reconnect.
   Eventlet support removed - didn't play well with the library mutex.

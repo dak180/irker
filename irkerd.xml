@@ -101,9 +101,15 @@ your firewall.</para>
 <para>IRC has a message length limit of 510 bytes generate your privmsg attribute values with appropriate care.</para>
 
 <para>IRC ignores any text after an embedded newline. Be aware that
-<application>irkerd</application> will turn payload strungs with
+<application>irkerd</application> will turn payload strings with
 embedded newlines into multiple IRC sends to avoid having message data
 discarded. </para>
+</refsect1>
+
+<refsect1 id='see_also'><title>SEE ALSO</title>
+<para>
+<citerefentry><refentrytitle>irkerhook</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+</para>
 </refsect1>
 
 <refsect1 id='authors'><title>AUTHOR</title>

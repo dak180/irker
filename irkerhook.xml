@@ -228,10 +228,12 @@ the commit).  The defaults are the current working directory and HEAD,
 respectively.</para>
 
 <para>Note, however, that you <emphasis>cannot</emphasis> default the
-repository argumment inside a Subversion post-commit hook.  Instead,
-the values must be the two arguments that Subversion passes to that
-hook as arguments. Thus, a typical invocation in the post-commit
-script will look like this:</para>
+repository argument inside a Subversion post-commit hook; this is
+because of a limitation of Subversion, which is that getting the
+current directory is not reliable inside these hooks.  Instead, the
+values must be the two arguments that Subversion passes to that hook
+as arguments. Thus, a typical invocation in the post-commit script
+will look like this:</para>
 
 <programlisting>
 REPO=$1
@@ -355,6 +357,12 @@ terminate.</para></listitem>
 </varlistentry>
 </variablelist>
 
+</refsect1>
+
+<refsect1 id='see_also'><title>SEE ALSO</title>
+<para>
+<citerefentry><refentrytitle>irkerd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
+</para>
 </refsect1>
 
 <refsect1 id='authors'><title>AUTHOR</title>
