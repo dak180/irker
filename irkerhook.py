@@ -101,6 +101,7 @@ class GenericExtractor:
         self.template = None
         self.urlprefix = None
         self.host = socket.getfqdn()
+        self.cialike = None
         self.filtercmd = None
         # Color highlighting is disabled by default.
         self.color = None
@@ -211,6 +212,7 @@ class GitExtractor(GenericExtractor):
         self.tinyifier = do("git config --get irker.tinyifier") or default_tinyifier
         self.color = do("git config --get irker.color")
         self.urlprefix = do("git config --get irker.urlprefix") or "gitweb"
+        self.cialike = do("git config --get irker.cialike")
         self.filtercmd = do("git config --get irker.filtercmd")
         # These are git-specific
         self.refname = do("git symbolic-ref HEAD 2>/dev/null")
@@ -342,8 +344,10 @@ class HgExtractor(GenericExtractor):
         self.urlprefix = (ui.config('irker', 'urlprefix') or
                           ui.config('web', 'baseurl') or '')
         if self.urlprefix:
-            self.urlprefix = self.urlprefix.rstrip('/') + '/rev'
             # self.commit is appended to this by do_overrides
+            self.urlprefix = self.urlprefix.rstrip('/') + '/rev'
+        self.cialike = ui.config('irker', 'cialike')
+        self.filtercmd = ui.config('irker', 'filtercmd')
         if not self.project:
             self.project = os.path.basename(self.repository.root.rstrip('/'))
         self.do_overrides()
@@ -397,6 +401,17 @@ def ship(extractor, commit, debug):
             sys.stderr.write("irkerhook.py: could not decode JSON: %s\n" % data)
             raise SystemExit, 1
 
+    # Rewrite the file list if too long. The objective here is only
+    # to be easier on the eyes.
+    if extractor.cialike \
+           and extractor.cialike.lower() != "none" \
+           and len(metadata.files) > int(extractor.cialike):
+        files = metadata.files.split()
+        dirs = set([d.rpartition('/')[0] for d in files])
+        if len(dirs) == 1:
+            metadata.files = "(%s files)" % (len(files),)
+        else:
+            metadata.files = "(%s files in %s dirs)" % (len(files), len(dirs))
     # Message reduction.  The assumption here is that IRC can't handle
     # lines more than 510 characters long. If we exceed that length, we
     # try knocking out the file list, on the theory that for notification

@@ -147,6 +147,15 @@ to prevent shotgun spamming by malicious project owners.  Setting it to
 a value less than 2, however, would probably be unwise.</para>
 </listitem>
 </varlistentry>
+<varlistentry>
+<term>cialike</term>
+<listitem>
+<para>If not empty and not "None", this emulates the old CIA behavior
+of dropping long lists of files in favor of a summary of the form (N
+files in M directories). The value must be numeric giving a threshold
+value for the length of the file list in characters.</para>
+</listitem>
+</varlistentry>
 </variablelist>
 
 <refsect2 id="git"><title>git</title>

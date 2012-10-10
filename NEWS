@@ -2,6 +2,7 @@
 
 1.11 @
   Code is now fully Unicode-safe.
+  A 'cialike' option emulates the file-summary behavior on the old CIA service.
 
 1.10 @ 2012-10-09
   Expire disconnected connections if they aren't needed or can't reconnect.
