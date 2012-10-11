@@ -30,8 +30,8 @@ urlprefixmap = {
     "cgit": "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id=",
     }
 
-# By default, the channel list includes the freenode #commits list 
-default_channels = "irc://chat.freenode.net/%(project)s,irc://chat.freenode.net/#commits"
+# By default, ship to the freenode #commits list 
+default_channels = "irc://chat.freenode.net/#commits"
 
 #
 # No user-serviceable parts below this line:
