@@ -2,6 +2,7 @@
 
 1.12 @
   The IRC library at version 3.2 or later is required for this version!
+  Only ship to freenode #commits by default.
 
 1.11 @ 2012-10-10
   Code is now fully Unicode-safe.

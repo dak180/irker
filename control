@@ -11,6 +11,8 @@ Description: An IRC client that runs as a daemon accepting notification requests
 
 XBS-Gitorious-URL: https://gitorious.org/irker
 
+XBS-Ohloh-URL: http://www.ohloh.net/p/irker
+
 XBS-Destinations: freecode
 
 Homepage: http://www.catb.org/~esr/irker
