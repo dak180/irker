@@ -1,6 +1,7 @@
 			irker history 
 
-1.12 @
+1.12 @ 2012-10-11
+  Emergency workaround for a Unicode-handling error buried deep in irclib.
   The IRC library at version 3.2 or later is required for this version!
   Only ship to freenode #commits by default.
 
