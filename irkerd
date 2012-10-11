@@ -384,7 +384,7 @@ class Irker:
         while True:
             try:
                 self.irc.process_once(timeout)
-            except UnicodeDecodingError:
+            except UnicodeDecodeError:
                 pass
     def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
