@@ -19,7 +19,7 @@ Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
 resource page at <http://www.catb.org/~esr/irker/>.
 
 Requires Python 2.6 or 2.5 with the simplejson library installed, and
-the irc client library at version >= 3.2: see
+the irc client library at version >= 3.2.2: see
 
 http://pypi.python.org/pypi/irc/
 """
@@ -364,7 +364,7 @@ class Irker:
         self.irc.add_global_handler("featurelist", self._handle_features)
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
         self.irc.add_global_handler("kick", self._handle_kick)
-        thread = threading.Thread(target=self.process_forever)
+        thread = threading.Thread(target=self.irc.process_forever)
         thread.setDaemon(True)
         self.irc._thread = thread
         thread.start()
@@ -376,16 +376,6 @@ class Irker:
         "Debugging information."
         if self.debuglevel >= level:
             sys.stderr.write("irkerd: %s\n" % errmsg)
-    def process_forever(self, timeout=0.2):
-        "Shim - can be removed later."
-        # Kluge to get around the fact that 3.2 and older library
-        # versions do a Unicode decode where they shouldn't.
-        self.debug(1, "process_forever(timeout=%s)" % timeout)
-        while True:
-            try:
-                self.irc.process_once(timeout)
-            except UnicodeDecodeError:
-                pass
     def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
         if connection.context:
