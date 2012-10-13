@@ -179,9 +179,10 @@ class Connection:
                         break
                     elif xmit_timeout or ping_timeout:
                         self.irker.debug(1, "timing out connection to %s at %s (ping_timeout=%s, xmit_timeout=%s)" % (self.servername, time.asctime(), ping_timeout, xmit_timeout))
-                        self.connection.context = None
-                        self.connection.quit("transmission timeout")
-                        self.connection = None
+                        with self.irker.irc.mutex:
+                            self.connection.context = None
+                            self.connection.quit("transmission timeout")
+                            self.connection = None
                         self.status = "disconnected"
                     else:
                         # Prevent this thread from hogging the CPU by pausing
@@ -199,25 +200,26 @@ class Connection:
                     break
                 elif not self.connection:
                     # Queue is nonempty but server isn't connected.
-                    self.connection = self.irker.irc.server()
-                    self.connection.context = self
-                    # Try to avoid colliding with other instances
-                    self.nick_trial = random.randint(1, 990)
-                    self.channels_joined = {}
-                    try:
-                        # This will throw
-                        # irc.client.ServerConnectionError on failure
-                        self.connection.connect(self.servername,
-                                            self.port,
-                                            nickname=self.nickname(),
-                                            username="irker",
-                                            ircname="irker relaying client")
-                        self.status = "handshaking"
-                        self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
-                        self.last_xmit = time.time()
-                        self.last_ping = time.time()
-                    except irc.client.ServerConnectionError:
-                        self.status = "disconnected"
+                    with self.irker.irc.mutex:
+                        self.connection = self.irker.irc.server()
+                        self.connection.context = self
+                        # Try to avoid colliding with other instances
+                        self.nick_trial = random.randint(1, 990)
+                        self.channels_joined = {}
+                        try:
+                            # This will throw
+                            # irc.client.ServerConnectionError on failure
+                            self.connection.connect(self.servername,
+                                                self.port,
+                                                nickname=self.nickname(),
+                                                username="irker",
+                                                ircname="irker relaying client")
+                            self.status = "handshaking"
+                            self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
+                            self.last_xmit = time.time()
+                            self.last_ping = time.time()
+                        except irc.client.ServerConnectionError:
+                            self.status = "disconnected"
                 elif self.status == "handshaking":
                     if time.time() > self.last_xmit + HANDSHAKE_TTL:
                         self.status = "expired"
@@ -236,16 +238,17 @@ class Connection:
                     self.status = "expired"
                     break
                 elif self.status == "ready":
-                    (channel, message) = self.queue.get()
-                    if channel not in self.channels_joined:
-                        self.connection.join(channel)
-                        self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
-                    for segment in message.split("\n"):
-                        self.connection.privmsg(channel, segment)
-                        time.sleep(ANTI_FLOOD_DELAY)
-                    self.last_xmit = self.channels_joined[channel] = time.time()
-                    self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
-                    self.queue.task_done()
+                    with self.irker.irc.mutex:
+                        (channel, message) = self.queue.get()
+                        if channel not in self.channels_joined:
+                            self.connection.join(channel)
+                            self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
+                        for segment in message.split("\n"):
+                            self.connection.privmsg(channel, segment)
+                            time.sleep(ANTI_FLOOD_DELAY)
+                        self.last_xmit = self.channels_joined[channel] = time.time()
+                        self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
+                        self.queue.task_done()
         except:
             (exc_type, _exc_value, exc_traceback) = sys.exc_info()
             self.irker.logerr("exception %s in thread for %s" % \
