@@ -1,8 +1,7 @@
 			irker history 
 
 1.13 @
-  The IRC library at version 3.2 or later is required for this version!
-  This means the daemon requires 2.7, though irkerhook.py works with 2.6.
+  The IRC library at version 3.2.3 or later is required for this version!
 
 1.12 @ 2012-10-11
   Emergency workaround for a Unicode-handling error buried deep in irclib.
