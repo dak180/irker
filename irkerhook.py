@@ -296,7 +296,7 @@ class SvnExtractor(GenericExtractor):
         commit.rev = "r%s" % self.id
         commit.author = self.svnlook("author")
         commit.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
-        commit.logmsg = self.svnlook("log")
+        commit.logmsg = self.svnlook("log").strip() + "\n"
         return commit
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.id)))
