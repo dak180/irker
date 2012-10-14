@@ -19,7 +19,7 @@ Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
 resource page at <http://www.catb.org/~esr/irker/>.
 
 Requires Python 2.6 or 2.5 with the simplejson library installed, and
-the irc client library at version >= 3.2.2: see
+the irc client library at version >= 3.2.2 which requires 2.7: see
 
 http://pypi.python.org/pypi/irc/
 """
