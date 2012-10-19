@@ -238,17 +238,16 @@ class Connection:
                     self.status = "expired"
                     break
                 elif self.status == "ready":
-                    with self.irker.irc.mutex:
-                        (channel, message) = self.queue.get()
-                        if channel not in self.channels_joined:
-                            self.connection.join(channel)
-                            self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
-                        for segment in message.split("\n"):
-                            self.connection.privmsg(channel, segment)
-                            time.sleep(ANTI_FLOOD_DELAY)
-                        self.last_xmit = self.channels_joined[channel] = time.time()
-                        self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
-                        self.queue.task_done()
+                    (channel, message) = self.queue.get()
+                    if channel not in self.channels_joined:
+                        self.connection.join(channel)
+                        self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
+                    for segment in message.split("\n"):
+                        self.connection.privmsg(channel, segment)
+                        time.sleep(ANTI_FLOOD_DELAY)
+                    self.last_xmit = self.channels_joined[channel] = time.time()
+                    self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
+                    self.queue.task_done()
         except:
             (exc_type, _exc_value, exc_traceback) = sys.exc_info()
             self.irker.logerr("exception %s in thread for %s" % \
@@ -257,6 +256,9 @@ class Connection:
             # when we need to be able to for debugging purposes.
             if debuglvl > 0:
                 raise exc_type, _exc_value, exc_traceback
+            else:
+                # Maybe this should have its own status?
+                self.status = "expired"
     def live(self):
         "Should this connection not be scavenged?"
         return self.status != "expired"
