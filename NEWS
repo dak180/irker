@@ -1,7 +1,8 @@
 			irker history 
 
 1.13 @
-  The IRC library at version 3.2.3 or later is required for this version!
+  Fix for a very rare thread race found by AI0867.
+  The IRC library at version 3.4 or later is required for this version!
 
 1.12 @ 2012-10-11
   Emergency workaround for a Unicode-handling error buried deep in irclib.
