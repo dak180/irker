@@ -76,6 +76,10 @@ class Commit:
                         # Didn't get a retrieval error or 404 on the web
                         # view, so try to tinyify a reference to it.
                         self.url = open(urllib.urlretrieve(self.tinyifier + webview)[0]).read()
+                        try:
+                            self.url = self.url.decode('UTF-8')
+                        except UnicodeError:
+                            pass
                     except IOError:
                         self.url = webview
                 else:
