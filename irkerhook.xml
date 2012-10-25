@@ -195,7 +195,7 @@ like:</para>
 [irker]
     project = gpsd
     color = ANSI
-    channels = {irc://chat.freenode.net/gpsd, irc://chat.freenode.net/commits}
+    channels = irc://chat.freenode.net/gpsd,irc://chat.freenode.net/commits
 </programlisting>
 
 <para> You should not set the "repository" variable (an equivalent
