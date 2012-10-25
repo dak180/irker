@@ -282,6 +282,8 @@ class Connection:
 class Target():
     "Represent a transmission target."
     def __init__(self, url):
+        # Pre-2.6 Pythons don't recognize irc: as a valid URL prefix.
+        url = url.replace("irc://", "http://")
         parsed = urlparse.urlparse(url)
         irchost, _, ircport = parsed.netloc.partition(':')
         if not ircport:
