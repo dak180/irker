@@ -214,6 +214,8 @@ class Connection:
                                                 nickname=self.nickname(),
                                                 username="irker",
                                                 ircname="irker relaying client")
+                            if hasattr(self.connection, "buffer"):
+                                self.connection.buffer.errors = 'replace'
                             self.status = "handshaking"
                             self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
                             self.last_xmit = time.time()
