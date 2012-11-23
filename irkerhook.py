@@ -349,7 +349,7 @@ class HgExtractor(GenericExtractor):
                           ui.config('web', 'baseurl') or '')
         if self.urlprefix:
             # self.commit is appended to this by do_overrides
-            self.urlprefix = self.urlprefix.rstrip('/') + '/rev'
+            self.urlprefix = self.urlprefix.rstrip('/') + '/rev/'
         self.cialike = ui.config('irker', 'cialike')
         self.filtercmd = ui.config('irker', 'filtercmd')
         if not self.project:
