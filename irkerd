@@ -437,7 +437,7 @@ class Irker:
         target = event.target
         # irclib 5.0 compatibility, because the maintainer continues to be a
         # fool.
-	if callable(target):
+        if callable(target):
             target = target()
         self.debug(1, "irker has been kicked from %s on %s" % (target, connection.server))
         if connection.context:
