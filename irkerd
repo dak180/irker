@@ -297,6 +297,9 @@ class Target():
         # got kicked, and irkerd crashed because the server returned
         # "#channel" in the notification that our kick handler saw.
         self.channel = parsed.path.lstrip('/').lower()
+        # This deals with a tweak in recent versions of urlparse.
+        if parsed.fragment:
+            self.channel += "#" + parsed.fragment
         isnick = self.channel.endswith(",isnick")
         if isnick:
             self.channel = self.channel[:-7]
