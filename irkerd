@@ -398,7 +398,11 @@ class Irker:
         "Determine if and how we can set deaf mode."
         if connection.context:
             cxt = connection.context
-            for lump in event.arguments():
+            arguments = event.arguments
+            # irclib 5.0 compatibility, because the maintainer is a fool
+            if callable(arguments):
+                arguments = arguments()
+            for lump in arguments:
                 if lump.startswith("DEAF="):
                     connection.mode(cxt.nickname(), "+"+lump[5:])
                 elif lump.startswith("MAXCHANNELS="):
@@ -427,9 +431,14 @@ class Irker:
             connection.context.handle_disconnect()
     def _handle_kick(self, connection, event):
         "Server hung up the connection."
-        self.debug(1, "irker has been kicked from %s on %s" % (event.target(), connection.server))
+        target = event.target
+        # irclib 5.0 compatibility, because the maintainer continues to be a
+        # fool.
+	if callable(target):
+            target = target()
+        self.debug(1, "irker has been kicked from %s on %s" % (target, connection.server))
         if connection.context:
-            connection.context.handle_kick(event.target())
+            connection.context.handle_kick(target)
     def handle(self, line):
         "Perform a JSON relay request."
         try:
