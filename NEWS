@@ -1,5 +1,8 @@
 			irker history 
 
+1.14 @ 
+  irclib 5.0 and urlparse compatibility fixes.
+
 1.13 @ 2012-11-06
   Fix for a very rare thread race found by AI0867.
   Work around a midesign in the IRC library.
