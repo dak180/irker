@@ -37,7 +37,7 @@ default_channels = "irc://chat.freenode.net/#commits"
 # No user-serviceable parts below this line:
 #
 
-version = "1.14"
+version = "1.15"
 
 import os, sys, commands, socket, urllib, subprocess, locale
 from pipes import quote as shellquote
@@ -300,7 +300,7 @@ class SvnExtractor(GenericExtractor):
         commit.rev = "r%s" % self.id
         commit.author = self.svnlook("author")
         commit.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
-        commit.logmsg = self.svnlook("log").strip() + "\n"
+        commit.logmsg = self.svnlook("log").strip()
         return commit
     def svnlook(self, info):
         return do("svnlook %s %s --revision %s" % (shellquote(info), shellquote(self.repository), shellquote(self.id)))
