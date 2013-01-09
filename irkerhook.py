@@ -47,7 +47,7 @@ except ImportError:
     import json
 
 def do(command):
-    return unicode(commands.getstatusoutput(command)[1], locale.getpreferredencoding() or 'UTF-8')
+    return unicode(commands.getstatusoutput(command)[1], locale.getlocale()[1] or 'UTF-8').encode(locale.getlocale()[1] or 'UTF-8')
 
 class Commit:
     def __init__(self, extractor, commit):
