@@ -245,7 +245,17 @@ class Connection:
                         self.connection.join(channel)
                         self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
                     for segment in message.split("\n"):
-                        self.connection.privmsg(channel, segment)
+                        # Truncate the message if it's too long,
+                        # but we're working with characters here,
+                        # not bytes, so we could be off.
+                        # 500 = 512 - CRLF - 'PRIVMSG ' - ' :'
+                        maxlength = 500 - len(channel)
+                        if len(segment) > maxlength:
+                            segment = segment[:maxlength]
+                        try:
+                            self.connection.privmsg(channel, segment)
+                        except ValueError as err:
+                            self.irker.debug(1, "irclib rejected a message to %s on %s because: %s" % (channel, self.servername, str(err)))
                         time.sleep(ANTI_FLOOD_DELAY)
                     self.last_xmit = self.channels_joined[channel] = time.time()
                     self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
