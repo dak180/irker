@@ -264,13 +264,21 @@ class Connection:
             (exc_type, _exc_value, exc_traceback) = sys.exc_info()
             self.irker.logerr("exception %s in thread for %s" % \
                               (exc_type, self.servername))
+
+            # Maybe this should have its own status?
+            self.status = "expired"
+
             # This is so we can see tracebacks for errors inside the thread
             # when we need to be able to for debugging purposes.
             if debuglvl > 0:
                 raise exc_type, _exc_value, exc_traceback
-            else:
-                # Maybe this should have its own status?
-                self.status = "expired"
+        finally:
+            try:
+                # Make sure we don't leave any zombies behind
+                self.connection.close()
+            except:
+                # Irclib has a habit of throwing fresh exceptions here. Ignore that
+                pass
     def live(self):
         "Should this connection not be scavenged?"
         return self.status != "expired"
