@@ -264,7 +264,7 @@ class GitExtractor(GenericExtractor):
         # conventionally supposed to be a summary of the commit.  Under
         # other VCSes a different choice may be appropriate.
         metainfo = do("git log -1 '--pretty=format:%an <%ae>|%s' " + shellquote(commit.commit))
-        (commit.author, commit.logmsg) = metainfo.split("|")
+        (commit.author, _, commit.logmsg) = metainfo.partition("|")
         commit.mail = commit.author.split()[-1].strip("<>")
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
