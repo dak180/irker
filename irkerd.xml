@@ -98,7 +98,8 @@ known to spew spam is always a good idea.</para>
 If you think you need to do that, you have a problem better solved at
 your firewall.</para>
 
-<para>IRC has a message length limit of 510 bytes generate your privmsg attribute values with appropriate care.</para>
+<para>IRC has a message length limit of 510 bytes; generate your
+privmsg attribute values with appropriate care.</para>
 
 <para>IRC ignores any text after an embedded newline. Be aware that
 <application>irkerd</application> will turn payload strings with
