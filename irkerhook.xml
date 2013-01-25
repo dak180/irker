@@ -71,8 +71,7 @@ specified, defaults to a lowercased copy of the project name.</para>
 <listitem>
 <para>An IRC channel URL, or comma-separated list of same, identifying
 channels to which notifications are to be sent. If not specified, the
-defaults channel list id the freenode #commits channel plus the freenode
-channel named by the project variable.</para>
+default is the freenode #commits channel.</para>
 </listitem>
 </varlistentry>
 <varlistentry>
