@@ -1,5 +1,8 @@
 			irker history 
 
+1.17 @ 2013-02-03
+  Various minor fixes and bulletproofing.
+
 1.16 @ 2013-01-24
   Deal gracefully with non-ASCII author names and '|' in the command line.
 
