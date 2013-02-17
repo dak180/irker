@@ -60,6 +60,8 @@ class Commit:
         self.files = None
         self.logmsg = None
         self.url = None
+        self.author_date = None
+        self.commit_date = None
         self.__dict__.update(extractor.__dict__)
     def __unicode__(self):
         "Produce a notification string from this commit."
@@ -271,6 +273,8 @@ class GitExtractor(GenericExtractor):
         # for spammers' address harvesters - getting this wrong
         # would make the freenode #commits channel into harvester heaven.
         commit.author = commit.mail.split("@")[0]
+        commit.author_date, commit.commit_date = \
+            do("git log -1 '--pretty=format:%ai|%ci' " + shellquote(commit.commit)).split("|")
         return commit
 
 class SvnExtractor(GenericExtractor):
