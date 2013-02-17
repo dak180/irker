@@ -39,7 +39,7 @@ default_channels = "irc://chat.freenode.net/#commits"
 
 version = "1.17"
 
-import os, sys, commands, socket, urllib, subprocess, locale
+import os, sys, commands, socket, urllib, subprocess, locale, datetime
 from pipes import quote as shellquote
 try:
     import simplejson as json	# Faster, also makes us Python-2.5-compatible
@@ -374,6 +374,8 @@ class HgExtractor(GenericExtractor):
         commit.rev = '%d:%s' % (ctx.rev(), commit.commit)
         commit.branch = ctx.branch()
         commit.author = person(ctx.user())
+        commit.author_date = \
+            datetime.datetime.fromtimestamp(ctx.date()[0]).strftime('%Y-%m-%d %H:%M:%S')
         commit.logmsg = ctx.description()
         # Extract changed files from status against first parent
         st = self.repository.status(ctx.p1().node(), ctx.node())
