@@ -303,6 +303,7 @@ class SvnExtractor(GenericExtractor):
         commit.branch = ""
         commit.rev = "r%s" % self.id
         commit.author = self.svnlook("author")
+        commit.commit_date = self.svnlook("date").partition('(')[0]
         commit.files = self.svnlook("dirs-changed").strip().replace("\n", " ")
         commit.logmsg = self.svnlook("log").strip()
         return commit
