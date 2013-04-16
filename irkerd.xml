@@ -20,6 +20,7 @@
   <command>irkerd</command>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-l <replaceable>logfile</replaceable></arg>
+     <arg>-n <replaceable>nick</replaceable></arg>
      <arg>-V</arg>
 </cmdsynopsis>
 </refsynopsisdiv>
@@ -78,6 +79,13 @@ consult the source code for details.</para></listitem>
 Each log line consists of three |-separated fields; a numeric
 timestamp in Unix time, the fqdn of the sending server, and the
 message data.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-n</term>
+<listitem><para>Takes a following value, setting the nick
+to be used. If the nick contains a numeric format element
+(such as %03d) it is used to generate suffixed fallback names
+in the event of a nick collision.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-V</term>

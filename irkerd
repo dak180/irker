@@ -28,7 +28,6 @@ http://pypi.python.org/pypi/irc/
 HOST = "localhost"
 PORT = 6659
 
-NAMESTYLE = "irker%03d"		# IRC nick template - must contain '%d'
 XMIT_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 PING_TTL = (15 * 60)		# Time to live, seconds from last PING
 HANDSHAKE_TTL = 60		# Time to live, seconds from nick transmit
@@ -44,7 +43,7 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 version = "1.17"
 
-import sys, getopt, urlparse, time, random, socket, signal
+import sys, getopt, urlparse, time, random, socket, signal, re
 import threading, Queue, SocketServer
 import irc.client, logging
 try:
@@ -112,7 +111,10 @@ class Connection:
         "Return a name for the nth server connection."
         if n is None:
             n = self.nick_trial
-        return (NAMESTYLE % n)
+        if fallback:
+            return (namestyle % n)
+        else:
+            return namestyle
     def handle_ping(self):
         "Register the fact that the server has pinged this connection."
         self.last_ping = time.time()
@@ -121,13 +123,17 @@ class Connection:
         self.status = "ready"
         self.irker.debug(1, "nick %s accepted" % self.nickname())
     def handle_badnick(self):
-        "The server says our nick has a conflict."
+        "The server says our nick is ill-formed or has a conflict."
         self.irker.debug(1, "nick %s rejected" % self.nickname())
-        # Randomness prevents a malicious user or bot from anticipating the
-        # next trial name in order to block us from completing the handshake.
-        self.nick_trial += random.randint(1, 3)
-        self.last_xmit = time.time()
-        self.connection.nick(self.nickname())
+        if fallback:
+            # Randomness prevents a malicious user or bot from
+            # anticipating the next trial name in order to block us
+            # from completing the handshake.
+            self.nick_trial += random.randint(1, 3)
+            self.last_xmit = time.time()
+            self.connection.nick(self.nickname())
+        # Otherwise fall through, it might be possible to
+        # recover manually.
     def handle_disconnect(self):
         "Server disconnected us for flooding or some other reason."
         self.connection = None
@@ -538,8 +544,9 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
 
 if __name__ == '__main__':
     debuglvl = 0
+    namestyle = "irker%03d"
     logfile = None
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:V:")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:n:V:")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
@@ -547,9 +554,12 @@ if __name__ == '__main__':
                 logging.basicConfig(level=logging.DEBUG)
         elif opt == '-l':	# Logfile mode - report traffic read in
             logfile = val
+        elif opt == '-n':	# Force the nick
+            namestyle = val
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irkerd version %s\n" % version)
             sys.exit(0)
+    fallback = re.search("%.*d", namestyle)
     irker = Irker(debuglevel=debuglvl)
     irker.debug(1, "irkerd version %s" % version)
     try:
