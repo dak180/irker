@@ -123,7 +123,7 @@ class Connection:
     def handle_badnick(self):
         "The server says our nick has a conflict."
         self.irker.debug(1, "nick %s rejected" % self.nickname())
-        # Randomness prevents a malicious user or bot from antcipating the
+        # Randomness prevents a malicious user or bot from anticipating the
         # next trial name in order to block us from completing the handshake.
         self.nick_trial += random.randint(1, 3)
         self.last_xmit = time.time()
@@ -539,7 +539,7 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
 if __name__ == '__main__':
     debuglvl = 0
     logfile = None
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:V:l:")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:V:")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
