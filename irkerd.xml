@@ -19,6 +19,7 @@
 <cmdsynopsis>
   <command>irkerd</command>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
+     <arg>-l <replaceable>logfile</replaceable></arg>
      <arg>-V</arg>
 </cmdsynopsis>
 </refsynopsisdiv>
@@ -70,6 +71,13 @@ an instance is up and running.</para>
 <listitem><para>Takes a following value, setting the debugging level from
 it. This option will generally only be of interest to developers;
 consult the source code for details.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-l</term>
+<listitem><para>Takes a following filename, logs traffic to that file.
+Each log line consists of three |-separated fields; a numeric
+timestamp in Unix time, the fqdn of the sending server, and the
+message data.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-V</term>

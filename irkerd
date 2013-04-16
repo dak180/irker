@@ -391,6 +391,7 @@ class Irker:
         self.irc.add_global_handler("featurelist", self._handle_features)
         self.irc.add_global_handler("disconnect", self._handle_disconnect)
         self.irc.add_global_handler("kick", self._handle_kick)
+        self.irc.add_global_handler("all_raw_messages", self._handle_all_raw_messages)
         thread = threading.Thread(target=self.irc.process_forever)
         thread.setDaemon(True)
         self.irc._thread = thread
@@ -425,7 +426,8 @@ class Irker:
                 arguments = arguments()
             for lump in arguments:
                 if lump.startswith("DEAF="):
-                    connection.mode(cxt.nickname(), "+"+lump[5:])
+                    if not logfile:
+                        connection.mode(cxt.nickname(), "+"+lump[5:])
                 elif lump.startswith("MAXCHANNELS="):
                     m = int(lump[12:])
                     for pref in "#&+":
@@ -453,13 +455,18 @@ class Irker:
     def _handle_kick(self, connection, event):
         "Server hung up the connection."
         target = event.target
-        # irclib 5.0 compatibility, because the maintainer continues to be a
-        # fool.
+        # irclib 5.0 compatibility, because the maintainer continues
+        # to be a fool.
         if callable(target):
             target = target()
         self.debug(1, "irker has been kicked from %s on %s" % (target, connection.server))
         if connection.context:
             connection.context.handle_kick(target)
+    def _handle_all_raw_messages(self, connection, event):
+        "Log all messages when in watcher mode."
+        with open(logfile, "w") as logfp:
+            logfp.write("%03f|%s|%s\n" % \
+                             (time.time(), event.source, event.arguments[0]))
     def handle(self, line):
         "Perform a JSON relay request."
         try:
@@ -531,12 +538,15 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
 
 if __name__ == '__main__':
     debuglvl = 0
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:V")
+    logfile = None
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:V:l:")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
             if debuglvl > 1:
                 logging.basicConfig(level=logging.DEBUG)
+        elif opt == '-l':	# Logfile mode - report traffic read in
+            logfile = val
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irkerd version %s\n" % version)
             sys.exit(0)
