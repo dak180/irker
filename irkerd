@@ -479,8 +479,9 @@ class Irker:
             connection.context.handle_kick(target)
     def _handle_all_raw_messages(self, _connection, event):
         "Log all messages when in watcher mode."
-        with open(logfile, "a") as logfp:
-            logfp.write("%03f|%s|%s\n" % \
+        if logfile:
+            with open(logfile, "a") as logfp:
+                logfp.write("%03f|%s|%s\n" % \
                              (time.time(), event.source, event.arguments[0]))
     def handle(self, line):
         "Perform a JSON relay request."
