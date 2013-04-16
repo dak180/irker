@@ -21,6 +21,7 @@
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-l <replaceable>logfile</replaceable></arg>
      <arg>-n <replaceable>nick</replaceable></arg>
+     <arg>-p <replaceable>password</replaceable></arg>
      <arg>-V</arg>
 </cmdsynopsis>
 </refsynopsisdiv>
@@ -86,6 +87,12 @@ message data.</para></listitem>
 to be used. If the nick contains a numeric format element
 (such as %03d) it is used to generate suffixed fallback names
 in the event of a nick collision.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-p</term>
+<listitem><para>Takes a following value, setting a nickserv
+password to be used. If given, this password is shipped to
+authenticate the nick on receipt of a welcom message.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-V</term>
