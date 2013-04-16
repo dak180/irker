@@ -57,10 +57,11 @@ colon, as shown in the third example; otherwise
 <application>irkerd</application> sends messages to the the default 6667 IRC
 port of each server.</para>
 
-<para>An empty message is legal and will cause 
+<para>An empty message is legal and will cause
 <application>irkerd</application> to join the target channels without
 actually emitting a message.  This may be useful for advertising that
-an instance is up and running.</para>
+an instance is up and running, or for joining a channel to log its
+traffic.</para>
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
@@ -78,7 +79,7 @@ consult the source code for details.</para></listitem>
 <term>-l</term>
 <listitem><para>Takes a following filename, logs traffic to that file.
 Each log line consists of three |-separated fields; a numeric
-timestamp in Unix time, the fqdn of the sending server, and the
+timestamp in Unix time, the FQDN of the sending server, and the
 message data.</para></listitem>
 </varlistentry>
 <varlistentry>
