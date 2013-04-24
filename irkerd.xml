@@ -23,6 +23,7 @@
      <arg>-n <replaceable>nick</replaceable></arg>
      <arg>-p <replaceable>password</replaceable></arg>
      <arg>-V</arg>
+	 <arg>-h</arg>
 </cmdsynopsis>
 </refsynopsisdiv>
 
@@ -98,6 +99,11 @@ authenticate the nick on receipt of a welcom message.</para></listitem>
 <varlistentry>
 <term>-V</term>
 <listitem><para>Write the program version to stdout and
+terminate.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-h</term>
+<listitem><para>Print usage instructions and
 terminate.</para></listitem>
 </varlistentry>
 </variablelist>

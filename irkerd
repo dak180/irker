@@ -552,12 +552,31 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
         #socket = self.request[1]
         irker.handle(data)
 
+def usage():
+    sys.stdout.write("""
+Usage:
+  irkerd [-d debuglevel] [-l logfile] [-n nick] [-p password] [-V] [-h]
+
+Options
+  -d    set debug level
+  -l    set logfile
+  -n    set nick-style
+  -p    set nickserv password
+  -V    return irkerd version
+  -h    print this help dialog
+""")
+
 if __name__ == '__main__':
     debuglvl = 0
     namestyle = "irker%03d"
     password = None
     logfile = None
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:n:p:V")
+    try:
+        (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:n:p:Vh")
+    except getopt.GetoptError as e:
+        sys.stderr.write("%s" % e)
+        usage()
+        sys.exit(1)
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
@@ -571,6 +590,9 @@ if __name__ == '__main__':
             password = val
         elif opt == '-V':	# Emit version and exit
             sys.stdout.write("irkerd version %s\n" % version)
+            sys.exit(0)
+        elif opt == '-h':
+            usage()
             sys.exit(0)
     fallback = re.search("%.*d", namestyle)
     irker = Irker(debuglevel=debuglvl)
