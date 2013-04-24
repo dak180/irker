@@ -557,7 +557,7 @@ if __name__ == '__main__':
     namestyle = "irker%03d"
     password = None
     logfile = None
-    (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:n:p:V:")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:n:p:V")
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
