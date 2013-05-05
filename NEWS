@@ -1,6 +1,9 @@
 			irker history 
 
-1.18
+1.19 @ 2013-05-06
+  Fixed a minor bug in argument processing
+
+1.18 @ 2013-04-16
   Added -l option; irker can now be used as a channel monitor.
   Added -n and -p option: the nick can be forced and authenticated.
 
