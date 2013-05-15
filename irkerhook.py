@@ -195,7 +195,11 @@ class GenericExtractor:
 
 def has(dirname, paths):
     "Test for existence of a list of paths."
-    return all([os.path.exists(os.path.join(dirname, x)) for x in paths])
+    # all() is a python2.5 construct
+    for exists in [os.path.exists(os.path.join(dirname, x)) for x in paths]:
+        if not exists:
+            return False
+    return True
 
 # VCS-dependent code begins here
 
@@ -265,9 +269,9 @@ class GitExtractor(GenericExtractor):
         # Design choice: for git we ship only the first line, which is
         # conventionally supposed to be a summary of the commit.  Under
         # other VCSes a different choice may be appropriate.
-        metainfo = do("git log -1 '--pretty=format:%an <%ae>|%s' " + shellquote(commit.commit))
-        (commit.author, _, commit.logmsg) = metainfo.partition("|")
-        commit.mail = commit.author.split()[-1].strip("<>")
+        commit.author_name = do("git log -1 '--pretty=format:%an' " + shellquote(commit.commit))
+        commit.mail = do("git log -1 '--pretty=format:%ae' " + shellquote(commit.commit))
+        commit.logmsg = do("git log -1 '--pretty=format:%s' " + shellquote(commit.commit))
         # This discards the part of the author's address after @.
         # Might be be nice to ship the full email address, if not
         # for spammers' address harvesters - getting this wrong
