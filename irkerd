@@ -38,7 +38,7 @@ CHANNEL_TTL = (3 * 60 * 60)	# Time to live, seconds from last transmit
 DISCONNECT_TTL = (24 * 60 * 60)	# Time to live, seconds from last connect
 UNSEEN_TTL = 60			# Time to live, seconds since first request
 CHANNEL_MAX = 18		# Max channels open per socket (default)
-ANTI_FLOOD_DELAY = 0.5		# Anti-flood delay after transmissions, seconds
+ANTI_FLOOD_DELAY = 1.0		# Anti-flood delay after transmissions, seconds
 ANTI_BUZZ_DELAY = 0.09		# Anti-buzz delay after queue-empty check
 CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
