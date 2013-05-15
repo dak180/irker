@@ -94,11 +94,13 @@ class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
     booleans = ["tcp"]
     numerics = ["maxchannels"]
+    strings = ["email"]
     def __init__(self, arguments):
         self.arguments = arguments
         self.project = None
         self.repo = None
         # These aren't really repo data but they belong here anyway...
+        self.email = None
         self.tcp = True
         self.tinyifier = default_tinyifier
         self.server = None
@@ -183,6 +185,8 @@ class GenericExtractor:
                     setattr(self, key, False)
             elif key in GenericExtractor.numerics:
                 setattr(self, key, int(val))
+            elif key in GenericExtractor.strings:
+                setattr(self, key, val)
         if not self.project:
             sys.stderr.write("irkerhook.py: no project name set!\n")
             raise SystemExit(1)
@@ -217,6 +221,7 @@ class GitExtractor(GenericExtractor):
         self.repo = do("git config --get irker.repo")
         self.server = do("git config --get irker.server")
         self.channels = do("git config --get irker.channels")
+        self.email = do("git config --get irker.email")
         self.tcp = do("git config --bool --get irker.tcp")
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.tinyifier = do("git config --get irker.tinyifier") or default_tinyifier
@@ -350,6 +355,7 @@ class HgExtractor(GenericExtractor):
         self.repo = ui.config('irker', 'repo')
         self.server = ui.config('irker', 'server')
         self.channels = ui.config('irker', 'channels')
+        self.email = ui.config('irker', 'email')
         self.tcp = str(ui.configbool('irker', 'tcp'))  # converted to bool again in do_overrides
         self.template = '%(bold)s%(project)s:%(reset)s %(green)s%(author)s%(reset)s %(repo)s:%(yellow)s%(branch)s%(reset)s * %(bold)s%(rev)s%(reset)s / %(bold)s%(files)s%(reset)s: %(logmsg)s %(brown)s%(url)s%(reset)s'
         self.tinyifier = ui.config('irker', 'tinyifier') or default_tinyifier
@@ -451,7 +457,22 @@ def ship(extractor, commit, debug):
         print message
     elif channels:
         try:
-            if extractor.tcp:
+            if extractor.email:
+                # We can't really figure out what our SF username is without
+                # exploring our environment. The mail pipeline doesn't care
+                # about who sent the mail, other than being from sourceforge.
+                # A better way might be to simply call mail(1)
+                sender = "irker@users.sourceforge.net"
+                msg = """From: %(sender)s
+Subject: irker json
+
+%(message)s""" % {"sender":sender, "message":message}
+                import smtplib
+                smtp = smtplib.SMTP()
+                smtp.connect()
+                smtp.sendmail(sender, extractor.email, msg)
+                smtp.quit()
+            elif extractor.tcp:
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.connect((extractor.server or default_server, IRKER_PORT))
