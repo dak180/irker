@@ -82,6 +82,13 @@ to reside. Defaults to "localhost".</para>
 </listitem>
 </varlistentry>
 <varlistentry>
+<term>email</term>
+<listitem>
+<para>If set, use email for communication rather than TCP or UDP.
+The value is used as the target mail address.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
 <term>tcp</term>
 <listitem>
 <para>If "true", use TCP for communication; if "false", use UDP.
