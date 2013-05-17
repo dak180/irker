@@ -19,7 +19,7 @@ def send(target, message):
         s = socket.create_connection(("localhost", 6659))
         s.sendall(json.dumps(data))
     except socket.error, e:
-        sys.stderr.write("irkerd: server launch failed: %r\n" % e)
+        sys.stderr.write("irkerd: write to server failed: %r\n" % e)
 
 target = sys.argv[1]
 if not "irc:" in target:
