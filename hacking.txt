@@ -37,7 +37,7 @@ type switch. It can deduce the repo type by looking, so it should.
 
 2. Do 'make pylint' to audit the code.
 
-3. Run irkerd and irkerhook.py; look at #irker on freenode to verify.
+3. Run irk with a sample message; look at #irker on freenode to verify.
 
 4. Bump the version numbers in irkerd and irkerhook.py
 
