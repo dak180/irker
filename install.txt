@@ -16,6 +16,17 @@ humans watching irkerd's output, are mere spam).
 See the security.txt document for a detailed discussion of security
 and DoS vulnerabilities related to irker.
 
+== Prerequisites ==
+
+You will need either 
+
+1. Python at version 2.6 or later, which has JSON built in
+
+2. Python at version no older than 2.4, and a version of the
+   simplejson library installed that it can use.  Some newer
+   versions of simplejson discard 2.4 compatibility; 2.0.9
+   is known to work.
+
 == Installing irkerd ==
 
 irker needs to run constantly, watching for TCP and UDP traffic on
@@ -29,6 +40,10 @@ it can be used to spam IRC channels while masking the source address.
 
 You will need to have Jason Coombs's irc library where Python can see
 it.  See <http://pypi.python.org/pypi/irc/>; use version 3.4 or later.
+
+Some irclib versions after 5.0 may produce problems if you try to ship
+non-ASCII Unicode through them; this is not an irker bug, and should be
+kicked upstrean to the irclib maintainer.
 
 The file org.catb.irkerd.plist is a Mac OS/X plist that can be
 installed to launch irkerd as a boot-time service on that system.
@@ -49,6 +64,12 @@ git update script, you can simply replace this
 with this:
 
 /path/to/irkerhook.py --refname=${refname} $(git rev-list ${oldhead}..${newhead} | tac)
+
+SourceForge is a special case: see
+
+https://github.com/AI0867/sf-git-irker-pipeline
+
+for tools and instructions on how to work around its limitations.
 
 == Testing ==
 

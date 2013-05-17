@@ -1,5 +1,8 @@
 			irker history 
 
+1.21 @
+  An email delivery method, suitable for use on SourceForge.
+
 1.20 @ 2013-05-17
   Compatibility back to Python 2.4 (provided simplejson is present).
   Increased anti-flood delay to avoid trouble with freenode.
