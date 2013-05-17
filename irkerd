@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import with_statement
 """
 irkerd - a simple IRC multiplexer daemon
 
@@ -26,6 +25,8 @@ the irc client library at version >= 3.4 which requires 2.6: see
 
 http://pypi.python.org/pypi/irc/
 """
+from __future__ import with_statement
+
 # These things might need tuning
 
 HOST = "localhost"
