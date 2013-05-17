@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# Illustrates how to test irkerd.  Requires that the irkerd source
-# be in the current directory.
+# Illustrates how to test irkerd.
 #
 # First argument must be a channel URL. If it does not begin with "irc", 
 # the base URL for freenode is prepended.
@@ -25,7 +24,7 @@ def send(target, message):
     except socket.error, e:
         sys.stderr.write("irkerd: write to server failed: %r\n" % e)
 
-spawn = None
+# Spawn an irkerd instance if none is running.
 try:
     # irkerd might already be running
     s = socket.create_connection(("localhost", 6659))
