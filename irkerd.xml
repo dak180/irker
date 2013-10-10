@@ -45,6 +45,7 @@ Examples:
 {"to":"irc://chat.freenode.net/git-ciabot", "privmsg":"Hello, world!"}
 {"to":["irc://chat.freenode.net/#git-ciabot","irc://chat.freenode.net/#gpsd"],"privmsg":"Multichannel test"}
 {"to":"irc://chat.hypothetical.net:6668/git-ciabot", "privmsg":"Hello, world!"}
+{"to":"irc://chat.hypothetical.net:6668/git-private?key=topsecret", "privmsg":"Keyed channel test"}
 </programlisting></para>
 
 <para>If the channel part of the URL does not have one of the prefix
@@ -57,6 +58,11 @@ shipping - <emphasis>unless</emphasis>the channel part has the suffix
 colon, as shown in the third example; otherwise
 <application>irkerd</application> sends messages to the the default 6667 IRC
 port of each server.</para>
+
+<para>To join password-protected (mode +k) channels, the channel part of the
+URL may be followed with a query-string indicating the channel key, of the
+form <quote>?secret</quote> or <quote>?key=secret</quote>, where
+<quote>secret</quote> is the channel key.</para>
 
 <para>An empty message is legal and will cause
 <application>irkerd</application> to join the target channels without

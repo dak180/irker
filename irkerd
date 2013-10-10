@@ -154,20 +154,20 @@ class Connection:
                               % (self.servername, outof))
         qcopy = []
         while not self.queue.empty():
-            (channel, message) = self.queue.get()
+            (channel, message, key) = self.queue.get()
             if channel != outof:
-                qcopy.append((channel, message))
-        for (channel, message) in qcopy:
-            self.queue.put((channel, message))
+                qcopy.append((channel, message, key))
+        for (channel, message, key) in qcopy:
+            self.queue.put((channel, message, key))
         self.status = "ready"
-    def enqueue(self, channel, message):
+    def enqueue(self, channel, message, key):
         "Enque a message for transmission."
         if self.thread is None or not self.thread.is_alive():
             self.status = "unseen"
             self.thread = threading.Thread(target=self.dequeue)
             self.thread.setDaemon(True)
             self.thread.start()
-        self.queue.put((channel, message))
+        self.queue.put((channel, message, key))
     def dequeue(self):
         "Try to ship pending messages from the queue."
         try:
@@ -252,9 +252,9 @@ class Connection:
                     self.status = "expired"
                     break
                 elif self.status == "ready":
-                    (channel, message) = self.queue.get()
+                    (channel, message, key) = self.queue.get()
                     if channel not in self.channels_joined:
-                        self.connection.join(channel)
+                        self.connection.join(channel, key=key)
                         self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
                     # An empty message might be used as a keepalive or
                     # to join a channel for logging, so suppress the
@@ -339,6 +339,10 @@ class Target():
             self.channel = self.channel[:-7]
         if self.channel and not isnick and self.channel[0] not in "#&+":
             self.channel = "#" + self.channel
+        # support both channel?secret and channel?key=secret
+        self.key = None
+        if parsed.query:
+            self.key = re.sub("^key=", "", parsed.query)
         self.port = int(ircport)
     def valid(self):
         "Both components must be present for a valid target."
@@ -354,7 +358,7 @@ class Dispatcher:
         self.servername = servername
         self.port = port
         self.connections = []
-    def dispatch(self, channel, message):
+    def dispatch(self, channel, message, key):
         "Dispatch messages for our server-port combination."
         # First, check if there is room for another channel
         # on any of our existing connections.
@@ -362,7 +366,7 @@ class Dispatcher:
         eligibles = [x for x in connections if x.joined_to(channel)] \
                     or [x for x in connections if x.accepting(channel)]
         if eligibles:
-            eligibles[0].enqueue(channel, message)
+            eligibles[0].enqueue(channel, message, key)
             return
         # All connections are full up. Look for one old enough to be
         # scavenged.
@@ -377,14 +381,14 @@ class Dispatcher:
             found_connection.part(drop_channel, "scavenged by irkerd")
             del found_connection.channels_joined[drop_channel]
             #time.sleep(ANTI_FLOOD_DELAY)
-            found_connection.enqueue(channel, message)
+            found_connection.enqueue(channel, message, key)
             return
         # Didn't find any channels with no recent activity
         newconn = Connection(self.irker,
                              self.servername,
                              self.port)
         self.connections.append(newconn)
-        newconn.enqueue(channel, message)
+        newconn.enqueue(channel, message, key)
     def live(self):
         "Does this server-port combination have any live connections?"
         self.connections = [x for x in self.connections if x.live()]
@@ -511,7 +515,7 @@ class Irker:
                                 return
                             if target.server() not in self.servers:
                                 self.servers[target.server()] = Dispatcher(self, target.servername, target.port)
-                            self.servers[target.server()].dispatch(target.channel, message)
+                            self.servers[target.server()].dispatch(target.channel, message, target.key)
                             # GC dispatchers with no active connections
                             servernames = self.servers.keys()
                             for servername in servernames:
