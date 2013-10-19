@@ -43,7 +43,7 @@ type switch. It can deduce the repo type by looking, so it should.
 
 5. Update the NEWS file
 
-6. make dist; make release
+6. make release
 
 == Thanks where due == 
 
