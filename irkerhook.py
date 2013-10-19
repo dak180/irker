@@ -88,7 +88,7 @@ class Commit:
                     self.url = webview
             except IOError:
                 self.url = ""
-        return self.template % self.__dict__
+        return unicode(self.template % self.__dict__, "utf-8")
 
 class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
