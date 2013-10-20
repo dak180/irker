@@ -394,12 +394,12 @@ class Connection:
     def handle_welcome(self):
         "The server says we're OK, with a non-conflicting nick."
         self.status = "ready"
-        self.irker.debug(1, "nick %s accepted" % self.nickname())
+        self.irker.irc.debug(1, "nick %s accepted" % self.nickname())
         if password:
             self.connection.privmsg("nickserv", "identify %s" % password)
     def handle_badnick(self):
         "The server says our nick is ill-formed or has a conflict."
-        self.irker.debug(1, "nick %s rejected" % self.nickname())
+        self.irker.irc.debug(1, "nick %s rejected" % self.nickname())
         if fallback:
             # Randomness prevents a malicious user or bot from
             # anticipating the next trial name in order to block us
@@ -459,7 +459,7 @@ class Connection:
                         self.status = "expired"
                         break
                     elif xmit_timeout or ping_timeout:
-                        self.irker.debug(1, "timing out connection to %s at %s (ping_timeout=%s, xmit_timeout=%s)" % (self.servername, time.asctime(), ping_timeout, xmit_timeout))
+                        self.irker.irc.debug(1, "timing out connection to %s at %s (ping_timeout=%s, xmit_timeout=%s)" % (self.servername, time.asctime(), ping_timeout, xmit_timeout))
                         with self.irker.irc.mutex:
                             self.connection.context = None
                             self.connection.quit("transmission timeout")
@@ -498,7 +498,7 @@ class Connection:
                             if hasattr(self.connection, "buffer"):
                                 self.connection.buffer.errors = 'replace'
                             self.status = "handshaking"
-                            self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
+                            self.irker.irc.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
                         except IRCServerConnectionError:
@@ -524,7 +524,7 @@ class Connection:
                     (channel, message, key) = self.queue.get()
                     if channel not in self.channels_joined:
                         self.connection.join(channel, key=key)
-                        self.irker.debug(1, "joining %s on %s." % (channel, self.servername))
+                        self.irker.irc.debug(1, "joining %s on %s." % (channel, self.servername))
                     # An empty message might be used as a keepalive or
                     # to join a channel for logging, so suppress the
                     # privmsg send unless there is actual traffic.
@@ -540,10 +540,10 @@ class Connection:
                             try:
                                 self.connection.privmsg(channel, segment)
                             except ValueError as err:
-                                self.irker.debug(1, "irclib rejected a message to %s on %s because: %s" % (channel, self.servername, str(err)))
+                                self.irker.irc.debug(1, "irclib rejected a message to %s on %s because: %s" % (channel, self.servername, str(err)))
                             time.sleep(ANTI_FLOOD_DELAY)
                     self.last_xmit = self.channels_joined[channel] = time.time()
-                    self.irker.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
+                    self.irker.irc.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                     self.queue.task_done()
         except:
             (exc_type, _exc_value, exc_traceback) = sys.exc_info()
@@ -689,10 +689,6 @@ class Irker:
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irkerd: " + errmsg + "\n")
-    def debug(self, level, errmsg):
-        "Debugging information."
-        if self.debuglevel >= level:
-            sys.stderr.write("irkerd: %s\n" % errmsg)
     def _handle_ping(self, connection, _event):
         "PING arrived, bump the last-received time for the connection."
         if connection.context:
@@ -721,7 +717,7 @@ class Irker:
                     m = int(lump[12:])
                     for pref in "#&+":
                         cxt.channel_limits[pref] = m
-                    self.debug(1, "%s maxchannels is %d"
+                    self.irc.debug(1, "%s maxchannels is %d"
                                % (connection.server, m))
                 elif lump.startswith("CHANLIMIT=#:"):
                     limits = lump[10:].split(",")
@@ -731,13 +727,13 @@ class Irker:
                             limit = int(limit)
                             for c in prefixes:
                                 cxt.channel_limits[c] = limit
-                        self.debug(1, "%s channel limit map is %s"
+                        self.irc.debug(1, "%s channel limit map is %s"
                                    % (connection.server, cxt.channel_limits))
                     except ValueError:
                         self.logerr("ill-formed CHANLIMIT property")
     def _handle_disconnect(self, connection, _event):
         "Server hung up the connection."
-        self.debug(1, "server %s disconnected" % connection.server)
+        self.irc.debug(1, "server %s disconnected" % connection.server)
         connection.close()
         if connection.context:
             connection.context.handle_disconnect()
@@ -748,7 +744,7 @@ class Irker:
         # to be a fool.
         if callable(target):
             target = target()
-        self.debug(1, "irker has been kicked from %s on %s" % (target, connection.server))
+        self.irc.debug(1, "irker has been kicked from %s on %s" % (target, connection.server))
         if connection.context:
             connection.context.handle_kick(target)
     def _handle_every_raw_message(self, _connection, event):
@@ -868,7 +864,7 @@ if __name__ == '__main__':
             sys.exit(0)
     fallback = re.search("%.*d", namestyle)
     irker = Irker(debuglevel=debuglvl)
-    irker.debug(1, "irkerd version %s" % version)
+    irker.irc.debug(1, "irkerd version %s" % version)
     try:
         tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
         udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
