@@ -128,8 +128,9 @@ class IRCClient():
         # the shared state of an IRC object running this function.
         while True:
             with self.mutex:
-                sockets = [x.socket for x in self.server_connections if x is not None]
-                sockets = [x for x in sockets if x is not None]
+                connected = [x for x in self.server_connections
+                             if x is not None and x.socket is not None]
+                sockets = [x.socket for x in connected]
                 if sockets:
                     (insocks, _o, _e) = select.select(sockets, [], [], timeout)
                     for s, c in itertools.product(insocks, self.server_connections):
