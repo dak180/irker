@@ -340,7 +340,7 @@ class Target():
         if self.channel and not isnick and self.channel[0] not in "#&+":
             self.channel = "#" + self.channel
         # support both channel?secret and channel?key=secret
-        self.key = None
+        self.key = ""
         if parsed.query:
             self.key = re.sub("^key=", "", parsed.query)
         self.port = int(ircport)
