@@ -20,11 +20,9 @@ option prints the program version and exits.
 Design and code by Eric S. Raymond <esr@thyrsus.com>. See the project
 resource page at <http://www.catb.org/~esr/irker/>.
 
-Requires Python 2.6 or 2.5 with the simplejson library installed, and
-the irc client library at version >= 3.4 which requires 2.6: see
-
-http://pypi.python.org/pypi/irc/
+Requires Python 2.6 or 2.5 with the simplejson library installed.
 """
+
 from __future__ import with_statement
 
 # These things might need tuning
@@ -48,8 +46,8 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 version = "1.20"
 
 import sys, getopt, urlparse, time, random, socket, signal, re
-import threading, Queue, SocketServer
-import irc.client, logging
+import threading, Queue, SocketServer, select, itertools
+import logging
 try:
     import simplejson as json	# Faster, also makes us Python-2.4-compatible
 except ImportError:
@@ -88,13 +86,279 @@ except ImportError:
 # same problem - there is little point in reliable delivery to a relay
 # that is down or unreliable.
 #
-# This code uses only NICK, JOIN, PART, MODE, and PRIVMSG. It is strictly
-# compliant to RFC1459, except for the interpretation and use of the
-# DEAF and CHANLIMIT and (obsolete) MAXCHANNELS features.  CHANLIMIT
-# is as described in the Internet RFC draft
+# This code uses only NICK, JOIN, PART, MODE, PRIVMSG, USER, and QUIT. 
+# It is strictly compliant to RFC1459, except for the interpretation and
+# use of the DEAF and CHANLIMIT and (obsolete) MAXCHANNELS features.
+#
+# CHANLIMIT is as described in the Internet RFC draft
 # draft-brocklesby-irc-isupport-03 at <http://www.mirc.com/isupport.html>.
 # The ",isnick" feature is as described in
 # <http://ftp.ics.uci.edu/pub/ietf/uri/draft-mirashi-url-irc-01.txt>.
+
+# Historical note: the IRCClient and IRCServerConnection classes
+# (~270LOC) replace the overweight, overcomplicated 3KLOC mass of
+# irclib code that irker formerly used as a service library.  They
+# still look similar to parts of irclib because I contributed to that
+# code before giving up on it.
+
+class IRCError(Exception):
+    "An IRC exception"
+    pass
+
+class IRCClient():
+    "An IRC client session to one or more servers."
+    def __init__(self):
+        self.mutex = threading.RLock()
+        self.server_connections = []
+        self.event_handlers = {}
+        self.add_event_handler("ping",
+                               lambda c, e: c.ship("PONG %s" % e.target))
+
+    def newserver(self):
+        "Initialize a new server-connection object."
+        conn = IRCServerConnection(self)
+        with self.mutex:
+            self.server_connections.append(conn)
+        return conn
+
+    def spin(self, timeout=0.2):
+        "Spin processing data from connections forever."
+        # Outer loop should specifically *not* be mutex-locked.
+        # Otherwise no other thread would ever be able to change
+        # the shared state of an IRC object running this function.
+        while True:
+            with self.mutex:
+                sockets = [x.socket for x in self.server_connections if x is not None]
+                sockets = [x for x in sockets if x is not None]
+                if sockets:
+                    (insocks, _o, _e) = select.select(sockets, [], [], timeout)
+                    with self.mutex:
+                        for s, c in itertools.product(insocks, self.server_connections):
+                            if s == c.socket:
+                                c.consume()
+
+                else:
+                    time.sleep(timeout)
+
+    def add_event_handler(self, event, handler):
+        "Set a handler to be called later."
+        with self.mutex:
+            event_handlers = self.event_handlers.setdefault(event, [])
+            event_handlers.append(handler)
+
+    def handle_event(self, connection, event):
+        with self.mutex:
+            h = self.event_handlers
+            th = sorted(h.get("all_events", []) + h.get(event.type, []))
+            for handler in th:
+                handler(connection, event)
+
+    def drop_connection(self, connection):
+        with self.mutex:
+            self.server_connections.remove(connection)
+
+class LineBufferedStream():
+    "Line-buffer a read stream."
+    crlf_re = re.compile(b'\r?\n')
+
+    def __init__(self):
+        self.buffer = ''
+
+    def append(self, newbytes):
+        self.buffer += newbytes
+
+    def lines(self):
+        "Iterate over lines in the buffer."
+        lines = LineBufferedStream.crlf_re.split(self.buffer)
+        self.buffer = lines.pop()
+        return iter(lines)
+
+    def __iter__(self):
+        return self.lines()
+
+class IRCServerConnectionError(IRCError):
+    pass
+
+class IRCServerConnection():
+    command_re = re.compile("^(:(?P<prefix>[^ ]+) +)?(?P<command>[^ ]+)( *(?P<argument> .+))?")
+    # The full list of numeric-to-event mappings is in Perl's Net::IRC.
+    # We only need to ensure that if some ancient server throws numerics
+    # for the ones we actually want to catch, they're mapped.
+    codemap = {
+        "001": "welcome",
+        "005": "featurelist",
+        "432": "erroneusnickname",
+        "433": "nicknameinuse",
+        "436": "nickcollision",
+        "437": "unavailresource",
+    }
+
+    def __init__(self, master):
+        self.master = master
+        self.socket = None
+
+    def connect(self, server, port, nickname,
+                password=None, username=None, ircname=None):
+        log.debug("connect(server=%r, port=%r, nickname=%r, ...)",
+                  server, port, nickname)
+        if self.socket is not None:
+            self.disconnect("Changing servers")
+
+        self.buffer = LineBufferedStream()
+        self.event_handlers = {}
+        self.real_server_name = ""
+        self.server = server
+        self.port = port
+        self.server_address = (server, port)
+        self.nickname = nickname
+        self.username = username or nickname
+        self.ircname = ircname or nickname
+        self.password = password
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.bind(('', 0))
+            self.socket.connect(self.server_address)
+        except socket.error as err:
+            raise IRCServerConnectionError("Couldn't connect to socket: %s" % err)
+
+        if self.password:
+            self.ship("PASS " + self.password)
+        self.nick(self.nickname)
+        self.user(self.username, self.ircname)
+        return self
+
+    def close(self):
+        # Without this thread lock, there is a window during which
+        # select() can find a closed socket, leading to an EBADF error.
+        with self.master.mutex:
+            self.disconnect("Closing object")
+            self.master.drop_connection(self)
+
+    def consume(self):
+        try:
+            incoming = self.socket.recv(16384)
+        except socket.error:
+            # Server hung up on us.
+            self.disconnect("Connection reset by peer")
+            return
+        if not incoming:
+            # Dead air also indicates a connection reset.
+            self.disconnect("Connection reset by peer")
+            return
+
+        self.buffer.append(incoming)
+
+        for line in self.buffer:
+            log.debug("FROM: %s", line)
+
+            if not line:
+                continue
+
+            prefix = None
+            command = None
+            arguments = None
+            self.handle_event(Event("every_raw_message",
+                                     self.real_server_name,
+                                     None,
+                                     [line]))
+
+            m = IRCServerConnection.command_re.match(line)
+            if m.group("prefix"):
+                prefix = m.group("prefix")
+                if not self.real_server_name:
+                    self.real_server_name = prefix
+            if m.group("command"):
+                command = m.group("command").lower()
+            if m.group("argument"):
+                a = m.group("argument").split(" :", 1)
+                arguments = a[0].split()
+                if len(a) == 2:
+                    arguments.append(a[1])
+
+            command = IRCServerConnection.codemap.get(command, command)
+            if command in ["privmsg", "notice"]:
+                target = arguments.pop(0)
+            else:
+                target = None
+
+                if command == "quit":
+                    arguments = [arguments[0]]
+                elif command == "ping":
+                    target = arguments[0]
+                else:
+                    target = arguments[0]
+                    arguments = arguments[1:]
+
+            log.debug("command: %s, source: %s, target: %s, "
+                      "arguments: %s", command, prefix, target, arguments)
+            self.handle_event(Event(command, prefix, target, arguments))
+
+    def handle_event(self, event):
+        self.master.handle_event(self, event)
+        if event.type in self.event_handlers:
+            for fn in self.event_handlers[event.type]:
+                fn(self, event)
+
+    def is_connected(self):
+        return self.socket is not None
+
+    def disconnect(self, message=""):
+        if self.socket is None:
+            return
+        self.quit(message)
+        try:
+            self.socket.shutdown(socket.SHUT_WR)
+            self.socket.close()
+        except socket.error:
+            pass
+        del self.socket
+        self.socket = None
+        self.handle_event(Event("disconnect", self.server, "", [message]))
+
+    def join(self, channel, key=""):
+        self.ship("JOIN %s%s" % (channel, (key and (" " + key))))
+
+    def mode(self, target, command):
+        self.ship("MODE %s %s" % (target, command))
+
+    def nick(self, newnick):
+        self.ship("NICK " + newnick)
+
+    def part(self, channel, message=""):
+        cmd_parts = ['PART', channel]
+        if message:
+            cmd_parts.append(message)
+        self.ship(' '.join(cmd_parts))
+
+    def privmsg(self, target, text):
+        self.ship("PRIVMSG %s :%s" % (target, text))
+
+    def quit(self, message=""):
+        # Triggers an error that forces a disconnect.
+        self.ship("QUIT" + (message and (" :" + message)))
+
+    def user(self, username, realname):
+        self.ship("USER %s 0 * :%s" % (username, realname))
+
+    def ship(self, string):
+        "Ship a command to the server, appending CR/LF"
+        try:
+            self.socket.send(string + b'\r\n')
+            log.debug("TO: %s", string)
+        except socket.error:
+            self.disconnect("Connection reset by peer.")
+
+class Event(object):
+    def __init__(self, evtype, source, target, arguments=None):
+        self.type = evtype
+        self.source = source
+        self.target = target
+        if arguments is None:
+            arguments = []
+        self.arguments = arguments
+
+def is_channel(string):
+    return string and string[0] in "#&+!"
 
 class Connection:
     def __init__(self, irkerd, servername, port):
@@ -213,14 +477,14 @@ class Connection:
                 elif not self.connection:
                     # Queue is nonempty but server isn't connected.
                     with self.irker.irc.mutex:
-                        self.connection = self.irker.irc.server()
+                        self.connection = self.irker.irc.newserver()
                         self.connection.context = self
                         # Try to avoid colliding with other instances
                         self.nick_trial = random.randint(1, 990)
                         self.channels_joined = {}
                         try:
                             # This will throw
-                            # irc.client.ServerConnectionError on failure
+                            # IRCServerConnectionError on failure
                             self.connection.connect(self.servername,
                                                 self.port,
                                                 nickname=self.nickname(),
@@ -232,7 +496,7 @@ class Connection:
                             self.irker.debug(1, "XMIT_TTL bump (%s connection) at %s" % (self.servername, time.asctime()))
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
-                        except irc.client.ServerConnectionError:
+                        except IRCServerConnectionError:
                             self.status = "disconnected"
                 elif self.status == "handshaking":
                     if time.time() > self.last_xmit + HANDSHAKE_TTL:
@@ -401,18 +665,18 @@ class Irker:
     "Persistent IRC multiplexer."
     def __init__(self, debuglevel=0):
         self.debuglevel = debuglevel
-        self.irc = irc.client.IRC()
-        self.irc.add_global_handler("ping", self._handle_ping)
-        self.irc.add_global_handler("welcome", self._handle_welcome)
-        self.irc.add_global_handler("erroneusnickname", self._handle_badnick)
-        self.irc.add_global_handler("nicknameinuse", self._handle_badnick)
-        self.irc.add_global_handler("nickcollision", self._handle_badnick)
-        self.irc.add_global_handler("unavailresource", self._handle_badnick)
-        self.irc.add_global_handler("featurelist", self._handle_features)
-        self.irc.add_global_handler("disconnect", self._handle_disconnect)
-        self.irc.add_global_handler("kick", self._handle_kick)
-        self.irc.add_global_handler("all_raw_messages", self._handle_all_raw_messages)
-        thread = threading.Thread(target=self.irc.process_forever)
+        self.irc = IRCClient()
+        self.irc.add_event_handler("ping", self._handle_ping)
+        self.irc.add_event_handler("welcome", self._handle_welcome)
+        self.irc.add_event_handler("erroneusnickname", self._handle_badnick)
+        self.irc.add_event_handler("nicknameinuse", self._handle_badnick)
+        self.irc.add_event_handler("nickcollision", self._handle_badnick)
+        self.irc.add_event_handler("unavailresource", self._handle_badnick)
+        self.irc.add_event_handler("featurelist", self._handle_features)
+        self.irc.add_event_handler("disconnect", self._handle_disconnect)
+        self.irc.add_event_handler("kick", self._handle_kick)
+        self.irc.add_event_handler("every_raw_message", self._handle_every_raw_message)
+        thread = threading.Thread(target=self.irc.spin)
         thread.setDaemon(True)
         self.irc._thread = thread
         thread.start()
@@ -482,7 +746,7 @@ class Irker:
         self.debug(1, "irker has been kicked from %s on %s" % (target, connection.server))
         if connection.context:
             connection.context.handle_kick(target)
-    def _handle_all_raw_messages(self, _connection, event):
+    def _handle_every_raw_message(self, _connection, event):
         "Log all messages when in watcher mode."
         if logfile:
             with open(logfile, "a") as logfp:
@@ -572,6 +836,7 @@ Options
 """)
 
 if __name__ == '__main__':
+    log = logging.getLogger(__name__)
     debuglvl = 0
     namestyle = "irker%03d"
     password = None

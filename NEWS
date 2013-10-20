@@ -1,9 +1,10 @@
 			irker history 
 
-1.21 @ 
+2.0 @ 
   An email delivery method, suitable for use on SourceForge.
   irkerhook can now be used as a hg changegroup hook.
   Prevent misbehavior un UTF-8 in commit metadata.
+  The dependency on irclib is gone.
 
 1.20 @ 2013-05-17
   Compatibility back to Python 2.4 (provided simplejson is present).
