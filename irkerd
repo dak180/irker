@@ -132,10 +132,9 @@ class IRCClient():
                 sockets = [x for x in sockets if x is not None]
                 if sockets:
                     (insocks, _o, _e) = select.select(sockets, [], [], timeout)
-                    with self.mutex:
-                        for s, c in itertools.product(insocks, self.server_connections):
-                            if s == c.socket:
-                                c.consume()
+                    for s, c in itertools.product(insocks, self.server_connections):
+                        if s == c.socket:
+                            c.consume()
 
                 else:
                     time.sleep(timeout)
