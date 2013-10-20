@@ -1,13 +1,13 @@
 = Forge installation instructions =
 
-irker and irkerhook.py are intended to be installed on forge sites
+irker and irkerhook are intended to be installed on forge sites
 such as SourceForge, GitHub, Gitorious, Gna, and Savannah.  This
 file explains the theory of operation, how to install the code,
 and how to test it.
 
 == Theory of operation ==
 
-irkerhook.py creates JSON notification requests and ships them to
+irkerhook creates JSON notification requests and ships them to
 irkerd's listener socket.  irkerd run as a daemon in order to maintain
 all the client state required to post multiple notifications while generating
 minimum of join/leave messages (which, from the point of view of
@@ -27,6 +27,9 @@ You will need either
    versions of simplejson discard 2.4 compatibility; 2.0.9
    is known to work.
 
+3. Autorevision is required for installation, but not for running.
+   https://github.com/Autorevision/autorevision/releases[Latest Releases]
+
 == Installing irkerd ==
 
 irker needs to run constantly, watching for TCP and UDP traffic on
@@ -41,9 +44,9 @@ it can be used to spam IRC channels while masking the source address.
 The file org.catb.irkerd.plist is a Mac OS/X plist that can be
 installed to launch irkerd as a boot-time service on that system.
 
-== Installing irkerhook.py ==
+== Installing irkerhook ==
 
-Under git, a call to irkerhook.py should be installed in the update 
+Under git, a call to irkerhook should be installed in the update
 hook script of your repo.  Under Subversion, the call goes in your
 repo's post-commit script. Under Mercurial there are two different
 ways to install it. See the irkerhook manual page for details; the
@@ -56,7 +59,7 @@ git update script, you can simply replace this
 
 with this:
 
-/path/to/irkerhook.py --refname=${refname} $(git rev-list ${oldhead}..${newhead} | tac)
+/path/to/irkerhook --refname=${refname} $(git rev-list ${oldhead}..${newhead} | tac)
 
 SourceForge is a special case: see
 
@@ -67,11 +70,11 @@ for tools and instructions on how to work around its limitations.
 == Testing ==
 
 To verify that your repo produces well-formed JSON notifications,
-you can run irkerhook.py in the repo directory using the -n switch,
+you can run irkerhook in the repo directory using the -n switch,
 which emits JSON to standard output rather than attempting to ship
 to an irkerd instance.
 
-Then, start irkerd and call irkerhook.py while watching the freenode
+Then, start irkerd and call irkerhook while watching the freenode
 #commits channel.
 
 The 'irk' script is a little test tool that takes two arguments,

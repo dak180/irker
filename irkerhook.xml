@@ -17,7 +17,7 @@
 <refsynopsisdiv id='synopsis'>
 
 <cmdsynopsis>
-  <command>irkerhook.py</command>
+  <command>irkerhook</command>
      <arg>-n</arg>
      <arg>-V</arg>
      <group><arg rep='repeat'><replaceable>--variable=value</replaceable></arg></group>
@@ -27,7 +27,7 @@
 
 <refsect1 id='description'><title>DESCRIPTION</title>
 
-<para><application>irkerhook.py</application> is a Python script intended 
+<para><application>irkerhook</application> is a Python script intended
 to be called from the post-commit hook of a version-control repository. Its
 job is to collect information about the commit that fired the hook (and
 possibly preferences set by the repository owner) and ship that information
@@ -35,7 +35,7 @@ to an instance of <application>irkerd</application> for forwarding to
 various announcement channels.</para>
 
 <para>The proper invocation and behavior of 
-<application>irkerhook.py</application> varies depending on which
+<application>irkerhook</application> varies depending on which
 VCS (version-control system) is calling it.  There are four different places
 from which it may extract information:</para>
 
@@ -110,7 +110,7 @@ that will usually work with those systems.</para>
 
 <para>The magic cookies "%(host)s" and %(repo)s" may occur in this
 URL.  The former is expanded to the FQDN of the host on which
-<application>irkerhook.py</application> is running; the latter is
+<application>irkerhook</application> is running; the latter is
 expanded to the value of the "repo" variable.</para>
 </listitem>
 </varlistentry>
@@ -177,18 +177,18 @@ order. In a normal update script, the invocation should look like this</para>
 refname=$1
 old=$2
 new=$3
-irkerhook.py --refname=${refname} $(git rev-list --reverse ${old}..${new})
+irkerhook --refname=${refname} $(git rev-list --reverse ${old}..${new})
 </programlisting>
 
-<para>except that you'll need an absolute path for irkerhook.py.</para>
+<para>except that you'll need an absolute path for irkerhook.</para>
 
 <para>For testing purposes and backward compatibility, if you invoke
-<application>irkerhook.py</application> with no arguments (as in a
+<application>irkerhook</application> with no arguments (as in a
 post-commit hook) it will behave as though it had been called like
 this:</para>
 
 <programlisting>
-irkerhook.py --refname=refs/heads/master HEAD
+irkerhook --refname=refs/heads/master HEAD
 </programlisting>
 
 <para>However, this will not give the right result when you push to 
@@ -251,7 +251,7 @@ may have the following values:</para>
 
 <refsect2 id="svn"><title>Subversion</title>
 
-<para>Under Subversion, <application>irkerhook.py</application>
+<para>Under Subversion, <application>irkerhook</application>
 accepts a --repository option with value (the absolute pathname of the
 Subversion repository) and a commit argument (the numeric revision level of
 the commit).  The defaults are the current working directory and HEAD,
@@ -268,7 +268,7 @@ will look like this:</para>
 <programlisting>
 REPO=$1
 REV=$2
-irkerhook.py --repository=$REPO $REV
+irkerhook --repository=$REPO $REV
 </programlisting>
 
 <para>Other --variable=value settings may also be
@@ -300,7 +300,7 @@ that would have unhappy results.</para>
 
 <refsect2 id="hg"><title>Mercurial</title>
 
-<para>Under Mercurial, <application>irkerhook.py</application> can be
+<para>Under Mercurial, <application>irkerhook</application> can be
 invoked in two ways: either as a Python hook (preferred) or as a
 script.</para>
 
@@ -310,7 +310,7 @@ repository:</para>
 
 <programlisting>
 [hooks]
-	incoming.irker = python:/path/to/irkerhook.py:hg_hook
+	incoming.irker = python:/path/to/irkerhook:hg_hook
 </programlisting>
 
 <para>When called as a script, the hook accepts a --repository option
@@ -339,7 +339,7 @@ exists.</para>
 <application>irkerd</application>.</para>
 
 <para>You have to specify the <option>filtercmd</option> option, which
-will be the command <application>irkerhook.py</application> will
+will be the command <application>irkerhook</application> will
 run. This command should accept one arguments, which is a JSON
 representation of commit and extractor metadata (including the
 channels variable). The command should emit to standard output a JSON
@@ -370,7 +370,7 @@ error messages.</para>
 
 <refsect1 id='options'><title>OPTIONS</title>
 
-<para><application>irkerhook.py</application> takes the following
+<para><application>irkerhook</application> takes the following
 options:</para>
 
 <variablelist>

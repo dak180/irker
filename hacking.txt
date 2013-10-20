@@ -6,17 +6,17 @@ Points to you if some of this seems familiar from GPSD...
 
 === Keep mechanism and policy separate ===
 
-Mechanism goes in irkerd.  Policy goes in irkerhook.py
+Mechanism goes in irkerd.  Policy goes in irkerhook
 
 irkerd is intended to be super-simple and completely indifferent to
 what content passes through it.  It doesn't know, in any sense, that
 the use-case it was designed for is broadcasting notifications from
-version control systems. irkerhook.py is the part that knows about how
+version control systems. irkerhook is the part that knows about how
 to mine data from repositories and sets the format of notifications.
 
 === If you think the mechanism needs an option, think again ===
 
-Because irkerhook.py does policy, it takes policy options. Because
+Because irkerhook does policy, it takes policy options. Because
 irkerd is pure mechanism, it shouldn't need any.  If you think it
 does, you have almost certainly got a bug in your thinking.  Fix
 that before you modify code.
@@ -28,7 +28,7 @@ careless and failure-prone.  Therefore, whenever you make a user tell
 your code something the code can deduce for itself, you are
 introducing unnecessary inefficiency and unnecessary failure modes.
 
-This, in particular, is why irkerhook.py doesn't have a repository
+This, in particular, is why irkerhook doesn't have a repository
 type switch. It can deduce the repo type by looking, so it should.
 
 == Release procedure ==
@@ -39,9 +39,10 @@ type switch. It can deduce the repo type by looking, so it should.
 
 3. Run irk with a sample message; look at #irker on freenode to verify.
 
-4. Bump the version numbers in irkerd and irkerhook.py
+4. Update the NEWS file.
 
-5. Update the NEWS file
+5. Make a new tag using 'git tag -s' or 'git tag -a' (if you cannot use
+gpg to sign the tag).
 
 6. git commit -a
 
@@ -60,7 +61,7 @@ significant refactoring work.
 Daniel Franke <dfoxfranke@gmail.com> performed a security audit of irkerd.
 
 Georg Brandl <georg@python.org> contributed the Mercurial support in
-irkerhook.py and explained how to make Control-C work right.
+irkerhook and explained how to make Control-C work right.
 
 Laurent Bachelier <laurent@bachelier.name> fixed the Makefile so it 
 wouldn't break stuff and wrote the first version of the external 

@@ -1,6 +1,6 @@
 # Makefile for the irker relaying daemon
 
-VERS := $(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
+VERS := $(shell autorevision -s VCS_TAG -o ./autorevision.cache)
 SYSTEMDSYSTEMUNITDIR := $(shell pkg-config --variable=systemdsystemunitdir systemd)
 
 # `prefix`, `mandir` & `DESTDIR` can and should be set on the command
@@ -10,6 +10,18 @@ mandir ?= /share/man
 target = $(DESTDIR)$(prefix)
 
 docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1 irk.html irk.1
+
+cmd: irkerd irkerhook
+
+irkerd: irkerd.py
+	sed -e 's:&&IRKVERSION&&:$(VERS):g' irkerd.py > irkerd
+	chmod +x irkerd
+
+irkerhook: irkerhook.py
+	sed -e 's:&&IRKVERSION&&:$(VERS):g' irkerhook.py > irkerhook
+	chmod +x irkerhook
+
+man: irkerd.8 irkerhook.1 irk.1
 
 irkerd.8: irkerd.xml
 	xmlto man irkerd.xml
@@ -33,7 +45,7 @@ security.html: security.txt
 hacking.html: hacking.txt
 	asciidoc -o hacking.html hacking.txt
 
-install: irk.1 irkerd.8 irkerhook.1 uninstall
+install: man cmd uninstall
 	install -m 755 -o 0 -g 0 -d "$(target)/bin"
 	install -m 755 -o 0 -g 0 irkerd "$(target)/bin/irkerd"
 ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
@@ -56,7 +68,14 @@ endif
 	rm -f "$(target)$(mandir)/man1/irk.1"
 
 clean:
-	rm -f irkerd.8 irkerhook.1 irk.1 irker-*.tar.gz *~ *.html
+	rm -f irkerd irkerhook
+	rm -f irkerd.8 irkerhook.1 irk.1
+	rm -f irker-*.tar.gz *~
+	rm -f SHIPPER.* *.html
+
+# Not safe to run in a tarball
+devclean: clean
+	rm -f autorevision.cache
 
 PYLINTOPTS = --rcfile=/dev/null --reports=n \
 	--msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
@@ -93,6 +112,7 @@ SOURCES = \
 EXTRA_DIST = \
 	org.catb.irkerd.plist \
 	irkerd.service \
+	autorevision.cache \
 	irker-logo.png
 
 version:

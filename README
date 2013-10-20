@@ -4,11 +4,11 @@ irkerd is a specialized IRC client that runs as a daemon, allowing
 other programs to ship IRC notifications by sending JSON objects to a 
 listening socket. 
 
-It is meant to be used by hook scripts in version-control
-repositories, allowing them to send commit notifications to project
-IRC channels.  A hook script, irkerhook.py, supporting git, hg, and
-Subversion is included in the distribution; see the install.txt file
-for installation instructions.
+It is meant to be used by hook scripts in version-control repositories,
+allowing them to send commit notifications to project IRC channels.  A
+hook script, irkerhook, supporting git, hg, and Subversion is
+included in the distribution; see the install.asciidoc file for
+installation instructions.
 
 The advantage of using this daemon over individual scripted sends 
 is that it can maintain connection state for multiple channels,

@@ -10,3 +10,11 @@
 
 # HTML Docs
 /*.html
+
+# Products
+/irkerd
+/irkerhook
+/*.tar.gz
+
+# Other things
+autorevision.cache

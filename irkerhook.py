@@ -5,7 +5,7 @@
 # This script contains git porcelain and porcelain byproducts.
 # Requires Python 2.6, or 2.5 with the simplejson library installed.
 #
-# usage: irkerhook.py [-V] [-n] [--variable=value...] [commit_id...]
+# usage: irkerhook [-V] [-n] [--variable=value...] [commit_id...]
 #
 # This script is meant to be run in an update or post-commit hook.
 # Try it with -n to see the notification dumped to stdout and verify
@@ -37,7 +37,7 @@ default_channels = "irc://chat.freenode.net/#commits"
 # No user-serviceable parts below this line:
 #
 
-version = "2.13"
+version = "&&IRKVERSION&&"
 
 import os, sys, commands, socket, urllib, subprocess, locale, datetime, re
 from pipes import quote as shellquote
@@ -189,7 +189,7 @@ class GenericExtractor:
             elif key in GenericExtractor.strings:
                 setattr(self, key, val)
         if not self.project:
-            sys.stderr.write("irkerhook.py: no project name set!\n")
+            sys.stderr.write("irkerhook: no project name set!\n")
             raise SystemExit(1)
         if not self.repo:
             self.repo = self.project.lower()
@@ -248,7 +248,7 @@ class GitExtractor(GenericExtractor):
                         self.project = self.project[0:-4]
                     break
                 elif here == '/':
-                    sys.stderr.write("irkerhook.py: no git repo below root!\n")
+                    sys.stderr.write("irkerhook: no git repo below root!\n")
                     sys.exit(1)
                 here = os.path.dirname(here)
         # Get overrides
@@ -396,7 +396,7 @@ def hg_hook(ui, repo, **kwds):
     # To be called from a Mercurial "commit", "incoming" or "changegroup" hook.
     # Example configuration:
     # [hooks]
-    # incoming.irker = python:/path/to/irkerhook.py:hg_hook
+    # incoming.irker = python:/path/to/irkerhook:hg_hook
     extractor = HgExtractor([(ui, repo)])
     start = repo[kwds['node']].rev()
     end = len(repo)
@@ -427,8 +427,8 @@ def ship(extractor, commit, debug):
         try:
             metadata.__dict__.update(json.loads(data))
         except ValueError:
-            sys.stderr.write("irkerhook.py: could not decode JSON: %s\n" % data)
-            raise SystemExit(1)
+            sys.stderr.write("irkerhook: could not decode JSON: %s\n" % data)
+            raise SystemExit, 1
 
     # Rewrite the file list if too long. The objective here is only
     # to be easier on the eyes.
@@ -504,7 +504,7 @@ if __name__ == "__main__":
         if arg == '-n':
             notify = False
         elif arg == '-V':
-            print "irkerhook.py: version", version
+            print "irkerhook: version", version
             sys.exit(0)
         elif arg.startswith("--repository="):
             repository = arg[13:]
