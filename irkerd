@@ -46,7 +46,7 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 version = "1.20"
 
 import sys, getopt, urlparse, time, random, socket, signal, re
-import threading, Queue, SocketServer, select, itertools
+import threading, Queue, SocketServer, select
 import logging
 try:
     import simplejson as json	# Faster, also makes us Python-2.4-compatible
@@ -132,10 +132,10 @@ class IRCClient():
                              if x is not None and x.socket is not None]
                 sockets = [x.socket for x in connected]
                 if sockets:
+                    connmap = dict([(c.socket.fileno(), c) for c in connected])
                     (insocks, _o, _e) = select.select(sockets, [], [], timeout)
-                    for s, c in itertools.product(insocks, self.server_connections):
-                        if s == c.socket:
-                            c.consume()
+                    for s in insocks:
+                        connmap[s.fileno()].consume()
 
                 else:
                     time.sleep(timeout)
