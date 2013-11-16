@@ -310,7 +310,7 @@ class IRCServerConnection():
     def disconnect(self, message=""):
         if self.socket is None:
             return
-        self.quit(message)
+        # Don't send a QUIT here - causes infinite loop!
         try:
             self.socket.shutdown(socket.SHUT_WR)
             self.socket.close()
@@ -412,7 +412,8 @@ class Connection:
     def handle_disconnect(self):
         "Server disconnected us for flooding or some other reason."
         self.connection = None
-        self.status = "disconnected"
+        if self.status != "connectfail":
+            self.status = "disconnected"
     def handle_kick(self, outof):
         "We've been kicked."
         self.status = "handshaking"
@@ -479,7 +480,7 @@ class Connection:
                     # space forever would be a memory leak.
                     self.status = "expired"
                     break
-                elif not self.connection:
+                elif not self.connection and self.status != "connectfail":
                     # Queue is nonempty but server isn't connected.
                     with self.irker.irc.mutex:
                         self.connection = self.irker.irc.newserver()
@@ -500,7 +501,7 @@ class Connection:
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
                         except IRCServerConnectionError:
-                            self.status = "disconnected"
+                            self.status = "connectfail"
                 elif self.status == "handshaking":
                     if time.time() > self.last_xmit + HANDSHAKE_TTL:
                         self.status = "expired"
