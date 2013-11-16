@@ -1,11 +1,12 @@
-irkerd.pyc
-irkerhook.pyc
-irkerd.8
-irkerhook.1
-irkerd.html
-irkerhook.html
-security.html
-hacking.html
-install.html
-irc
-irclib
+# Git clutter
+*.orig
+
+# Python bits
+/*.pyc
+
+# Man Pages
+/*.8
+/*.1
+
+# HTML Docs
+/*.html
