@@ -1,7 +1,7 @@
 # Makefile for the irker relaying daemon
 
-VERS=$(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
-SYSTEMDSYSTEMUNITDIR:=$(shell pkg-config --variable=systemdsystemunitdir systemd)
+VERS := $(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
+SYSTEMDSYSTEMUNITDIR := $(shell pkg-config --variable=systemdsystemunitdir systemd)
 
 docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1
 
@@ -54,16 +54,38 @@ loc:
 	@echo "LOC:"; wc -l irkerd irkerhook.py
 	@echo -n "LLOC: "; grep -vE '(^ *#|^ *$$)' irkerd irkerhook.py | wc -l
 
-SOURCES = README COPYING NEWS install.txt security.txt hacking.txt \
-	irkerd irkerhook.py filter-example.py filter-test.py irk \
-	Makefile irkerd.xml irkerhook.xml
-EXTRA_DIST = irker-logo.png org.catb.irkerd.plist irkerd.service
+DOCS = \
+	README \
+	COPYING \
+	NEWS \
+	install.txt \
+	security.txt \
+	hacking.txt \
+	irkerhook.xml \
+	irkerd.xml \
+
+SOURCES = \
+	$(DOCS) \
+	irkerd.py \
+	irkerhook.py \
+	filter-example.py \
+	filter-test.py \
+	irk \
+	Makefile
+
+EXTRA_DIST = \
+	org.catb.irkerd.plist \
+	irkerd.service \
+	irker-logo.png
 
 version:
 	@echo $(VERS)
 
 irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
-	tar --transform='s:^:irker-$(VERS)/:' --show-transformed-names -cvzf irker-$(VERS).tar.gz $(SOURCES) $(EXTRA_DIST)
+	mkdir irker-$(VERS)
+	cp -pR $(SOURCES) $(EXTRA_DIST) irker-$(VERS)/
+	@COPYFILE_DISABLE=1 tar -cvzf irker-$(VERS).tar.gz irker-$(VERS)
+	rm -fr irker-$(VERS)
 
 dist: irker-$(VERS).tar.gz
 
