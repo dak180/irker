@@ -43,8 +43,7 @@ endif
 	rm -f $(DESTDIR)/usr/share/man/man1/irkerhook.1
 
 clean:
-	rm -f irkerd.8 irkerhook.1 irker-*.tar.gz *~
-	rm -f SHIPPER.* *.html
+	rm -f irkerd.8 irkerhook.1 irker-*.tar.gz *~ *.html
 
 PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,R0201,R0902,R0903,R0912,R0913,R0914,R0915,E1101,W0201,W0212,W0621,W0702,F0401"
 pylint:
@@ -69,5 +68,4 @@ irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
 dist: irker-$(VERS).tar.gz
 
 release: irker-$(VERS).tar.gz irkerd.html irkerhook.html install.html security.html hacking.html
-	shipper -u -m -t; make clean
-	git push && git push --tags
+	shipper version=$(VERS) | sh -e -x
