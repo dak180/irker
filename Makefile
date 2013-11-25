@@ -3,6 +3,11 @@
 VERS := $(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
 SYSTEMDSYSTEMUNITDIR := $(shell pkg-config --variable=systemdsystemunitdir systemd)
 
+# `prefix`, `mandir` & `DESTDIR` can and should be set on the command line to control installation locations
+prefix ?= /usr
+mandir ?= /share/man
+target = $(DESTDIR)$(prefix)
+
 docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1
 
 irkerd.8: irkerd.xml
@@ -23,24 +28,24 @@ hacking.html: hacking.txt
 	asciidoc -o hacking.html hacking.txt
 
 install: irkerd.8 irkerhook.1 uninstall
-	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/bin/
-	install -m 755 -o 0 -g 0 irkerd $(DESTDIR)/usr/bin/irkerd
+	install -m 755 -o 0 -g 0 -d "$(target)/bin"
+	install -m 755 -o 0 -g 0 irkerd "$(target)/bin/irkerd"
 ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
-	install -m 755 -o 0 -g 0 -d $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)
-	install -m 644 -o 0 -g 0 irkerd.service $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)
+	install -m 755 -o 0 -g 0 -d "$(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)"
+	install -m 644 -o 0 -g 0 irkerd.service "$(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)"
 endif
-	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/share/man/man8/
-	install -m 755 -o 0 -g 0 irkerd.8 $(DESTDIR)/usr/share/man/man8/irkerd.8
-	install -m 755 -o 0 -g 0 -d $(DESTDIR)/usr/share/man/man1/
-	install -m 755 -o 0 -g 0 irkerhook.1 $(DESTDIR)/usr/share/man/man1/irkerhook.1
+	install -m 755 -o 0 -g 0 -d "$(target)$(mandir)/man8"
+	install -m 755 -o 0 -g 0 irkerd.8 "$(target)$(mandir)/man8/irkerd.8"
+	install -m 755 -o 0 -g 0 -d "$(target)$(mandir)/man1"
+	install -m 755 -o 0 -g 0 irkerhook.1 "$(target)$(mandir)/man1/irkerhook.1"
 
 uninstall:
-	rm -f $(DESTDIR)/usr/bin/irkerd
+	rm -f "$(target)/bin/irkerd"
 ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
-	rm -f $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)/irkerd.service
+	rm -f "$(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)/irkerd.service"
 endif
-	rm -f $(DESTDIR)/usr/share/man/man8/irkerd.8
-	rm -f $(DESTDIR)/usr/share/man/man1/irkerhook.1
+	rm -f "$(target)$(mandir)/man8/irkerd.8"
+	rm -f "$(target)$(mandir)/man1/irkerhook.1"
 
 clean:
 	rm -f irkerd.8 irkerhook.1 irker-*.tar.gz *~ *.html
