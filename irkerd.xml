@@ -100,7 +100,7 @@ in the event of a nick collision.</para></listitem>
 <term>-p</term>
 <listitem><para>Takes a following value, setting a nickserv
 password to be used. If given, this password is shipped to
-authenticate the nick on receipt of a welcom message.</para></listitem>
+authenticate the nick on receipt of a welcome message.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-V</term>
@@ -109,8 +109,7 @@ terminate.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-h</term>
-<listitem><para>Print usage instructions and
-terminate.</para></listitem>
+<listitem><para>Print usage instructions and terminate.</para></listitem>
 </varlistentry>
 </variablelist>
 
