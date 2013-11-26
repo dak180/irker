@@ -34,6 +34,11 @@ client intended to be used for shipping notification messages to IRC
 channels. The use case in mind when it was designed was broadcasting
 notifications from commit hooks in version-control systems.</para>
 
+<para>The main advantage of relaying through this daemon over
+individual scripted sends from applications is that it can maintain
+connection state for multiple channels, rather than producing obnoxious
+join/leave channel spam on every message.</para>
+
 <para><application>irkerd</application> is a socket server that
 listens on for UDP or TCP packets on port 6659 for textual request
 lines containing JSON objects and terminated by a newline. Each JSON
