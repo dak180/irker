@@ -540,6 +540,7 @@ class Connection:
                                 self.connection.privmsg(channel, segment)
                             except ValueError as err:
                                 self.irker.irc.debug(1, "irclib rejected a message to %s on %s because: %s" % (channel, self.servername, str(err)))
+                                self.irker.irc.debug(50, err.format_exc())
                             time.sleep(ANTI_FLOOD_DELAY)
                     self.last_xmit = self.channels_joined[channel] = time.time()
                     self.irker.irc.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
