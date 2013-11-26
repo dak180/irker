@@ -3,7 +3,8 @@
 VERS := $(shell sed -n 's/version = "\(.\+\)"/\1/p' irkerd)
 SYSTEMDSYSTEMUNITDIR := $(shell pkg-config --variable=systemdsystemunitdir systemd)
 
-# `prefix`, `mandir` & `DESTDIR` can and should be set on the command line to control installation locations
+# `prefix`, `mandir` & `DESTDIR` can and should be set on the command
+# line to control installation locations
 prefix ?= /usr
 mandir ?= /share/man
 target = $(DESTDIR)$(prefix)
