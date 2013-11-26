@@ -348,7 +348,7 @@ class IRCServerConnection():
     def ship(self, string):
         "Ship a command to the server, appending CR/LF"
         try:
-            self.socket.send(string + b'\r\n')
+            self.socket.send(string.encode('utf-8') + b'\r\n')
             self.master.debug(2, "TO: %s" % string)
         except socket.error:
             self.disconnect("Connection reset by peer.")
