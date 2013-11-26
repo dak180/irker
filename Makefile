@@ -72,7 +72,7 @@ DOCS = \
 
 SOURCES = \
 	$(DOCS) \
-	irkerd.py \
+	irkerd \
 	irkerhook.py \
 	filter-example.py \
 	filter-test.py \
