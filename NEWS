@@ -1,5 +1,9 @@
 			irker history 
 
+Repository head:
+  A performance improvement in the git repository hook.
+  Documentation polishing.
+
 2.0 @ 2013-11-16
   The dependency on irclib is gone.
   An email delivery method, suitable for use on SourceForge.
