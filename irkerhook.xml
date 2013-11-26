@@ -128,8 +128,8 @@ variable is "None", no compression will be attempted.</para>
 <para>If "mIRC", highlight notification fields with mIRC color codes.
 If "ANSI", highlight notification fields with ANSI color escape
 sequences.  Defaults to "none" (no colors). ANSI codes are supported
-in Chatzilla, irssi, ircle, and BitchX, but not in mIRC, XChat, KVirc or
-Konversation.</para>
+in Chatzilla, irssi, ircle, and BitchX, but not in mIRC, XChat, KVirc,
+Konversation, or weechat.</para>
 
 <para>Note: if you turn this on and notifications stop appearing on
 your channel, you need to turn off IRC's color filter on that channel.
