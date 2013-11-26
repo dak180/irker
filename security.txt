@@ -180,7 +180,7 @@ for a godawful amount of code bloat.
 The deployment advice in the installation instructions assumes that 
 irkerd submitters are "authenticated" by being inside a firewall - that is,
 mesages are issued from an intranet and it can be trusted that anyone 
-issuing messages from within a given intrenet is authorized to do so.
+issuing messages from within a given intranet is authorized to do so.
 This fits the assumption that irker instances will run on forge sites
 receiving requests from instances of irkerhook.py.
 

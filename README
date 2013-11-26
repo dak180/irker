@@ -10,7 +10,7 @@ IRC channels.  A hook script, irkerhook.py, supporting git, hg, and
 Subversion is included in the distribution; see the install.txt file
 for installation instructions.
 
-The advantage of using this daeomon over individual scripted sends 
+The advantage of using this daemon over individual scripted sends 
 is that it can maintain connection state for multiple channels,
 avoiding obnoxious join/leave spam.
 
