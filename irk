@@ -16,6 +16,7 @@ import fileinput
 import subprocess
 import time
 import os
+import signal
 import getopt
 
 def send(target, message):
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     except:
         # If it isn't, spawn an instance
         print "Spawning an irker instance..."
-        irkerd = subprocess.Popen("irkerd", shell=True)
+        irkerd = subprocess.Popen("irkerd", shell=True, preexec_fn=os.setsid)
         time.sleep(0.5)
 
     target = arguments[0]
@@ -57,6 +58,7 @@ if __name__ == "__main__":
         send(target, message)
     if killafter:
         if irkerd:
-            irkerd.terminate()
-            irkerd.wait()
+            time.sleep(0.5)
+            # Magic required because shell=True, terminate() won't work.
+            os.killpg(irkerd.pid, signal.SIGTERM)
             print "...terminated."
