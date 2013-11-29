@@ -2,7 +2,7 @@
 
 2.2 @ 2013-11-29
   Fixed Unicode processing - got busted in 2.0 when irclib was removed.
-  Show Pyton traceback on higher debug levels.
+  Show Python traceback on higher debug levels.
 
 2.1 @ 2013-11-26
   A performance improvement in the git repository hook.
