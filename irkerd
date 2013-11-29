@@ -121,12 +121,12 @@ class IRCClient():
             self.server_connections.append(conn)
         return conn
 
-    def spin(self, timeout=0.2):
+    def spin(self, predicate=None, timeout=0.2):
         "Spin processing data from connections forever."
         # Outer loop should specifically *not* be mutex-locked.
         # Otherwise no other thread would ever be able to change
         # the shared state of an IRC object running this function.
-        while True:
+        while predicate is None or predicate():
             with self.mutex:
                 connected = [x for x in self.server_connections
                              if x is not None and x.socket is not None]
@@ -662,6 +662,9 @@ class Dispatcher:
         "Does this server-port combination have any live connections?"
         self.connections = [x for x in self.connections if x.live()]
         return len(self.connections) > 0
+    def pending(self):
+        "Return all connections with pending traffic."
+        return [x for x in self.connections if not x.queue.empty()]
     def last_xmit(self):
         "Return the time of the most recent transmission."
         return max(x.last_xmit for x in self.connections)
@@ -746,6 +749,9 @@ class Irker:
             with open(logfile, "a") as logfp:
                 logfp.write("%03f|%s|%s\n" % \
                              (time.time(), event.source, event.arguments[0]))
+    def pending(self):
+        "Do we have any pending message traffic?"
+        return [k for (k, v) in self.servers.items() if v.pending()]
     def handle(self, line):
         "Perform a JSON relay request."
         try:
@@ -831,11 +837,12 @@ Options
 
 if __name__ == '__main__':
     debuglvl = 0
+    immediate = None
     namestyle = "irker%03d"
     password = None
     logfile = None
     try:
-        (options, arguments) = getopt.getopt(sys.argv[1:], "d:l:n:p:Vh")
+        (options, arguments) = getopt.getopt(sys.argv[1:], "d:i:l:n:p:Vh")
     except getopt.GetoptError as e:
         sys.stderr.write("%s" % e)
         usage()
@@ -843,6 +850,8 @@ if __name__ == '__main__':
     for (opt, val) in options:
         if opt == '-d':		# Enable debug/progress messages
             debuglvl = int(val)
+        elif opt == '-i':	# Immediate mode - send one message, then exit. 
+            immediate = val
         elif opt == '-l':	# Logfile mode - report traffic read in
             logfile = val
         elif opt == '-n':	# Force the nick
@@ -858,18 +867,23 @@ if __name__ == '__main__':
     fallback = re.search("%.*d", namestyle)
     irker = Irker(debuglevel=debuglvl)
     irker.irc.debug(1, "irkerd version %s" % version)
-    try:
-        tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
-        udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
-        for server in [tcpserver, udpserver]:
-            server = threading.Thread(target=server.serve_forever)
-            server.setDaemon(True)
-            server.start()
+    if immediate:
+        (to, privmsg) = val.split(",")
+        irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg))
+        irker.irc.spin()
+    else:
         try:
-            signal.pause()
-        except KeyboardInterrupt:
-            raise SystemExit(1)
-    except socket.error, e:
-        sys.stderr.write("irkerd: server launch failed: %r\n" % e)
+            tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
+            udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
+            for server in [tcpserver, udpserver]:
+                server = threading.Thread(target=server.serve_forever)
+                server.setDaemon(True)
+                server.start()
+            try:
+                signal.pause()
+            except KeyboardInterrupt:
+                raise SystemExit(1)
+        except socket.error, e:
+            sys.stderr.write("irkerd: server launch failed: %r\n" % e)
 
 # end
