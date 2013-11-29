@@ -17,7 +17,7 @@ XBS-Destinations: freecode
 
 Homepage: http://www.catb.org/~esr/irker
 
-XBS-HTML-Template: index.html
+XBS-HTML-Target: index.html
 
 XBS-IRC-Channel: irc://chat.freenode.net/#irker
 
