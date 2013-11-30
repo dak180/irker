@@ -126,7 +126,7 @@ class IRCClient():
         # Outer loop should specifically *not* be mutex-locked.
         # Otherwise no other thread would ever be able to change
         # the shared state of an IRC object running this function.
-        while True;
+        while True:
             with self.mutex:
                 connected = [x for x in self.server_connections
                              if x is not None and x.socket is not None]
@@ -338,7 +338,6 @@ class IRCServerConnection():
         self.ship("PRIVMSG %s :%s" % (target, text))
 
     def quit(self, message=""):
-        # Triggers an error that forces a disconnect.
         self.ship("QUIT" + (message and (" :" + message)))
 
     def user(self, username, realname):
@@ -429,7 +428,7 @@ class Connection:
         for (channel, message, key) in qcopy:
             self.queue.put((channel, message, key))
         self.status = "ready"
-    def enqueue(self, channel, message, key):
+    def enqueue(self, channel, message, key, quit_after):
         "Enque a message for transmission."
         if self.thread is None or not self.thread.is_alive():
             self.status = "unseen"
@@ -437,6 +436,8 @@ class Connection:
             self.thread.setDaemon(True)
             self.thread.start()
         self.queue.put((channel, message, key))
+        if quit_after:
+            self.queue.put((channel, None, key))
     def dequeue(self):
         "Try to ship pending messages from the queue."
         try:
@@ -523,10 +524,13 @@ class Connection:
                     if channel not in self.channels_joined:
                         self.connection.join(channel, key=key)
                         self.irker.irc.debug(1, "joining %s on %s." % (channel, self.servername))
+                    # None is magic - it's a request to quit the server
+                    if message is None:
+                        self.connection.quit()
                     # An empty message might be used as a keepalive or
                     # to join a channel for logging, so suppress the
                     # privmsg send unless there is actual traffic.
-                    if message:
+                    elif message:
                         for segment in message.split("\n"):
                             # Truncate the message if it's too long,
                             # but we're working with characters here,
@@ -626,7 +630,7 @@ class Dispatcher:
         self.servername = servername
         self.port = port
         self.connections = []
-    def dispatch(self, channel, message, key):
+    def dispatch(self, channel, message, key, quit_after=False):
         "Dispatch messages for our server-port combination."
         # First, check if there is room for another channel
         # on any of our existing connections.
@@ -649,14 +653,14 @@ class Dispatcher:
             found_connection.part(drop_channel, "scavenged by irkerd")
             del found_connection.channels_joined[drop_channel]
             #time.sleep(ANTI_FLOOD_DELAY)
-            found_connection.enqueue(channel, message, key)
+            found_connection.enqueue(channel, message, key, quit_after)
             return
         # Didn't find any channels with no recent activity
         newconn = Connection(self.irker,
                              self.servername,
                              self.port)
         self.connections.append(newconn)
-        newconn.enqueue(channel, message, key)
+        newconn.enqueue(channel, message, key, quit_after)
     def live(self):
         "Does this server-port combination have any live connections?"
         self.connections = [x for x in self.connections if x.live()]
@@ -752,7 +756,7 @@ class Irker:
     def pending(self):
         "Do we have any pending message traffic?"
         return [k for (k, v) in self.servers.items() if v.pending()]
-    def handle(self, line):
+    def handle(self, line, quit_after=False):
         "Perform a JSON relay request."
         try:
             request = json.loads(line.strip())
@@ -779,7 +783,7 @@ class Irker:
                                 return
                             if target.server() not in self.servers:
                                 self.servers[target.server()] = Dispatcher(self, target.servername, target.port)
-                            self.servers[target.server()].dispatch(target.channel, message, target.key)
+                            self.servers[target.server()].dispatch(target.channel, message, target.key, quit_after=quit_after)
                             # GC dispatchers with no active connections
                             servernames = self.servers.keys()
                             for servername in servernames:
@@ -868,8 +872,11 @@ if __name__ == '__main__':
     irker = Irker(debuglevel=debuglvl)
     irker.irc.debug(1, "irkerd version %s" % version)
     if immediate:
+        def bailout():
+            raise SystemExit, 1
+        irker.irc.add_event_handler("quit", lambda _c, _e: bailout())
         (to, privmsg) = val.split(",")
-        irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg))
+        irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg), quit_after=True)
         irker.irc.spin()
     else:
         irker.thread_launch()
