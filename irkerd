@@ -684,7 +684,6 @@ class Irker:
         self.irc.add_event_handler("kick", self._handle_kick)
         self.irc.add_event_handler("every_raw_message", self._handle_every_raw_message)
         self.servers = {}
-        self.until = None
     def thread_launch(self):
         thread = threading.Thread(target=self.irc.spin)
         thread.setDaemon(True)
@@ -711,7 +710,7 @@ class Irker:
             cxt = connection.context
             arguments = event.arguments
             for lump in arguments:
-                if self.until is None and lump.startswith("DEAF="):
+                if lump.startswith("DEAF="):
                     if not logfile:
                         connection.mode(cxt.nickname(), "+"+lump[5:])
                 elif lump.startswith("MAXCHANNELS="):
@@ -750,9 +749,6 @@ class Irker:
             with open(logfile, "a") as logfp:
                 logfp.write("%03f|%s|%s\n" % \
                              (time.time(), event.source, event.arguments[0]))
-        if self.until is not None:
-            if self.until == event.arguments[0]:
-                raise SystemExit, 1
     def pending(self):
         "Do we have any pending message traffic?"
         return [k for (k, v) in self.servers.items() if v.pending()]
@@ -874,7 +870,6 @@ if __name__ == '__main__':
     if immediate:
         (to, privmsg) = val.split(",")
         irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg))
-        irker.until = privmsg
         irker.irc.spin()
     else:
         irker.thread_launch()
