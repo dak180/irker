@@ -121,12 +121,12 @@ class IRCClient():
             self.server_connections.append(conn)
         return conn
 
-    def spin(self, predicate=None, timeout=0.2):
+    def spin(self, timeout=0.2):
         "Spin processing data from connections forever."
         # Outer loop should specifically *not* be mutex-locked.
         # Otherwise no other thread would ever be able to change
         # the shared state of an IRC object running this function.
-        while predicate is None or predicate():
+        while True;
             with self.mutex:
                 connected = [x for x in self.server_connections
                              if x is not None and x.socket is not None]
