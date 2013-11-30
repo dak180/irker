@@ -711,7 +711,7 @@ class Irker:
             cxt = connection.context
             arguments = event.arguments
             for lump in arguments:
-                if lump.startswith("DEAF="):
+                if self.until is None and lump.startswith("DEAF="):
                     if not logfile:
                         connection.mode(cxt.nickname(), "+"+lump[5:])
                 elif lump.startswith("MAXCHANNELS="):
