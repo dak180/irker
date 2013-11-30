@@ -683,11 +683,12 @@ class Irker:
         self.irc.add_event_handler("disconnect", self._handle_disconnect)
         self.irc.add_event_handler("kick", self._handle_kick)
         self.irc.add_event_handler("every_raw_message", self._handle_every_raw_message)
+        self.servers = {}
+    def thread_launch(self):
         thread = threading.Thread(target=self.irc.spin)
         thread.setDaemon(True)
         self.irc._thread = thread
         thread.start()
-        self.servers = {}
     def logerr(self, errmsg):
         "Log a processing error."
         sys.stderr.write("irkerd: " + errmsg + "\n")
@@ -872,6 +873,7 @@ if __name__ == '__main__':
         irker.irc.spin()
         # FIXME: This mode does not yet terminate
     else:
+        irker.thread_launch()
         try:
             tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
             udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
