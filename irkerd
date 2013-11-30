@@ -136,7 +136,6 @@ class IRCClient():
                     (insocks, _o, _e) = select.select(sockets, [], [], timeout)
                     for s in insocks:
                         connmap[s.fileno()].consume()
-
                 else:
                     time.sleep(timeout)
 
@@ -871,6 +870,7 @@ if __name__ == '__main__':
         (to, privmsg) = val.split(",")
         irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg))
         irker.irc.spin()
+        # FIXME: This mode does not yet terminate
     else:
         try:
             tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
