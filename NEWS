@@ -1,5 +1,8 @@
 			irker history 
 
+Repository head:
+  -i option enables immediate sending of one line in foreground.
+
 2.2 @ 2013-11-29
   Fixed Unicode processing - got busted in 2.0 when irclib was removed.
   Show Python traceback on higher debug levels.

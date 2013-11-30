@@ -22,8 +22,10 @@
      <arg>-l <replaceable>logfile</replaceable></arg>
      <arg>-n <replaceable>nick</replaceable></arg>
      <arg>-p <replaceable>password</replaceable></arg>
+     <arg>-i <replaceable>ITC-URL</replaceable></arg>
      <arg>-V</arg>
-	 <arg>-h</arg>
+     <arg>-h</arg>
+     <arg choice='opt'><replaceable>message text</replaceable></arg>
 </cmdsynopsis>
 </refsynopsisdiv>
 
@@ -106,6 +108,12 @@ in the event of a nick collision.</para></listitem>
 <listitem><para>Takes a following value, setting a nickserv
 password to be used. If given, this password is shipped to
 authenticate the nick on receipt of a welcome message.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-i</term>
+<listitem><para>Immediate mode, to be run in foreground. Takes two
+following values interpreted as a channel URL and a message
+string. Sends the message, then quits.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-V</term>

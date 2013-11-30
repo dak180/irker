@@ -828,13 +828,14 @@ class IrkerUDPHandler(SocketServer.BaseRequestHandler):
 def usage():
     sys.stdout.write("""
 Usage:
-  irkerd [-d debuglevel] [-l logfile] [-n nick] [-p password] [-V] [-h]
+  irkerd [-d debuglevel] [-l logfile] [-n nick] [-p password] [-i channel message] [-V] [-h]
 
 Options
   -d    set debug level
   -l    set logfile
   -n    set nick-style
   -p    set nickserv password
+  -i    immediate mode
   -V    return irkerd version
   -h    print this help dialog
 """)
@@ -875,8 +876,7 @@ if __name__ == '__main__':
         def bailout():
             raise SystemExit, 1
         irker.irc.add_event_handler("quit", lambda _c, _e: bailout())
-        (to, privmsg) = val.split(",")
-        irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg), quit_after=True)
+        irker.handle('{"to":"%s","privmsg":"%s"}' % (immediate, arguments[0]), quit_after=True)
         irker.irc.spin()
     else:
         irker.thread_launch()
