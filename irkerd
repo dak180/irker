@@ -684,6 +684,7 @@ class Irker:
         self.irc.add_event_handler("kick", self._handle_kick)
         self.irc.add_event_handler("every_raw_message", self._handle_every_raw_message)
         self.servers = {}
+        self.until = None
     def thread_launch(self):
         thread = threading.Thread(target=self.irc.spin)
         thread.setDaemon(True)
@@ -749,6 +750,9 @@ class Irker:
             with open(logfile, "a") as logfp:
                 logfp.write("%03f|%s|%s\n" % \
                              (time.time(), event.source, event.arguments[0]))
+        if self.until is not None:
+            if self.until == event.arguments[0]:
+                raise SystemExit, 1
     def pending(self):
         "Do we have any pending message traffic?"
         return [k for (k, v) in self.servers.items() if v.pending()]
@@ -870,8 +874,8 @@ if __name__ == '__main__':
     if immediate:
         (to, privmsg) = val.split(",")
         irker.handle('{"to":"%s","privmsg":"%s"}' % (to, privmsg))
+        irker.until = privmsg
         irker.irc.spin()
-        # FIXME: This mode does not yet terminate
     else:
         irker.thread_launch()
         try:
