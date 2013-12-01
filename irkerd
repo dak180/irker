@@ -428,7 +428,7 @@ class Connection:
         for (channel, message, key) in qcopy:
             self.queue.put((channel, message, key))
         self.status = "ready"
-    def enqueue(self, channel, message, key, quit_after):
+    def enqueue(self, channel, message, key, quit_after=False):
         "Enque a message for transmission."
         if self.thread is None or not self.thread.is_alive():
             self.status = "unseen"
