@@ -43,7 +43,7 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 # No user-serviceable parts below this line
 
-version = "2.2"
+version = "2.3"
 
 import sys, getopt, urlparse, time, random, socket, signal, re
 import threading, Queue, SocketServer, select
