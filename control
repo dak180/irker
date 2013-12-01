@@ -23,6 +23,6 @@ XBS-IRC-Channel: irc://chat.freenode.net/#irker
 
 XBS-Logo: irker-logo.png
 
-XBS-Project-Tag-List: IRC, client
+XBS-Freecode-Tags: IRC, client
 
 XBS-VC-Tag-Template: %(version)s
