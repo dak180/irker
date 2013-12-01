@@ -88,7 +88,8 @@ class Commit:
                     self.url = webview
             except IOError:
                 self.url = ""
-        return unicode(self.template % self.__dict__, "utf-8")
+        res = self.template % self.__dict__
+        return unicode(res, 'UTF-8') if not isinstance(res, unicode) else res
 
 class GenericExtractor:
     "Generic class for encapsulating data from a VCS."
