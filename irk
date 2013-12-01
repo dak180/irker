@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+# Illustrates how to test irkerd.
+#
+# First argument must be a channel URL. If it does not begin with "irc", 
+# the base URL for freenode is prepended.
+#
+# Second argument must be a payload string.  Standard C-style escapes 
+# such as \n and \t are decoded.
+#
+import json
+import socket
+import sys
+import fileinput
+import subprocess
+import time
+import os
+
+def send(target, message):
+    data = {"to": target, "privmsg" : message}
+    #print(json.dumps(data))
+    try:
+        s = socket.create_connection(("localhost", 6659))
+        s.sendall(json.dumps(data))
+    except socket.error, e:
+        sys.stderr.write("irk: write to server failed: %r\n" % e)
+
+try:
+    s = socket.create_connection(("localhost", 6659))
+except:
+    print "No irker is running."
+
+target = sys.argv[1]
+if not "irc:" in target:
+    target = "irc://chat.freenode.net/{0}".format(target)
+message = " ".join(sys.argv[2:])
+message = message.decode('string_escape')
+if message == '-':
+    for line in fileinput.input('-'):
+        send(target, line.rstrip('\n'))
+else:
+    send(target, message)
