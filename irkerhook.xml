@@ -193,6 +193,20 @@ irkerhook.py --refname=refs/heads/master HEAD
 <para>However, this will not give the right result when you push to 
 a non-default branch of a bare repo.</para>
 
+<para>A typical way to install this hook is actually in the
+<filename>post-receive</filename> hook, because it gets all the
+necessary details and will not abort the push on failure. Use the
+following script:
+
+<programlisting>
+#!/bin/sh
+
+echo "sending IRC notification"
+while read old new refname; do
+    irkerhook --refname=${refname} $(git rev-list --reverse ${old}..${new})
+done
+</programlisting>
+
 <para>Preferences may be set in the repo <filename>config</filename>
 file in an [irker] section. Here is an example of what that can look
 like:</para>
