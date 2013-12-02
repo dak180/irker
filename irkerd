@@ -874,7 +874,7 @@ if __name__ == '__main__':
     irker.irc.debug(1, "irkerd version %s" % version)
     if immediate:
         def bailout():
-            raise SystemExit, 1
+            raise SystemExit, 0
         irker.irc.add_event_handler("quit", lambda _c, _e: bailout())
         irker.handle('{"to":"%s","privmsg":"%s"}' % (immediate, arguments[0]), quit_after=True)
         irker.irc.spin()
