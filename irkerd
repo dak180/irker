@@ -638,7 +638,7 @@ class Dispatcher:
         eligibles = [x for x in connections if x.joined_to(channel)] \
                     or [x for x in connections if x.accepting(channel)]
         if eligibles:
-            eligibles[0].enqueue(channel, message, key)
+            eligibles[0].enqueue(channel, message, key, quit_after)
             return
         # All connections are full up. Look for one old enough to be
         # scavenged.
