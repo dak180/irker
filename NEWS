@@ -1,5 +1,9 @@
 			irker history 
 
+2.4 @ 2013-12-03
+   Bug fix release - some users reported failure to connect with 2.3.
+   Also prevent a crash if Unicode shows up in the wrong place.
+
 2.3 @ 2013-11-30
   -i option enables immediate sending of one line in foreground.
 
