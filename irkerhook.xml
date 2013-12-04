@@ -196,7 +196,7 @@ a non-default branch of a bare repo.</para>
 <para>A typical way to install this hook is actually in the
 <filename>post-receive</filename> hook, because it gets all the
 necessary details and will not abort the push on failure. Use the
-following script:
+following script:</para>
 
 <programlisting>
 #!/bin/sh
