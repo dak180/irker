@@ -72,10 +72,10 @@ form <quote>?secret</quote> or <quote>?key=secret</quote>, where
 <quote>secret</quote> is the channel key.</para>
 
 <para>An empty message is legal and will cause
-<application>irkerd</application> to join the target channels without
-actually emitting a message.  This may be useful for advertising that
-an instance is up and running, or for joining a channel to log its
-traffic.</para>
+<application>irkerd</application> to join or maintain a connection to
+the target channels without actually emitting a message.  This may be
+useful for advertising that an instance is up and running, or for
+joining a channel to log its traffic.</para>
 </refsect1>
 
 <refsect1 id='options'><title>OPTIONS</title>
