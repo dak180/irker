@@ -22,7 +22,7 @@
      <arg>-l <replaceable>logfile</replaceable></arg>
      <arg>-n <replaceable>nick</replaceable></arg>
      <arg>-p <replaceable>password</replaceable></arg>
-     <arg>-i <replaceable>IrC-URL</replaceable></arg>
+     <arg>-i <replaceable>IRC-URL</replaceable></arg>
      <arg>-V</arg>
      <arg>-h</arg>
      <arg choice='opt'><replaceable>message text</replaceable></arg>
