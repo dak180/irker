@@ -127,6 +127,7 @@ class IRCClient():
         # Otherwise no other thread would ever be able to change
         # the shared state of an IRC object running this function.
         while True:
+            nextsleep = 0
             with self.mutex:
                 connected = [x for x in self.server_connections
                              if x is not None and x.socket is not None]
@@ -137,7 +138,8 @@ class IRCClient():
                     for s in insocks:
                         connmap[s.fileno()].consume()
                 else:
-                    time.sleep(timeout)
+                    nextsleep = timeout
+            time.sleep(nextsleep)
 
     def add_event_handler(self, event, handler):
         "Set a handler to be called later."
