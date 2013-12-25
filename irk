@@ -22,8 +22,8 @@ def send(s, target, message):
 
 try:
     s = socket.create_connection(("localhost", 6659))
-except:
-    print "No irker is running."
+except socket.error, e:
+    sys.stderr.write("irk: no irkerd running: %r\n" % e)
 
 target = sys.argv[1]
 if not "irc:" in target:
