@@ -12,11 +12,10 @@ import socket
 import sys
 import fileinput
 
-def send(target, message):
+def send(s, target, message):
     data = {"to": target, "privmsg" : message}
     #print(json.dumps(data))
     try:
-        s = socket.create_connection(("localhost", 6659))
         s.sendall(json.dumps(data))
     except socket.error, e:
         sys.stderr.write("irk: write to server failed: %r\n" % e)
@@ -33,6 +32,6 @@ message = " ".join(sys.argv[2:])
 message = message.decode('string_escape')
 if message == '-':
     for line in fileinput.input('-'):
-        send(target, line.rstrip('\n'))
+        send(s, target, line.rstrip('\n'))
 else:
-    send(target, message)
+    send(s, target, message)
