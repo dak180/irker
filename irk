@@ -24,6 +24,7 @@ try:
     s = socket.create_connection(("localhost", 6659))
 except socket.error, e:
     sys.stderr.write("irk: no irkerd running: %r\n" % e)
+    sys.exit(1)
 
 target = sys.argv[1]
 if not "irc:" in target:
