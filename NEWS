@@ -1,5 +1,8 @@
 			irker history 
 
+2.5 @ 2013-12-24
+   Bug fix - remove a deadlock we inherited from irclib.
+
 2.4 @ 2013-12-03
    Bug fix release - some users reported failure to connect with 2.3.
    Also prevent a crash if Unicode shows up in the wrong place.
