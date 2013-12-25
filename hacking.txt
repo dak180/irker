@@ -17,7 +17,7 @@ to mine data from repositories and sets the format of notifications.
 === If you think the mechanism needs an option, think again ===
 
 Because irkerhook.py does policy, it takes policy options. Because
-irkerd is pure mechanism. it shouldn't need any.  If you think it
+irkerd is pure mechanism, it shouldn't need any.  If you think it
 does, you have almost certainly got a bug in your thinking.  Fix
 that before you modify code.
 
