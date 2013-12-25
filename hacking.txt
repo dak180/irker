@@ -47,10 +47,12 @@ type switch. It can deduce the repo type by looking, so it should.
 
 == Thanks where due == 
 
-Daniel Franke <dfoxfranke@gmail.com> performed a security audit of irkerd.
-
 Alexander van Gessel (AI0867) <ai0867@gmail.com> contributed the
-Subversion support in irkerhook.py.
+Subversion support in irkerhook.py. Since the 1.0 release he has 
+kept as close an eye on the code as the author and has fixed at least
+as many bugs.
+
+Daniel Franke <dfoxfranke@gmail.com> performed a security audit of irkerd.
 
 Georg Brandl <georg@python.org> contributed the Mercurial support in
 irkerhook.py and explained how to make Control-C work right.
