@@ -36,3 +36,4 @@ if message == '-':
         send(s, target, line.rstrip('\n'))
 else:
     send(s, target, message)
+s.close()
