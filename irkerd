@@ -551,6 +551,9 @@ class Connection:
                     self.last_xmit = self.channels_joined[channel] = time.time()
                     self.irker.irc.debug(1, "XMIT_TTL bump (%s transmission) at %s" % (self.servername, time.asctime()))
                     self.queue.task_done()
+                elif self.status == "expired":
+                    print "We're expired but still running! This is a bug."
+                    break
         except:
             (exc_type, _exc_value, exc_traceback) = sys.exc_info()
             self.irker.logerr("exception %s in thread for %s" % \
