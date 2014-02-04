@@ -1,5 +1,8 @@
 			irker history 
 
+2.6 @ 2014-02-04
+   Fix for an infinite loop on failing to connect to IRC
+
 2.5 @ 2013-12-24
    Bug fix - remove a deadlock we inherited from irclib.
 
