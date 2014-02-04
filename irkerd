@@ -504,6 +504,7 @@ class Connection:
                             self.last_ping = time.time()
                         except IRCServerConnectionError:
                             self.status = "expired"
+                            break
                 elif self.status == "handshaking":
                     if time.time() > self.last_xmit + HANDSHAKE_TTL:
                         self.status = "expired"
