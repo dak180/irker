@@ -577,7 +577,8 @@ class Connection:
                         self.target, time.asctime()))
                     self.queue.task_done()
                 elif self.status == "expired":
-                    print "We're expired but still running! This is a bug."
+                    LOG.error(
+                        "We're expired but still running! This is a bug.")
                     break
         except Exception, e:
             LOG.error("exception %s in thread for %s" % (e, self.target))
