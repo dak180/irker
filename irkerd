@@ -45,12 +45,23 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 version = "2.6"
 
-import sys, getopt, urlparse, time, random, socket, signal, re
-import threading, Queue, SocketServer, select
+import Queue
+import SocketServer
+import getopt
 try:
     import simplejson as json	# Faster, also makes us Python-2.4-compatible
 except ImportError:
     import json
+import random
+import re
+import select
+import signal
+import socket
+import sys
+import threading
+import time
+import urlparse
+
 
 # Sketch of implementation:
 #
