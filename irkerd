@@ -263,8 +263,8 @@ class IRCServerConnection():
             LOG.warning(
                 'cannot check SSL/TLS hostname with Python %s' % sys.version)
 
-    def connect(self, target, nickname,
-                password=None, username=None, ircname=None, **kwargs):
+    def connect(self, target, nickname, username=None, realname=None,
+                **kwargs):
         LOG.debug("connect(server=%r, port=%r, nickname=%r, ...)" % (
             target.servername, target.port, nickname))
         if self.socket is not None:
@@ -287,10 +287,12 @@ class IRCServerConnection():
 
         if target.ssl:
             self._check_hostname(target=target)
-        if password:
-            self.ship("PASS " + password)
+        if target.password:
+            self.ship("PASS " + target.password)
         self.nick(self.nickname)
-        self.user(username=username or ircname, realname=ircname or nickname)
+        self.user(
+            username=target.username or username or 'irker',
+            realname=realname or 'irker relaying client')
         return self
 
     def close(self):
@@ -567,8 +569,6 @@ class Connection:
                             self.connection.connect(
                                 target=self.target,
                                 nickname=self.nickname(),
-                                username="irker",
-                                ircname="irker relaying client",
                                 **self.kwargs)
                             self.status = "handshaking"
                             LOG.info("XMIT_TTL bump (%s connection) at %s" % (
@@ -675,10 +675,10 @@ class Target():
             default_ircport = 6697
         else:
             default_ircport = 6667
-        irchost, _, ircport = parsed.netloc.partition(':')
-        if not ircport:
-            ircport = default_ircport
-        self.servername = irchost
+        self.username = parsed.username
+        self.password = parsed.password
+        self.servername = parsed.hostname
+        self.port = parsed.port or default_ircport
         # IRC channel names are case-insensitive.  If we don't smash
         # case here we may run into problems later. There was a bug
         # observed on irc.rizon.net where an irkerd user specified #Channel,
@@ -697,7 +697,6 @@ class Target():
         self.key = ""
         if parsed.query:
             self.key = re.sub("^key=", "", parsed.query)
-        self.port = int(ircport)
 
     def __str__(self):
         "Represent this instance as a string"

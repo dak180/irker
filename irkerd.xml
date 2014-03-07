@@ -54,6 +54,7 @@ Examples:
 {"to":["irc://chat.freenode.net/#git-ciabot","irc://chat.freenode.net/#gpsd"],"privmsg":"Multichannel test"}
 {"to":"irc://chat.hypothetical.net:6668/git-ciabot", "privmsg":"Hello, world!"}
 {"to":"ircs://chat.hypothetical.net/git-private?key=topsecret", "privmsg":"Keyed channel test"}
+{"to":"ircs://:topsecret@chat.example.net/git-private", "privmsg":"Password-protected server test"}
 </programlisting></para>
 
 <para>If the channel part of the URL does not have one of the prefix
@@ -66,6 +67,11 @@ shipping - <emphasis>unless</emphasis>the channel part has the suffix
 colon, as shown in the third example; otherwise
 <application>irkerd</application> sends plaintext messages to the default
 6667 IRC port of each server, and SSL/TLS messages to 6697.</para>
+
+<para>The password for password-protected servers can be set using the
+usual <quote>[{username}:{password}@]{host}:{port}</quote> defined in
+RFC 3986, as shown in the fifth example.  Non-empty URL usernames
+override the default <quote>irker</quote> username.</para>
 
 <para>When the <quote>to</quote> URL uses the <quote>ircs</quote>
 scheme (as shown in the fourth and fifth examples), the connection to
