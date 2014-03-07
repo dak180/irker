@@ -185,7 +185,7 @@ class IRCClient():
 
 class LineBufferedStream():
     "Line-buffer a read stream."
-    crlf_re = re.compile(b'\r?\n')
+    _crlf_re = re.compile(b'\r?\n')
 
     def __init__(self):
         self.buffer = ''
@@ -195,7 +195,7 @@ class LineBufferedStream():
 
     def lines(self):
         "Iterate over lines in the buffer."
-        lines = LineBufferedStream.crlf_re.split(self.buffer)
+        lines = self._crlf_re.split(self.buffer)
         self.buffer = lines.pop()
         return iter(lines)
 
