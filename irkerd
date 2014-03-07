@@ -45,10 +45,7 @@ import Queue
 import SocketServer
 import argparse
 import logging
-try:
-    import simplejson as json	# Faster, also makes us Python-2.4-compatible
-except ImportError:
-    import json
+import json
 import random
 import re
 import select
