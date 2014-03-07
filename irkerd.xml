@@ -18,6 +18,7 @@
 
 <cmdsynopsis>
   <command>irkerd</command>
+     <arg>-c <replaceable>ca-file</replaceable></arg>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-l <replaceable>logfile</replaceable></arg>
      <arg>-n <replaceable>nick</replaceable></arg>
@@ -52,7 +53,7 @@ Examples:
 {"to":"irc://chat.freenode.net/git-ciabot", "privmsg":"Hello, world!"}
 {"to":["irc://chat.freenode.net/#git-ciabot","irc://chat.freenode.net/#gpsd"],"privmsg":"Multichannel test"}
 {"to":"irc://chat.hypothetical.net:6668/git-ciabot", "privmsg":"Hello, world!"}
-{"to":"irc://chat.hypothetical.net:6668/git-private?key=topsecret", "privmsg":"Keyed channel test"}
+{"to":"ircs://chat.hypothetical.net/git-private?key=topsecret", "privmsg":"Keyed channel test"}
 </programlisting></para>
 
 <para>If the channel part of the URL does not have one of the prefix
@@ -63,8 +64,24 @@ shipping - <emphasis>unless</emphasis>the channel part has the suffix
 
 <para>The host part of the URL may have a port-number suffix separated by a
 colon, as shown in the third example; otherwise
-<application>irkerd</application> sends messages to the the default 6667 IRC
-port of each server.</para>
+<application>irkerd</application> sends plaintext messages to the default
+6667 IRC port of each server, and SSL/TLS messages to 6697.</para>
+
+<para>When the <quote>to</quote> URL uses the <quote>ircs</quote>
+scheme (as shown in the fourth and fifth examples), the connection to
+the server is made via SSL/TLS (vs. a plaintext connection with the
+<quote>irc</quote> scheme).  To connect via SSL/TLS with Python 2.x,
+you need to explicitly declare the certificate authority file used to
+verify server certificates.  For example, <quote>-c
+/etc/ssl/certs/ca-certificates.crt</quote>.  In Python 3.2 and later,
+you can still set this option to declare a custom CA file, but
+<application>irkerd</application>; if you don't set it
+<application>irkerd</application> will use OpenSSL's default file
+(using Python's
+<quote>ssl.SSLContext.set_default_verify_paths</quote>).  In Python
+3.2 and later, <quote>ssl.match_hostname</quote> is used to ensure the
+server certificate belongs to the intended host, as well as being
+signed by a trusted CA.</para>
 
 <para>To join password-protected (mode +k) channels, the channel part of the
 URL may be followed with a query-string indicating the channel key, of the

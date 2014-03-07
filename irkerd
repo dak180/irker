@@ -58,6 +58,7 @@ try:  # Python 3
     import socketserver
 except ImportError:  # Python 2
     import SocketServer as socketserver
+import ssl
 import sys
 import threading
 import time
@@ -230,8 +231,40 @@ class IRCServerConnection():
         self.master = master
         self.socket = None
 
+    def _wrap_socket(self, socket, target, cafile=None,
+                     protocol=ssl.PROTOCOL_TLSv1):
+        try:  # Python 3.2 and greater
+            ssl_context = ssl.SSLContext(protocol)
+        except AttributeError:  # Python < 3.2
+            self.socket = ssl.wrap_socket(
+                self.socket, cert_reqs=ssl.CERT_REQUIRED,
+                ssl_version=protocol, ca_certs=cafile)
+        else:
+            ssl_context.verify_mode = ssl.CERT_REQUIRED
+            if cafile:
+                ssl_context.load_verify_locations(cafile=cafile)
+            else:
+                ssl_context.set_default_verify_paths()
+            kwargs = {}
+            if ssl.HAS_SNI:
+                kwargs['server_hostname'] = target.servername
+            self.socket = ssl_context.wrap_socket(self.socket, **kwargs)
+        return self.socket
+
+    def _check_hostname(self, target):
+        if hasattr(ssl, 'match_hostname'):  # Python >= 3.2
+            cert = self.socket.getpeercert()
+            try:
+                ssl.match_hostname(cert, target.servername)
+            except ssl.CertificateError as e:
+                raise IRCServerConnectionError(
+                    'Invalid SSL/TLS certificate: %s' % e)
+        else:  # Python < 3.2
+            LOG.warning(
+                'cannot check SSL/TLS hostname with Python %s' % sys.version)
+
     def connect(self, target, nickname,
-                password=None, username=None, ircname=None):
+                password=None, username=None, ircname=None, **kwargs):
         LOG.debug("connect(server=%r, port=%r, nickname=%r, ...)" % (
             target.servername, target.port, nickname))
         if self.socket is not None:
@@ -244,11 +277,16 @@ class IRCServerConnection():
         self.nickname = nickname
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if target.ssl:
+                self.socket = self._wrap_socket(
+                    socket=self.socket, target=target, **kwargs)
             self.socket.bind(('', 0))
             self.socket.connect((target.servername, target.port))
         except socket.error as err:
             raise IRCServerConnectionError("Couldn't connect to socket: %s" % err)
 
+        if target.ssl:
+            self._check_hostname(target=target)
         if password:
             self.ship("PASS " + password)
         self.nick(self.nickname)
@@ -537,7 +575,8 @@ class Connection:
                                 self.target, time.asctime()))
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
-                        except IRCServerConnectionError:
+                        except IRCServerConnectionError as e:
+                            LOG.error(e)
                             self.status = "expired"
                             break
                 elif self.status == "handshaking":
@@ -631,9 +670,14 @@ class Target():
     def __init__(self, url):
         self.url = url
         parsed = urllib_parse.urlparse(url)
+        self.ssl = parsed.scheme == 'ircs'
+        if self.ssl:
+            default_ircport = 6697
+        else:
+            default_ircport = 6667
         irchost, _, ircport = parsed.netloc.partition(':')
         if not ircport:
-            ircport = 6667
+            ircport = default_ircport
         self.servername = irchost
         # IRC channel names are case-insensitive.  If we don't smash
         # case here we may run into problems later. There was a bug
@@ -895,6 +939,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=__doc__.strip().splitlines()[0])
     parser.add_argument(
+        '-c', '--ca-file', metavar='PATH',
+        help='file of trusted certificates for SSL/TLS')
+    parser.add_argument(
         '-d', '--log-level', metavar='LEVEL', choices=LOG_LEVELS,
         help='file of trusted certificates for SSL/TLS')
     parser.add_argument(
@@ -925,6 +972,7 @@ if __name__ == '__main__':
         nick_template=args.nick,
         nick_needs_number=re.search('%.*d', args.nick),
         password=args.password,
+        cafile=args.ca_file,
         )
     LOG.info("irkerd version %s" % version)
     if args.immediate:

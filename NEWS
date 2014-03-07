@@ -1,5 +1,8 @@
 			irker history 
 
+2.7 @ unreleased
+  Add support for ircs:// and SSL/TLS connections to IRC servers.
+
 2.6 @ 2014-02-04
    Fix for an infinite loop on failing to connect to IRC
 
