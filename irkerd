@@ -640,6 +640,11 @@ class Target():
         if parsed.query:
             self.key = re.sub("^key=", "", parsed.query)
         self.port = int(ircport)
+
+    def __str__(self):
+        "Represent this instance as a string"
+        return self.servername or self.url or repr(self)
+
     def validate(self):
         "Raise InvalidRequest if the URL is missing a critical component"
         if not self.servername:
