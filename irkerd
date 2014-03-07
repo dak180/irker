@@ -221,22 +221,22 @@ class IRCServerConnection():
         self.master = master
         self.socket = None
 
-    def connect(self, server, port, nickname,
+    def connect(self, target, nickname,
                 password=None, username=None, ircname=None):
         LOG.debug("connect(server=%r, port=%r, nickname=%r, ...)" % (
-            server, port, nickname))
+            target.servername, target.port, nickname))
         if self.socket is not None:
             self.disconnect("Changing servers")
 
         self.buffer = LineBufferedStream()
         self.event_handlers = {}
         self.real_server_name = ""
-        self.server = server
+        self.target = target
         self.nickname = nickname
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.bind(('', 0))
-            self.socket.connect((server, port))
+            self.socket.connect((target.servername, target.port))
         except socket.error as err:
             raise IRCServerConnectionError("Couldn't connect to socket: %s" % err)
 
@@ -332,7 +332,8 @@ class IRCServerConnection():
             pass
         del self.socket
         self.socket = None
-        self.handle_event(Event("disconnect", self.server, "", [message]))
+        self.handle_event(
+            Event("disconnect", self.target.server, "", [message]))
 
     def join(self, channel, key=""):
         self.ship("JOIN %s%s" % (channel, (key and (" " + key))))
@@ -379,10 +380,10 @@ def is_channel(string):
     return string and string[0] in "#&+!"
 
 class Connection:
-    def __init__(self, irkerd, servername, port):
-        self.irker = irkerd
-        self.servername = servername
-        self.port = port
+    def __init__(self, irker, target, **kwargs):
+        self.irker = irker
+        self.target = target
+        self.kwargs = kwargs
         self.nick_trial = None
         self.connection = None
         self.status = None
@@ -434,7 +435,7 @@ class Connection:
             del self.channels_joined[outof]
         except KeyError:
             LOG.error("kicked by %s from %s that's not joined" % (
-                self.servername, outof))
+                self.target, outof))
         qcopy = []
         while not self.queue.empty():
             (channel, message, key) = self.queue.get()
@@ -478,7 +479,7 @@ class Connection:
                         LOG.info((
                             "timing out connection to %s at %s "
                             "(ping_timeout=%s, xmit_timeout=%s)") % (
-                            self.servername, time.asctime(), ping_timeout,
+                            self.target, time.asctime(), ping_timeout,
                             xmit_timeout))
                         with self.irker.irc.mutex:
                             self.connection.context = None
@@ -510,14 +511,15 @@ class Connection:
                         try:
                             # This will throw
                             # IRCServerConnectionError on failure
-                            self.connection.connect(self.servername,
-                                                self.port,
-                                                nickname=self.nickname(),
-                                                username="irker",
-                                                ircname="irker relaying client")
+                            self.connection.connect(
+                                target=self.target,
+                                nickname=self.nickname(),
+                                username="irker",
+                                ircname="irker relaying client",
+                                **self.kwargs)
                             self.status = "handshaking"
                             LOG.info("XMIT_TTL bump (%s connection) at %s" % (
-                                self.servername, time.asctime()))
+                                self.target, time.asctime()))
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
                         except IRCServerConnectionError:
@@ -544,8 +546,7 @@ class Connection:
                     (channel, message, key) = self.queue.get()
                     if channel not in self.channels_joined:
                         self.connection.join(channel, key=key)
-                        LOG.info("joining %s on %s." % (
-                            channel, self.servername))
+                        LOG.info("joining %s on %s." % (channel, self.target))
                     # None is magic - it's a request to quit the server
                     if message is None:
                         self.connection.quit()
@@ -567,19 +568,18 @@ class Connection:
                                 LOG.warning((
                                     "irclib rejected a message to %s on %s "
                                     "because: %s") % (
-                                    channel, self.servername, str(err)))
+                                    channel, self.target, str(err)))
                                 LOG.debug(err.format_exc())
                             time.sleep(ANTI_FLOOD_DELAY)
                     self.last_xmit = self.channels_joined[channel] = time.time()
                     LOG.info("XMIT_TTL bump (%s transmission) at %s" % (
-                        self.servername, time.asctime()))
+                        self.target, time.asctime()))
                     self.queue.task_done()
                 elif self.status == "expired":
                     print "We're expired but still running! This is a bug."
                     break
         except Exception, e:
-            LOG.error("exception %s in thread for %s" % (
-                e, self.servername))
+            LOG.error("exception %s in thread for %s" % (e, self.target))
             # Maybe this should have its own status?
             self.status = "expired"
             LOG.debug(e.format_exc())
@@ -659,10 +659,9 @@ class Target():
 
 class Dispatcher:
     "Manage connections to a particular server-port combination."
-    def __init__(self, irkerd, servername, port):
-        self.irker = irkerd
-        self.servername = servername
-        self.port = port
+    def __init__(self, irker, **kwargs):
+        self.irker = irker
+        self.kwargs = kwargs
         self.connections = []
     def dispatch(self, channel, message, key, quit_after=False):
         "Dispatch messages for our server-port combination."
@@ -689,10 +688,8 @@ class Dispatcher:
             #time.sleep(ANTI_FLOOD_DELAY)
             found_connection.enqueue(channel, message, key, quit_after)
             return
-        # Didn't find any channels with no recent activity
-        newconn = Connection(self.irker,
-                             self.servername,
-                             self.port)
+        # All existing channels had recent activity
+        newconn = Connection(self.irker, **self.kwargs)
         self.connections.append(newconn)
         newconn.enqueue(channel, message, key, quit_after)
     def live(self):
@@ -708,7 +705,8 @@ class Dispatcher:
 
 class Irker:
     "Persistent IRC multiplexer."
-    def __init__(self)
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
         self.irc = IRCClient()
         self.irc.add_event_handler("ping", self._handle_ping)
         self.irc.add_event_handler("welcome", self._handle_welcome)
@@ -761,12 +759,12 @@ class Irker:
                             for c in prefixes:
                                 cxt.channel_limits[c] = limit
                         LOG.info("%s channel limit map is %s" % (
-                            connection.server, cxt.channel_limits))
+                            connection.target, cxt.channel_limits))
                     except ValueError:
                         LOG.error("ill-formed CHANLIMIT property")
     def _handle_disconnect(self, connection, _event):
         "Server hung up the connection."
-        LOG.info("server %s disconnected" % connection.server)
+        LOG.info("server %s disconnected" % connection.target)
         connection.close()
         if connection.context:
             connection.context.handle_disconnect()
@@ -774,7 +772,7 @@ class Irker:
         "Server hung up the connection."
         target = event.target
         LOG.info("irker has been kicked from %s on %s" % (
-            target, connection.server))
+            target, connection.target))
         if connection.context:
             connection.context.handle_kick(target)
     def _handle_every_raw_message(self, _connection, event):
@@ -828,7 +826,7 @@ class Irker:
             for target in targets:
                 if target.server() not in self.servers:
                     self.servers[target.server()] = Dispatcher(
-                        self, target.servername, target.port)
+                        self, target=target, **self.kwargs)
                 self.servers[target.server()].dispatch(
                     target.channel, message, target.key, quit_after=quit_after)
                 # GC dispatchers with no active connections
