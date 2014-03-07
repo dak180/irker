@@ -214,23 +214,18 @@ class IRCServerConnection():
         self.event_handlers = {}
         self.real_server_name = ""
         self.server = server
-        self.port = port
-        self.server_address = (server, port)
         self.nickname = nickname
-        self.username = username or nickname
-        self.ircname = ircname or nickname
-        self.password = password
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.bind(('', 0))
-            self.socket.connect(self.server_address)
+            self.socket.connect((server, port))
         except socket.error as err:
             raise IRCServerConnectionError("Couldn't connect to socket: %s" % err)
 
-        if self.password:
-            self.ship("PASS " + self.password)
+        if password:
+            self.ship("PASS " + password)
         self.nick(self.nickname)
-        self.user(self.username, self.ircname)
+        self.user(username=username or ircname, realname=ircname or nickname)
         return self
 
     def close(self):
