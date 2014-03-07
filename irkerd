@@ -17,7 +17,6 @@ resource page at <http://www.catb.org/~esr/irker/>.
 
 Requires Python 2.7, or:
 * 2.6 with the argparse package installed.
-* 2.5 with the argparse and simplejson packages installed.
 """
 
 from __future__ import with_statement
@@ -580,7 +579,7 @@ class Connection:
                     LOG.error(
                         "We're expired but still running! This is a bug.")
                     break
-        except Exception, e:
+        except Exception as e:
             LOG.error("exception %s in thread for %s" % (e, self.target))
             # Maybe this should have its own status?
             self.status = "expired"
@@ -816,7 +815,7 @@ class Irker:
                         url)
                 target = Target(url)
                 target.validate()
-            except InvalidRequest, e:
+            except InvalidRequest as e:
                 LOG.error(str(e))
             else:
                 targets.append(target)
@@ -853,7 +852,7 @@ class Irker:
                             self.servers.keys(),
                             key=lambda name: self.servers[name].last_xmit())
                         del self.servers[oldest]
-        except InvalidRequest, e:
+        except InvalidRequest as e:
             LOG.error(str(e))
         except ValueError:
             self.logerr("can't recognize JSON on input: %r" % line)
@@ -928,7 +927,7 @@ if __name__ == '__main__':
                 signal.pause()
             except KeyboardInterrupt:
                 raise SystemExit(1)
-        except socket.error, e:
+        except socket.error as e:
             LOG.error("server launch failed: %r\n" % e)
 
 # end
