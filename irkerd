@@ -708,7 +708,8 @@ class Dispatcher:
 
 class Irker:
     "Persistent IRC multiplexer."
-    def __init__(self, **kwargs):
+    def __init__(self, logfile=None, **kwargs):
+        self.logfile = logfile
         self.kwargs = kwargs
         self.irc = IRCClient()
         self.irc.add_event_handler("ping", self._handle_ping)
@@ -746,7 +747,7 @@ class Irker:
             arguments = event.arguments
             for lump in arguments:
                 if lump.startswith("DEAF="):
-                    if not logfile:
+                    if not self.logfile:
                         connection.mode(cxt.nickname(), "+"+lump[5:])
                 elif lump.startswith("MAXCHANNELS="):
                     m = int(lump[12:])
@@ -780,8 +781,8 @@ class Irker:
             connection.context.handle_kick(target)
     def _handle_every_raw_message(self, _connection, event):
         "Log all messages when in watcher mode."
-        if logfile:
-            with open(logfile, "a") as logfp:
+        if self.logfile:
+            with open(self.logfile, "a") as logfp:
                 logfp.write("%03f|%s|%s\n" % \
                              (time.time(), event.source, event.arguments[0]))
     def pending(self):
@@ -929,6 +930,7 @@ if __name__ == '__main__':
         LOG.setLevel(log_level)
 
     irker = Irker(
+        logfile=logfile,
         nick_template=nick_template,
         nick_needs_number=re.search("%.*d", nick_template),
         )
