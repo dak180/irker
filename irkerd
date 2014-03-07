@@ -41,20 +41,29 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 version = "2.6"
 
-import Queue
-import SocketServer
 import argparse
 import logging
 import json
+try:  # Python 3
+    import queue
+except ImportError:  # Python 2
+    import Queue as queue
 import random
 import re
 import select
 import signal
 import socket
+try:  # Python 3
+    import socketserver
+except ImportError:  # Python 2
+    import SocketServer as socketserver
 import sys
 import threading
 import time
-import urlparse
+try:  # Python 3
+    import urllib.parse as urllib_parse
+except ImportError:  # Python 2
+    import urlparse as urllib_parse
 
 
 LOG = logging.getLogger(__name__)
@@ -389,7 +398,7 @@ class Connection:
         self.channels_joined = {}
         self.channel_limits = {}
         # The consumer thread
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.thread = None
     def nickname(self, n=None):
         "Return a name for the nth server connection."
@@ -612,7 +621,7 @@ class Target():
     "Represent a transmission target."
     def __init__(self, url):
         self.url = url
-        parsed = urlparse.urlparse(url)
+        parsed = urllib_parse.urlparse(url)
         irchost, _, ircport = parsed.netloc.partition(':')
         if not ircport:
             ircport = 6667
@@ -854,7 +863,7 @@ class Irker:
         except RuntimeError:
             self.logerr("wildly malformed JSON blew the parser stack.")
 
-class IrkerTCPHandler(SocketServer.StreamRequestHandler):
+class IrkerTCPHandler(socketserver.StreamRequestHandler):
     def handle(self):
         while True:
             line = self.rfile.readline()
@@ -862,7 +871,7 @@ class IrkerTCPHandler(SocketServer.StreamRequestHandler):
                 break
             irker.handle(line.strip())
 
-class IrkerUDPHandler(SocketServer.BaseRequestHandler):
+class IrkerUDPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request[0].strip()
         #socket = self.request[1]
@@ -912,8 +921,8 @@ if __name__ == '__main__':
     else:
         irker.thread_launch()
         try:
-            tcpserver = SocketServer.TCPServer((HOST, PORT), IrkerTCPHandler)
-            udpserver = SocketServer.UDPServer((HOST, PORT), IrkerUDPHandler)
+            tcpserver = socketserver.TCPServer((HOST, PORT), IrkerTCPHandler)
+            udpserver = socketserver.UDPServer((HOST, PORT), IrkerUDPHandler)
             for server in [tcpserver, udpserver]:
                 server = threading.Thread(target=server.serve_forever)
                 server.setDaemon(True)
