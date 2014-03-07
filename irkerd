@@ -19,6 +19,7 @@ Requires Python 2.7, or:
 * 2.6 with the argparse package installed.
 """
 
+from __future__ import unicode_literals
 from __future__ import with_statement
 
 # These things might need tuning
@@ -69,6 +70,11 @@ except ImportError:  # Python 2
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.ERROR)
 LOG_LEVELS = ['critical', 'error', 'warning', 'info', 'debug']
+
+try:  # Python 2
+    UNICODE_TYPE = unicode
+except NameError:  # Python 3
+    UNICODE_TYPE = str
 
 
 # Sketch of implementation:
@@ -188,7 +194,7 @@ class LineBufferedStream():
     _crlf_re = re.compile(b'\r?\n')
 
     def __init__(self):
-        self.buffer = ''
+        self.buffer = b''
 
     def append(self, newbytes):
         self.buffer += newbytes
@@ -270,6 +276,8 @@ class IRCServerConnection():
         self.buffer.append(incoming)
 
         for line in self.buffer:
+            if not isinstance(line, UNICODE_TYPE):
+                line = UNICODE_TYPE(line, 'utf-8')
             LOG.debug("FROM: %s" % line)
 
             if not line:
@@ -574,7 +582,7 @@ class Connection:
                                 LOG.warning((
                                     "irclib rejected a message to %s on %s "
                                     "because: %s") % (
-                                    channel, self.target, str(err)))
+                                    channel, self.target, UNICODE_TYPE(err)))
                                 LOG.debug(err.format_exc())
                             time.sleep(ANTI_FLOOD_DELAY)
                     self.last_xmit = self.channels_joined[channel] = time.time()
@@ -802,10 +810,10 @@ class Irker:
                 "malformed request - 'to' or 'privmsg' missing: %r" % request)
         channels = request['to']
         message = request['privmsg']
-        if not isinstance(channels, (list, basestring)):
+        if not isinstance(channels, (list, UNICODE_TYPE)):
             raise InvalidRequest(
                 "malformed request - unexpected channel type: %r" % channels)
-        if not isinstance(message, basestring):
+        if not isinstance(message, UNICODE_TYPE):
             raise InvalidRequest(
                 "malformed request - unexpected message type: %r" % message)
         if not isinstance(channels, list):
@@ -813,14 +821,14 @@ class Irker:
         targets = []
         for url in channels:
             try:
-                if not isinstance(url, basestring):
+                if not isinstance(url, UNICODE_TYPE):
                     raise InvalidRequest(
                         "malformed request - URL has unexpected type: %r" %
                         url)
                 target = Target(url)
                 target.validate()
             except InvalidRequest as e:
-                LOG.error(str(e))
+                LOG.error(UNICODE_TYPE(e))
             else:
                 targets.append(target)
         return (targets, message)
@@ -857,7 +865,7 @@ class Irker:
                             key=lambda name: self.servers[name].last_xmit())
                         del self.servers[oldest]
         except InvalidRequest as e:
-            LOG.error(str(e))
+            LOG.error(UNICODE_TYPE(e))
         except ValueError:
             self.logerr("can't recognize JSON on input: %r" % line)
         except RuntimeError:
@@ -869,13 +877,17 @@ class IrkerTCPHandler(socketserver.StreamRequestHandler):
             line = self.rfile.readline()
             if not line:
                 break
-            irker.handle(line.strip())
+            if not isinstance(line, UNICODE_TYPE):
+                line = UNICODE_TYPE(line, 'utf-8')
+            irker.handle(line=line.strip())
 
 class IrkerUDPHandler(socketserver.BaseRequestHandler):
     def handle(self):
-        data = self.request[0].strip()
+        line = self.request[0].strip()
         #socket = self.request[1]
-        irker.handle(data)
+        if not isinstance(line, UNICODE_TYPE):
+            line = UNICODE_TYPE(line, 'utf-8')
+        irker.handle(line=line.strip())
 
 
 if __name__ == '__main__':
