@@ -380,9 +380,11 @@ def is_channel(string):
     return string and string[0] in "#&+!"
 
 class Connection:
-    def __init__(self, irker, target, nick_needs_number=False, **kwargs):
+    def __init__(self, irker, target, nick_template, nick_needs_number=False,
+                 **kwargs):
         self.irker = irker
         self.target = target
+        self.nick_template = nick_template
         self.nick_needs_number = nick_needs_number
         self.kwargs = kwargs
         self.nick_trial = None
@@ -400,9 +402,9 @@ class Connection:
         if n is None:
             n = self.nick_trial
         if self.nick_needs_number:
-            return (namestyle % n)
+            return (self.nick_template % n)
         else:
-            return namestyle
+            return self.nick_template
     def handle_ping(self):
         "Register the fact that the server has pinged this connection."
         self.last_ping = time.time()
@@ -890,7 +892,7 @@ Options
 if __name__ == '__main__':
     log_level = None
     immediate = None
-    namestyle = "irker%03d"
+    nick_template = "irker%03d"
     password = None
     logfile = None
     try:
@@ -911,7 +913,7 @@ if __name__ == '__main__':
         elif opt == '-l':	# Logfile mode - report traffic read in
             logfile = val
         elif opt == '-n':	# Force the nick
-            namestyle = val
+            nick_template = val
         elif opt == '-p':	# Set a nickserv password
             password = val
         elif opt == '-V':	# Emit version and exit
@@ -927,7 +929,8 @@ if __name__ == '__main__':
         LOG.setLevel(log_level)
 
     irker = Irker(
-        nick_needs_number=re.search("%.*d", namestyle),
+        nick_template=nick_template,
+        nick_needs_number=re.search("%.*d", nick_template),
         )
     LOG.info("irkerd version %s" % version)
     if immediate:
