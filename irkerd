@@ -380,9 +380,10 @@ def is_channel(string):
     return string and string[0] in "#&+!"
 
 class Connection:
-    def __init__(self, irker, target, **kwargs):
+    def __init__(self, irker, target, nick_needs_number=False, **kwargs):
         self.irker = irker
         self.target = target
+        self.nick_needs_number = nick_needs_number
         self.kwargs = kwargs
         self.nick_trial = None
         self.connection = None
@@ -398,7 +399,7 @@ class Connection:
         "Return a name for the nth server connection."
         if n is None:
             n = self.nick_trial
-        if fallback:
+        if self.nick_needs_number:
             return (namestyle % n)
         else:
             return namestyle
@@ -414,7 +415,7 @@ class Connection:
     def handle_badnick(self):
         "The server says our nick is ill-formed or has a conflict."
         LOG.info("nick %s rejected" % self.nickname())
-        if fallback:
+        if self.nick_needs_number:
             # Randomness prevents a malicious user or bot from
             # anticipating the next trial name in order to block us
             # from completing the handshake.
@@ -925,8 +926,9 @@ if __name__ == '__main__':
     if log_level:
         LOG.setLevel(log_level)
 
-    fallback = re.search("%.*d", namestyle)
-    irker = Irker()
+    irker = Irker(
+        nick_needs_number=re.search("%.*d", namestyle),
+        )
     LOG.info("irkerd version %s" % version)
     if immediate:
         irker.irc.add_event_handler("quit", lambda _c, _e: sys.exit(0))
