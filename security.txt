@@ -184,14 +184,6 @@ issuing messages from within a given intranet is authorized to do so.
 This fits the assumption that irker instances will run on forge sites
 receiving requests from instances of irkerhook.py.
 
-If this is *not* the case (e.g. the network between a hook and irkerd
-has to be considered hostile) we could hide irkerd behind an instance
-of spiped <http://www.tarsnap.com/spiped.html> or an instance of
-stunnel <http://www.stunnel.org>. These would be far superior to
-in-band authentication in that they would leave the job to specialist
-code not in any way coupled to irkerd's internals, minimizing
-global complexity and failure modes.
-
 One larger issue (not unique to irker) is that because of the
 insecured nature of IRC it is essentially impossible to secure
 #commits against commit notifications that are either garbled by
@@ -201,10 +193,13 @@ lesson here is that IRC monitoring isn't a good method for that
 purpose; going direct to the repositories via a toolkit such as Ohloh
 is a far better idea.
 
-=== Future directions ===
+When this analysis was originally written, we recommended using spiped
+or stunnel to solve the problem of passing notifications from irkerd
+to IRC servers over a potentially hostile network that might interfere
+with them.  Later, SSL/TLS support proved easy to add and is now in
+irkerd itself.
 
-There is presently no direct support for spipe or stunnel in
-irkerhook.py.  We'd take patches for this.
+=== Future directions ===
 
 == Secrecy ==
 

@@ -52,6 +52,9 @@ Subversion support in irkerhook.py. Since the 1.0 release he has
 kept as close an eye on the code as the author and has fixed at least
 as many bugs.
 
+W. Trevor King <wking@tremily.us> added SSL/TLS support and did
+significant refactoring work.
+
 Daniel Franke <dfoxfranke@gmail.com> performed a security audit of irkerd.
 
 Georg Brandl <georg@python.org> contributed the Mercurial support in

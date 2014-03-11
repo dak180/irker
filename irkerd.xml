@@ -75,7 +75,7 @@ override the default <quote>irker</quote> username.</para>
 
 <para>When the <quote>to</quote> URL uses the <quote>ircs</quote>
 scheme (as shown in the fourth and fifth examples), the connection to
-the server is made via SSL/TLS (vs. a plaintext connection with the
+the IRC server is made via SSL/TLS (vs. a plaintext connection with the
 <quote>irc</quote> scheme).  To connect via SSL/TLS with Python 2.x,
 you need to explicitly declare the certificate authority file used to
 verify server certificates.  For example, <quote>-c
