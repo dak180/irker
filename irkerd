@@ -248,7 +248,7 @@ class IRCServerConnection():
             kwargs = {}
             if ssl.HAS_SNI:
                 kwargs['server_hostname'] = target.servername
-            self.socket = ssl_context.wrap_socket(self.socket, **kwargs)
+            self.socket = ssl_context.wrap_socket(socket, **kwargs)
         return self.socket
 
     def _check_hostname(self, target):
