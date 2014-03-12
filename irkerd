@@ -953,11 +953,16 @@ if __name__ == '__main__':
         '-p', '--password', metavar='PASSWORD',
         help='NickServ password')
     parser.add_argument(
-        '-i', '--immediate', action='store_const', const=True,
-        help='disconnect after sending each message')
+        '-i', '--immediate', metavar='IRC-URL',
+        help=(
+            'send a single message to IRC-URL and exit.  The message is the '
+            'first positional argument.'))
     parser.add_argument(
         '-V', '--version', action='version',
         version='%(prog)s {0}'.format(version))
+    parser.add_argument(
+        'message', metavar='MESSAGE', nargs='?',
+        help='message for --immediate mode')
     args = parser.parse_args()
 
     handler = logging.StreamHandler()
@@ -975,10 +980,21 @@ if __name__ == '__main__':
         )
     LOG.info("irkerd version %s" % version)
     if args.immediate:
+        if not args.message:
+            LOG.error(
+                '--immediate set (%r), but message argument not given' % (
+                args.immediate))
+            raise SystemExit(1)
         irker.irc.add_event_handler("quit", lambda _c, _e: sys.exit(0))
-        irker.handle('{"to":"%s","privmsg":"%s"}' % (args.immediate, arguments[0]), quit_after=True)
+        irker.handle('{"to":"%s","privmsg":"%s"}' % (
+            args.immediate, args.message), quit_after=True)
         irker.irc.spin()
     else:
+        if args.message:
+            LOG.error(
+                'message argument given (%r), but --immediate not set' % (
+                args.message))
+            raise SystemExit(1)
         irker.thread_launch()
         try:
             tcpserver = socketserver.TCPServer((HOST, PORT), IrkerTCPHandler)
