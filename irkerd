@@ -237,7 +237,7 @@ class IRCServerConnection():
             ssl_context = ssl.SSLContext(protocol)
         except AttributeError:  # Python < 3.2
             self.socket = ssl.wrap_socket(
-                self.socket, cert_reqs=ssl.CERT_REQUIRED,
+                socket, cert_reqs=ssl.CERT_REQUIRED,
                 ssl_version=protocol, ca_certs=cafile)
         else:
             ssl_context.verify_mode = ssl.CERT_REQUIRED
@@ -976,7 +976,7 @@ if __name__ == '__main__':
     LOG.info("irkerd version %s" % version)
     if args.immediate:
         irker.irc.add_event_handler("quit", lambda _c, _e: sys.exit(0))
-        irker.handle('{"to":"%s","privmsg":"%s"}' % (immediate, arguments[0]), quit_after=True)
+        irker.handle('{"to":"%s","privmsg":"%s"}' % (args.immediate, arguments[0]), quit_after=True)
         irker.irc.spin()
     else:
         irker.thread_launch()
