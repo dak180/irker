@@ -199,8 +199,6 @@ to IRC servers over a potentially hostile network that might interfere
 with them.  Later, SSL/TLS support proved easy to add and is now in
 irkerd itself.
 
-=== Future directions ===
-
 == Secrecy ==
 
 irkerd has no inherent secrecy risks.
