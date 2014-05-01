@@ -1,0 +1,84 @@
+<!DOCTYPE refentry PUBLIC
+   "-//OASIS//DTD DocBook XML V4.1.2//EN"
+   "docbook/docbookx.dtd">
+<refentry id='irk.8'>
+<refmeta>
+<refentrytitle>irk</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class='date'>Apr 30 2014</refmiscinfo>
+<refmiscinfo class='source'>irker</refmiscinfo>
+<refmiscinfo class='product'>irker</refmiscinfo>
+<refmiscinfo class='manual'>Commands</refmiscinfo>
+</refmeta>
+<refnamediv id='name'>
+<refname>irk</refname>
+<refpurpose>test program for irkerd</refpurpose>
+</refnamediv>
+<refsynopsisdiv id='synopsis'>
+
+<cmdsynopsis>
+  <command>irk</command>
+     <arg><replaceable>target</replaceable></arg>
+     <arg choice='opt'><replaceable>message text</replaceable></arg>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1 id='description'><title>DESCRIPTION</title>
+
+<para><application>irk</application> is a simple test program for
+<citerefentry><refentrytitle>irkerd</refentrytitle><manvolnum>8</manvolnum></citerefentry>. It
+will construct a simple JSON object and pass it to the daemon running
+on localhost.</para>
+</refsect1>
+
+<refsect1 id='options'><title>OPTIONS</title>
+
+<para><application>irk</application> takes the following options:</para>
+
+<variablelist>
+<varlistentry>
+<term>target</term>
+<listitem><para>Which server and channel to join to announced the
+message. If not prefixed with "irc:", it will prefix
+"irc://chat.freenode.net/" to the argument before passing it directly
+to irkerd. This argument is passed as the "to" parameter in the JSON
+object.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>message</term>
+<listitem><para>Which message to send to the target specified
+above. If the string "-", the message will be read from standard
+input, with newlines stripped.</para></listitem>
+</varlistentry>
+</variablelist>
+
+</refsect1>
+
+<refsect1 id='limitations'><title>LIMITATIONS</title>
+
+<para><application>irk</application> has no commandline usage and may
+be riddled with bugs.</para>
+
+<para><application>irk</application> doesn't know how to talk to your
+favorite VCS. You will generally want to use
+<citerefentry><refentrytitle>irkerhook</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+instead</para>
+
+<para><application>irk</application> has also all the limitations of
+<application>irkerd</application>.</para>
+</refsect1>
+
+<refsect1 id='see_also'><title>SEE ALSO</title>
+<para>
+<citerefentry><refentrytitle>irkerhook</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+</para>
+</refsect1>
+
+<refsect1 id='authors'><title>AUTHOR</title>
+<para>Eric S. Raymond <email>esr@snark.thyrsus.com</email>.  See the
+project page at <ulink
+url='http://www.catb.org/~esr/irker'>http://www.catb.org/~esr/irker</ulink>
+for updates and other resources, including an installable repository
+hook script.</para>
+</refsect1>
+</refentry>

@@ -9,7 +9,7 @@ prefix ?= /usr
 mandir ?= /share/man
 target = $(DESTDIR)$(prefix)
 
-docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1
+docs: irkerd.html irkerd.8 irkerhook.html irkerhook.1 irk.html irk.1
 
 irkerd.8: irkerd.xml
 	xmlto man irkerd.xml
@@ -21,6 +21,11 @@ irkerhook.1: irkerhook.xml
 irkerhook.html: irkerhook.xml
 	xmlto html-nochunks irkerhook.xml
 
+irk.1: irk.xml
+	xmlto man irk.xml
+irk.html: irk.xml
+	xmlto html-nochunks irkerhook.xml
+
 install.html: install.txt
 	asciidoc -o install.html install.txt
 security.html: security.txt
@@ -28,7 +33,7 @@ security.html: security.txt
 hacking.html: hacking.txt
 	asciidoc -o hacking.html hacking.txt
 
-install: irkerd.8 irkerhook.1 uninstall
+install: irk.1 irkerd.8 irkerhook.1 uninstall
 	install -m 755 -o 0 -g 0 -d "$(target)/bin"
 	install -m 755 -o 0 -g 0 irkerd "$(target)/bin/irkerd"
 ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
@@ -39,6 +44,7 @@ endif
 	install -m 755 -o 0 -g 0 irkerd.8 "$(target)$(mandir)/man8/irkerd.8"
 	install -m 755 -o 0 -g 0 -d "$(target)$(mandir)/man1"
 	install -m 755 -o 0 -g 0 irkerhook.1 "$(target)$(mandir)/man1/irkerhook.1"
+	install -m 755 -o 0 -g 0 irk.1 "$(target)$(mandir)/man1/irk.1"
 
 uninstall:
 	rm -f "$(target)/bin/irkerd"
@@ -47,9 +53,10 @@ ifneq ($(strip $(SYSTEMDSYSTEMUNITDIR)),)
 endif
 	rm -f "$(target)$(mandir)/man8/irkerd.8"
 	rm -f "$(target)$(mandir)/man1/irkerhook.1"
+	rm -f "$(target)$(mandir)/man1/irk.1"
 
 clean:
-	rm -f irkerd.8 irkerhook.1 irker-*.tar.gz *~ *.html
+	rm -f irkerd.8 irkerhook.1 irk.1 irker-*.tar.gz *~ *.html
 
 PYLINTOPTS = --rcfile=/dev/null --reports=n --include-ids=y --disable="C0103,C0111,C0301,C0302,R0201,R0902,R0903,R0912,R0913,R0914,R0915,E1101,W0142,W0201,W0212,W0621,W0702,W0703,F0401,E0611"
 pylint:
@@ -69,6 +76,7 @@ DOCS = \
 	hacking.txt \
 	irkerhook.xml \
 	irkerd.xml \
+	irk.xml \
 
 SOURCES = \
 	$(DOCS) \
@@ -87,7 +95,7 @@ EXTRA_DIST = \
 version:
 	@echo $(VERS)
 
-irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
+irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1 irk.1
 	mkdir irker-$(VERS)
 	cp -pR $(SOURCES) $(EXTRA_DIST) irker-$(VERS)/
 	@COPYFILE_DISABLE=1 tar -cvzf irker-$(VERS).tar.gz irker-$(VERS)
@@ -95,5 +103,5 @@ irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1
 
 dist: irker-$(VERS).tar.gz
 
-release: irker-$(VERS).tar.gz irkerd.html irkerhook.html install.html security.html hacking.html
+release: irker-$(VERS).tar.gz irkerd.html irk.html irkerhook.html install.html security.html hacking.html
 	shipper version=$(VERS) | sh -e -x
