@@ -942,7 +942,7 @@ if __name__ == '__main__':
         help='file of trusted certificates for SSL/TLS')
     parser.add_argument(
         '-d', '--log-level', metavar='LEVEL', choices=LOG_LEVELS,
-        help='file of trusted certificates for SSL/TLS')
+        help='how much to log to the log file (one of %(choices)s)')
     parser.add_argument(
         '-l', '--log-file', metavar='PATH',
         help='file for saving captured message traffic')
