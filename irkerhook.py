@@ -259,7 +259,7 @@ class GitExtractor(GenericExtractor):
     def commit_factory(self, commit_id):
         "Make a Commit object holding data for a specified commit ID."
         commit = Commit(self, commit_id)
-        commit.branch = os.path.basename(self.refname)
+        commit.branch = re.sub(r"^refs/[^/]*/", "", self.refname)
         # Compute a description for the revision
         if self.revformat == 'raw':
             commit.rev = commit.commit
