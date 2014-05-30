@@ -1,5 +1,9 @@
 			irker history 
 
+Repository head:
+  Various minor improvements to irk.
+  Cope better with branch names containing slashes.
+
 2.7 @ 2014-03-15
   Add support for ircs:// and SSL/TLS connections to IRC servers.
   Add support for per-URL usernames and passwords.
