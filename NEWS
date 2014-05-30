@@ -1,6 +1,6 @@
 			irker history 
 
-Repository head:
+2.8: 2014-05-30
   Various minor improvements to irk.
   Cope better with branch names containing slashes.
 
