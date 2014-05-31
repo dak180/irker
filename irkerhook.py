@@ -39,7 +39,7 @@ default_channels = "irc://chat.freenode.net/#commits"
 
 version = "2.7"
 
-import os, sys, commands, socket, urllib, subprocess, locale, datetime
+import os, sys, commands, socket, urllib, subprocess, locale, datetime, re
 from pipes import quote as shellquote
 try:
     import simplejson as json	# Faster, also makes us Python-2.5-compatible
