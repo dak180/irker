@@ -937,7 +937,10 @@ class IrkerUDPHandler(socketserver.BaseRequestHandler):
 
 def in_background():
     "Is this process running in background?"
-    return os.getpgrp() !=  os.tcgetpgrp(1)
+    try:
+        return os.getpgrp() !=  os.tcgetpgrp(1)
+    except OSError:
+        return True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
