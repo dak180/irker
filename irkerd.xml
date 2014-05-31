@@ -108,10 +108,35 @@ joining a channel to log its traffic.</para>
 <variablelist>
 <varlistentry>
 <term>-d</term>
-<listitem><para>Takes a following value, setting the debugging level
-from it; possible values are 'critical', 'error', 'warning', 'info',
-'debug'. This option will generally only be of interest to developers;
-consult the source code for details.</para></listitem>
+<listitem>
+  <para>
+    Takes a following value, setting the debugging level from it;
+    possible values are 'critical', 'error', 'warning', 'info',
+    'debug'. This option will generally only be of interest to
+    developers, as the logs are designed to help trace
+    <application>irkerd</application>'s internal state.  These tracing
+    logs are independent of the traffic logs controlled by
+    <quote>-l</quote>.
+  </para>
+  <para>
+    Logging will be to standard error (if
+    <application>irkerd</application> is running in the foreground) or
+    to <quote>/dev/syslog</quote> with facility "daemon" (if
+    <application>irkerd</application> is running in the background).
+    The background-ness of <application>irkerd</application> is
+    determined by comparing the process group id with the process
+    group associated with the terminal attached to stdout (with
+    non-matches for background processes).  We assume you aren't
+    running <application>irkerd</application> in Windows or another OS
+    that doesn't support <quote>os.getpgrp</quote> or
+    <quote>tcgetpgrp</quote> or <quote>.  We also assume that you have
+    stdout attached to a TTY (and haven't closed or redirected it).
+    We also assume that if stdout is attached to a TTY associated with
+    the same process group as <application>irkerd</application>, you
+    do intend to log to stderr and not syslog.
+  </para>
+</refsect1>
+</listitem>
 </varlistentry>
 <varlistentry>
 <term>-l</term>
@@ -149,12 +174,6 @@ terminate.</para></listitem>
 <listitem><para>Print usage instructions and terminate.</para></listitem>
 </varlistentry>
 </variablelist>
-
-<para>If no <option>-l</option> is set, logging will be to stndard
-output (if <application>irkerd</application> is running in foreground)
-or to /dev/syslog with facility "daemon" (if
-<application>irkerd</application> is running in packground).</para>
-</refsect1>
 
 <refsect1 id='limitations'><title>LIMITATIONS</title>
 <para>Requests via UDP optimizes for lowest latency and network load
