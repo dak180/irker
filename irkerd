@@ -807,7 +807,7 @@ class Irker:
                     m = int(lump[12:])
                     for pref in "#&+":
                         cxt.channel_limits[pref] = m
-                    LOG.info("%s maxchannels is %d" % (connection.server, m))
+                    LOG.info("%s maxchannels is %d" % (connection.target, m))
                 elif lump.startswith("CHANLIMIT=#:"):
                     limits = lump[10:].split(",")
                     try:
