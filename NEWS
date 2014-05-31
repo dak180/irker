@@ -1,5 +1,8 @@
 			irker history 
 
+Repository head:
+  If irkerd is running in background, log to /dev/syslog (facility daemon).
+
 2.8: 2014-05-30
   Various minor improvements to irk.
   Cope better with branch names containing slashes.

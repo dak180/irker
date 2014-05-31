@@ -42,8 +42,10 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 version = "2.8"
 
+import os
 import argparse
 import logging
+import logging.handlers
 import json
 try:  # Python 3
     import queue
@@ -933,6 +935,9 @@ class IrkerUDPHandler(socketserver.BaseRequestHandler):
             line = UNICODE_TYPE(line, 'utf-8')
         irker.handle(line=line.strip())
 
+def in_background():
+    "Is this process running in background?"
+    return os.getpgrp() !=  os.tcgetpgrp(1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -965,7 +970,12 @@ if __name__ == '__main__':
         help='message for --immediate mode')
     args = parser.parse_args()
 
-    handler = logging.StreamHandler()
+    if not args.log_file and in_background():
+        handler = logging.handlers.SysLogHandler(address='/dev/log',
+                                                 facility='daemon')
+    else:
+        handler = logging.StreamHandler()
+
     LOG.addHandler(handler)
     if args.log_level:
         log_level = getattr(logging, args.log_level.upper())

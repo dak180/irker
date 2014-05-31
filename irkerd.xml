@@ -108,8 +108,9 @@ joining a channel to log its traffic.</para>
 <variablelist>
 <varlistentry>
 <term>-d</term>
-<listitem><para>Takes a following value, setting the debugging level from
-it. This option will generally only be of interest to developers;
+<listitem><para>Takes a following value, setting the debugging level
+from it; possible values are 'critical', 'error', 'warning', 'info',
+'debug'. This option will generally only be of interest to developers;
 consult the source code for details.</para></listitem>
 </varlistentry>
 <varlistentry>
@@ -149,6 +150,10 @@ terminate.</para></listitem>
 </varlistentry>
 </variablelist>
 
+<para>If no <option>-l</option> is set, logging will be to stndard
+output (if <application>irkerd</application> is running in foreground)
+or to /dev/syslog with facility "daemon" (if
+<application>irkerd</application> is running in packground).</para>
 </refsect1>
 
 <refsect1 id='limitations'><title>LIMITATIONS</title>
