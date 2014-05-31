@@ -129,13 +129,11 @@ joining a channel to log its traffic.</para>
     non-matches for background processes).  We assume you aren't
     running <application>irkerd</application> in Windows or another OS
     that doesn't support <quote>os.getpgrp</quote> or
-    <quote>tcgetpgrp</quote> or <quote>.  We also assume that you have
-    stdout attached to a TTY (and haven't closed or redirected it).
-    We also assume that if stdout is attached to a TTY associated with
-    the same process group as <application>irkerd</application>, you
-    do intend to log to stderr and not syslog.
+    <quote>tcgetpgrp</quote>.  We assume that if stdout is attached to
+    a TTY associated with the same process group as
+    <application>irkerd</application>, you do intend to log to stderr
+    and not syslog.
   </para>
-</refsect1>
 </listitem>
 </varlistentry>
 <varlistentry>
@@ -174,6 +172,7 @@ terminate.</para></listitem>
 <listitem><para>Print usage instructions and terminate.</para></listitem>
 </varlistentry>
 </variablelist>
+</refsect1>
 
 <refsect1 id='limitations'><title>LIMITATIONS</title>
 <para>Requests via UDP optimizes for lowest latency and network load
