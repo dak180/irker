@@ -20,6 +20,7 @@
   <command>irkerd</command>
      <arg>-c <replaceable>ca-file</replaceable></arg>
      <arg>-d <replaceable>debuglevel</replaceable></arg>
+     <arg>-e <replaceable>cert-file</replaceable></arg>
      <arg>-l <replaceable>logfile</replaceable></arg>
      <arg>-n <replaceable>nick</replaceable></arg>
      <arg>-p <replaceable>password</replaceable></arg>
@@ -60,7 +61,7 @@ Examples:
 <para>If the channel part of the URL does not have one of the prefix
 characters <quote>#</quote>, <quote>&amp;</quote>, or
 <quote>+</quote>, a <quote>#</quote> will be prepended to it before
-shipping - <emphasis>unless</emphasis>the channel part has the suffix
+shipping - <emphasis>unless</emphasis> the channel part has the suffix
 ",isnick" (which is unconditionally removed).</para>
 
 <para>The host part of the URL may have a port-number suffix separated by a
@@ -135,6 +136,21 @@ joining a channel to log its traffic.</para>
     and not syslog.
   </para>
 </listitem>
+</varlistentry>
+<varlistentry>
+<term>-e</term>
+<listitem><para>Takes a following filename in pem format and uses it
+to authenticate to the IRC server.  You must be connecting to the IRC server
+over SSL for this to function properly.  This is commonly known as
+<quote>CertFP.</quote>
+</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-e</term>
+<listitem><para>Takes a following filename in pem format and uses it
+to authenticate to the IRC server.  You must be connecting to the IRC server
+over SSL for this to function properly.  This is commonly known as <quote>CertFP.</quote>
+</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-l</term>

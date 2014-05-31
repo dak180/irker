@@ -233,13 +233,13 @@ class IRCServerConnection():
         self.master = master
         self.socket = None
 
-    def _wrap_socket(self, socket, target, cafile=None,
+    def _wrap_socket(self, socket, target, certfile=None, cafile=None,
                      protocol=ssl.PROTOCOL_TLSv1):
         try:  # Python 3.2 and greater
             ssl_context = ssl.SSLContext(protocol)
         except AttributeError:  # Python < 3.2
             self.socket = ssl.wrap_socket(
-                socket, cert_reqs=ssl.CERT_REQUIRED,
+                socket, certfile=certfile, cert_reqs=ssl.CERT_REQUIRED,
                 ssl_version=protocol, ca_certs=cafile)
         else:
             ssl_context.verify_mode = ssl.CERT_REQUIRED
@@ -949,6 +949,9 @@ if __name__ == '__main__':
         '-c', '--ca-file', metavar='PATH',
         help='file of trusted certificates for SSL/TLS')
     parser.add_argument(
+        '-e', '--cert-file', metavar='PATH',
+        help='pem file used to authenticate to the server')
+    parser.add_argument(
         '-d', '--log-level', metavar='LEVEL', choices=LOG_LEVELS,
         help='how much to log to the log file (one of %(choices)s)')
     parser.add_argument(
@@ -990,6 +993,7 @@ if __name__ == '__main__':
         nick_needs_number=re.search('%.*d', args.nick),
         password=args.password,
         cafile=args.ca_file,
+        certfile=args.cert_file,
         )
     LOG.info("irkerd version %s" % version)
     if args.immediate:
