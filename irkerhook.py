@@ -30,7 +30,7 @@ urlprefixmap = {
     "cgit": "http://%(host)s/cgi-bin/cgit.cgi/%(repo)s/commit/?id=",
     }
 
-# By default, ship to the freenode #commits list 
+# By default, ship to the freenode #commits list
 default_channels = "irc://chat.freenode.net/#commits"
 
 #
@@ -68,7 +68,7 @@ class Commit:
         if self.urlprefix.lower() == "none":
             self.url = ""
         else:
-            urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix) 
+            urlprefix = urlprefixmap.get(self.urlprefix, self.urlprefix)
             webview = (urlprefix % self.__dict__) + self.commit
             try:
                 if urllib.urlopen(webview).getcode() == 404:
@@ -137,7 +137,7 @@ class GenericExtractor:
             self.bold = '\x1b[1m'
             self.green = '\x1b[1;32m'
             self.blue = '\x1b[1;34m'
-            self.red =  '\x1b[1;31m'
+            self.red = '\x1b[1;31m'
             self.yellow = '\x1b[1;33m'
             self.brown = '\x1b[33m'
             self.magenta = '\x1b[35m'
@@ -428,7 +428,7 @@ def ship(extractor, commit, debug):
             metadata.__dict__.update(json.loads(data))
         except ValueError:
             sys.stderr.write("irkerhook.py: could not decode JSON: %s\n" % data)
-            raise SystemExit, 1
+            raise SystemExit(1)
 
     # Rewrite the file list if too long. The objective here is only
     # to be easier on the eyes.

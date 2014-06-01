@@ -114,7 +114,7 @@ except NameError:  # Python 3
 # same problem - there is little point in reliable delivery to a relay
 # that is down or unreliable.
 #
-# This code uses only NICK, JOIN, PART, MODE, PRIVMSG, USER, and QUIT. 
+# This code uses only NICK, JOIN, PART, MODE, PRIVMSG, USER, and QUIT.
 # It is strictly compliant to RFC1459, except for the interpretation and
 # use of the DEAF and CHANLIMIT and (obsolete) MAXCHANNELS features.
 #
@@ -134,7 +134,7 @@ class IRCError(Exception):
     pass
 
 
-class InvalidRequest (ValueError):
+class InvalidRequest(ValueError):
     "An invalid JSON request"
     pass
 
@@ -456,7 +456,7 @@ class Connection:
         if n is None:
             n = self.nick_trial
         if self.nick_needs_number:
-            return (self.nick_template % n)
+            return self.nick_template % n
         else:
             return self.nick_template
     def handle_ping(self):
@@ -740,7 +740,7 @@ class Dispatcher:
                 if age < time.time() - CHANNEL_TTL:
                     ancients.append((connection, chan, age))
         if ancients:
-            ancients.sort(key=lambda x: x[2]) 
+            ancients.sort(key=lambda x: x[2])
             (found_connection, drop_channel, _drop_age) = ancients[0]
             found_connection.part(drop_channel, "scavenged by irkerd")
             del found_connection.channels_joined[drop_channel]
@@ -938,7 +938,7 @@ class IrkerUDPHandler(socketserver.BaseRequestHandler):
 def in_background():
     "Is this process running in background?"
     try:
-        return os.getpgrp() !=  os.tcgetpgrp(1)
+        return os.getpgrp() != os.tcgetpgrp(1)
     except OSError:
         return True
 
