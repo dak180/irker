@@ -43,7 +43,9 @@ type switch. It can deduce the repo type by looking, so it should.
 
 5. Update the NEWS file
 
-6. make release
+6. git commit -a
+
+7. make release
 
 == Thanks where due == 
 

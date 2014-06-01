@@ -1,6 +1,6 @@
 			irker history 
 
-Repository head:
+2.9: 2014-06-01
   If irkerd is running in background, log to /dev/syslog (facility daemon).
   New -H option to set host listening address.
   Add support for using CertFP to auth to the IRC server, and document it.
