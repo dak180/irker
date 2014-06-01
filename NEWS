@@ -2,7 +2,8 @@
 
 Repository head:
   If irkerd is running in background, log to /dev/syslog (facility daemon).
-  New -H option tyo set host listening address.
+  New -H option to set host listening address.
+  Add support for using CertFP to auth to the IRC server, and document it.
 
 2.8: 2014-05-30
   Various minor improvements to irk.
