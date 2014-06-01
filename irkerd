@@ -955,6 +955,9 @@ if __name__ == '__main__':
         '-d', '--log-level', metavar='LEVEL', choices=LOG_LEVELS,
         help='how much to log to the log file (one of %(choices)s)')
     parser.add_argument(
+        '-H', '--host', metavar='ADDRESS', default=HOST,
+        help='IP address to listen on')
+    parser.add_argument(
         '-l', '--log-file', metavar='PATH',
         help='file for saving captured message traffic')
     parser.add_argument(
@@ -1014,8 +1017,8 @@ if __name__ == '__main__':
             raise SystemExit(1)
         irker.thread_launch()
         try:
-            tcpserver = socketserver.TCPServer((HOST, PORT), IrkerTCPHandler)
-            udpserver = socketserver.UDPServer((HOST, PORT), IrkerUDPHandler)
+            tcpserver = socketserver.TCPServer((args.host, PORT), IrkerTCPHandler)
+            udpserver = socketserver.UDPServer((args.host, PORT), IrkerUDPHandler)
             for server in [tcpserver, udpserver]:
                 server = threading.Thread(target=server.serve_forever)
                 server.setDaemon(True)

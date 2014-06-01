@@ -22,6 +22,7 @@
      <arg>-d <replaceable>debuglevel</replaceable></arg>
      <arg>-e <replaceable>cert-file</replaceable></arg>
      <arg>-l <replaceable>logfile</replaceable></arg>
+     <arg>-H <replaceable>host</replaceable></arg>
      <arg>-n <replaceable>nick</replaceable></arg>
      <arg>-p <replaceable>password</replaceable></arg>
      <arg>-i <replaceable>IRC-URL</replaceable></arg>
@@ -148,9 +149,10 @@ over SSL for this to function properly.  This is commonly known as
 <varlistentry>
 <term>-e</term>
 <listitem><para>Takes a following filename in pem format and uses it
-to authenticate to the IRC server.  You must be connecting to the IRC server
-over SSL for this to function properly.  This is commonly known as <quote>CertFP.</quote>
-</para></listitem>
+to authenticate to the IRC server.  You must be connecting to the IRC
+server over SSL for this to function properly.  This is commonly known
+as <quote>CertFP.</quote></para>
+</listitem>
 </varlistentry>
 <varlistentry>
 <term>-l</term>
@@ -158,6 +160,15 @@ over SSL for this to function properly.  This is commonly known as <quote>CertFP
 Each log line consists of three |-separated fields; a numeric
 timestamp in Unix time, the FQDN of the sending server, and the
 message data.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>-H</term>
+<listitem><para>Takes a following hostname, and binds to that address
+when listening for messages.  <application>irkerd</application> binds
+to localhost by default, but you may want to use your host's public
+address to listen on a local network.  Listening on a public interface
+is not recommended, as it makes spamming IRC channels very
+easy.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>-n</term>

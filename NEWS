@@ -2,6 +2,7 @@
 
 Repository head:
   If irkerd is running in background, log to /dev/syslog (facility daemon).
+  New -H option tyo set host listening address.
 
 2.8: 2014-05-30
   Various minor improvements to irk.
