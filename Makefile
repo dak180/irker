@@ -58,10 +58,13 @@ endif
 clean:
 	rm -f irkerd.8 irkerhook.1 irk.1 irker-*.tar.gz *~ *.html
 
-PYLINTOPTS = --rcfile=/dev/null --reports=n --dummy-variables-rgx='^_' --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' --disable="C0103,C0111,C0301,C0302,C1001,R0201,R0902,R0903,R0912,R0913,R0914,R0915,E1101,W0142,W0201,W0212,W0621,W0702,W0703,W1201,F0401,E0611"
+PYLINTOPTS = --rcfile=/dev/null --reports=n \
+	--msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
+	--dummy-variables-rgx='^_'
+SUPPRESSIONS = "C0103,C0111,C0301,C0302,C1001,R0201,R0902,R0903,R0912,R0913,R0914,R0915,E1101,W0142,W0201,W0212,W0621,W0702,W0703,W1201,F0401,E0611"
 pylint:
-	@pylint $(PYLINTOPTS) irkerd
-	@pylint $(PYLINTOPTS) irkerhook.py
+	@pylint $(PYLINTOPTS) --disable=$(SUPPRESSIONS) irkerd
+	@pylint $(PYLINTOPTS) --disable=$(SUPPRESSIONS) irkerhook.py
 
 loc:
 	@echo "LOC:"; wc -l irkerd irkerhook.py
