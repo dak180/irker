@@ -156,10 +156,11 @@ a value less than 2, however, would probably be unwise.</para>
 <varlistentry>
 <term>cialike</term>
 <listitem>
-<para>If not empty and not "None", this emulates the old CIA behavior
-of dropping long lists of files in favor of a summary of the form (N
-files in M directories). The value must be numeric giving a threshold
-value for the length of the file list in characters.</para>
+<para>If not empty and not "None" (the default), this emulates the old
+CIA behavior of dropping long lists of files in favor of a summary of
+the form (N files in M directories). The value must be numeric giving
+a threshold value for the length of the file list in
+characters.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -167,7 +168,7 @@ value for the length of the file list in characters.</para>
 <refsect2 id="git"><title>git</title>
 
 <para>Under git, the normal way to invoke this hook (from within the
-update hook) passes with a refname followed by a list of commits.  Because 
+update hook) passes it a refname followed by a list of commits.  Because 
 <command>git rev-list</command> normally lists from most recent to oldest,
 you'll want to use --reverse to make notifications be omitted in chronological
 order. In a normal update script, the invocation should look like this</para>
