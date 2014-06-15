@@ -1,5 +1,8 @@
 			irker history 
 
+Repository head:
+  irk no longer fails on ircs channel URLs.
+
 2.9: 2014-06-01
   If irkerd is running in background, log to /dev/syslog (facility daemon).
   New -H option to set host listening address.
