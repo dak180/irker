@@ -27,7 +27,7 @@ except socket.error, e:
     sys.exit(1)
 
 target = sys.argv[1]
-if not "irc:" in target:
+if "irc:" not in target and "ircs:" not in target:
     target = "irc://chat.freenode.net/{0}".format(target)
 message = " ".join(sys.argv[2:])
 message = message.decode('string_escape')
