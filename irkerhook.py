@@ -37,7 +37,7 @@ default_channels = "irc://chat.freenode.net/#commits"
 # No user-serviceable parts below this line:
 #
 
-version = "2.9"
+version = "2.10"
 
 import os, sys, commands, socket, urllib, subprocess, locale, datetime, re
 from pipes import quote as shellquote
