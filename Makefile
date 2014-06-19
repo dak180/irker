@@ -104,7 +104,7 @@ irker-$(VERS).tar.gz: $(SOURCES) irkerd.8 irkerhook.1 irk.1
 	@COPYFILE_DISABLE=1 tar -cvzf irker-$(VERS).tar.gz irker-$(VERS)
 	rm -fr irker-$(VERS)
 
-irker-$(VERS).md5
+irker-$(VERS).md5:
 	@md5sum irker-$(VERS).tar.gz >irker-$(VERS).md5
 
 dist: irker-$(VERS).tar.gz irker-$(VERS).md5
