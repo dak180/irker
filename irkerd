@@ -913,9 +913,9 @@ class Irker:
         except InvalidRequest as e:
             LOG.error(UNICODE_TYPE(e))
         except ValueError:
-            self.logerr("can't recognize JSON on input: %r" % line)
+            LOG.error("can't recognize JSON on input: %r" % line)
         except RuntimeError:
-            self.logerr("wildly malformed JSON blew the parser stack.")
+            LOG.error("wildly malformed JSON blew the parser stack.")
 
 class IrkerTCPHandler(socketserver.StreamRequestHandler):
     def handle(self):
