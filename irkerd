@@ -491,7 +491,7 @@ class Connection:
         try:
             del self.channels_joined[outof]
         except KeyError:
-            LOG.error("kicked by %s from %s that's not joined" % (
+            LOG.error("irkerd: kicked by %s from %s that's not joined" % (
                 self.target, outof))
         qcopy = []
         while not self.queue.empty():
@@ -578,7 +578,7 @@ class Connection:
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
                         except IRCServerConnectionError as e:
-                            LOG.error(e)
+                            LOG.error("irkerd: " + e)
                             self.status = "expired"
                             break
                 elif self.status == "handshaking":
@@ -633,10 +633,10 @@ class Connection:
                     self.queue.task_done()
                 elif self.status == "expired":
                     LOG.error(
-                        "We're expired but still running! This is a bug.")
+                        "irkerd: we're expired but still running! This is a bug.")
                     break
         except Exception as e:
-            LOG.error("exception %s in thread for %s" % (e, self.target))
+            LOG.error("irkerd: exception %s in thread for %s" % (e, self.target))
             # Maybe this should have its own status?
             self.status = "expired"
             LOG.debug(traceback.format_exc())
@@ -821,7 +821,7 @@ class Irker:
                         LOG.info("%s channel limit map is %s" % (
                             connection.target, cxt.channel_limits))
                     except ValueError:
-                        LOG.error("ill-formed CHANLIMIT property")
+                        LOG.error("irkerd: ill-formed CHANLIMIT property")
     def _handle_disconnect(self, connection, _event):
         "Server hung up the connection."
         LOG.info("server %s disconnected" % connection.target)
@@ -874,7 +874,7 @@ class Irker:
                 target = Target(url)
                 target.validate()
             except InvalidRequest as e:
-                LOG.error(UNICODE_TYPE(e))
+                LOG.error("irkerd: " + UNICODE_TYPE(e))
             else:
                 targets.append(target)
         return (targets, message)
@@ -911,11 +911,11 @@ class Irker:
                             key=lambda name: self.servers[name].last_xmit())
                         del self.servers[oldest]
         except InvalidRequest as e:
-            LOG.error(UNICODE_TYPE(e))
+            LOG.error("irkerd: " + UNICODE_TYPE(e))
         except ValueError:
-            LOG.error("can't recognize JSON on input: %r" % line)
+            LOG.error("irkerd: " + "can't recognize JSON on input: %r" % line)
         except RuntimeError:
-            LOG.error("wildly malformed JSON blew the parser stack.")
+            LOG.error("irkerd: " + "wildly malformed JSON blew the parser stack.")
 
 class IrkerTCPHandler(socketserver.StreamRequestHandler):
     def handle(self):
@@ -1012,7 +1012,7 @@ if __name__ == '__main__':
     else:
         if args.message:
             LOG.error(
-                'message argument given (%r), but --immediate not set' % (
+                'irkerd: message argument given (%r), but --immediate not set' % (
                 args.message))
             raise SystemExit(1)
         irker.thread_launch()
@@ -1028,6 +1028,6 @@ if __name__ == '__main__':
             except KeyboardInterrupt:
                 raise SystemExit(1)
         except socket.error as e:
-            LOG.error("server launch failed: %r\n" % e)
+            LOG.error("irkerd: server launch failed: %r\n" % e)
 
 # end
