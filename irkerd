@@ -981,12 +981,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.log_file and in_background():
-        # The Linux, Mac, and FreeBSD values of the logging device
+        # The Linux, Mac, and FreeBSD values of the logging device.
         logdev = [x for x in ('/dev/log', '/var/run/syslog', '/var/run/log')
                   if os.path.exists(x)]
         if len(logdev) != 1:
             sys.stderr.write("can't initialize log device, bailing out!\n")
             raise SystemExit(1)
+        # There's a case for falling back to address = ('localhost', 514)
+        # But some systems (including OS X) disable this for security reasons.
         handler = logging.handlers.SysLogHandler(address=logdev[0],
                                                  facility='daemon')
     else:
