@@ -981,8 +981,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.log_file and in_background():
-        # The Linux and BSD values of the logging device
-        logdev = [x for x in ('/dev/log', '/var/run/syslog')
+        # The Linux, Mac, and FreeBSD values of the logging device
+        logdev = [x for x in ('/dev/log', '/var/run/syslog', '/var/run/log')
                   if os.path.exists(x)]
         if len(logdev) != 1:
             sys.stderr.write("can't initialize log device, bailing out!\n")
