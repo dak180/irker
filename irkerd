@@ -40,7 +40,7 @@ CONNECTION_MAX = 200		# To avoid hitting a thread limit
 
 # No user-serviceable parts below this line
 
-version = "2.10"
+version = "2.11"
 
 import argparse
 import logging

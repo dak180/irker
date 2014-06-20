@@ -1,5 +1,5 @@
 			irker history 
-Repository head:
+2.11: 2014-06-20
   With -i, message string argument now optional, stdin is read if it is absent.
   Auto-adapt to BSD & OS X log device as well as Linux's.
 
