@@ -1,6 +1,7 @@
 			irker history 
 Repository head:
   With -i, message string argument now optional, stdin is read if it is absent.
+  Auto-adapt to BSD & OS X log device as well as Linux's.
 
 2.10: 2014-06-19
   irk no longer fails on ircs channel URLs.

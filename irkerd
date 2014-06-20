@@ -47,6 +47,7 @@ import logging
 import logging.handlers
 import json
 import os
+import os.path
 try:  # Python 3
     import queue
 except ImportError:  # Python 2
@@ -980,7 +981,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.log_file and in_background():
-        handler = logging.handlers.SysLogHandler(address='/dev/log',
+        # The Linux and BSD values of the logging device
+        logdev = [x for x in ('/dev/log', '/var/run/syslog')
+                  if os.path.exists(x)]
+        if len(logdev) != 1:
+            sys.stderr.write("can't initialize log device, bailing out!\n")
+            raise SystemExit(1)
+        handler = logging.handlers.SysLogHandler(address=logdev[0],
                                                  facility='daemon')
     else:
         handler = logging.StreamHandler()
