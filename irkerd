@@ -1013,7 +1013,7 @@ if __name__ == '__main__':
             # This will also encode backslash, backspace, formfeed,
             # and high-half characters, which might produce unexpected
             # results on output.
-            args.message = sys.stdin.read().encode("string_escape") 
+            args.message = sys.stdin.read().encode("string_escape")
         irker.irc.add_event_handler("quit", lambda _c, _e: sys.exit(0))
         irker.handle('{"to":"%s","privmsg":"%s"}' % (
             args.immediate, args.message), quit_after=True)
