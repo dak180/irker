@@ -19,107 +19,107 @@ Repository head:
   Various minor improvements to irk.
   Cope better with branch names containing slashes.
 
-2.7 @ 2014-03-15
+2.7: 2014-03-15
   Add support for ircs:// and SSL/TLS connections to IRC servers.
   Add support for per-URL usernames and passwords.
 
-2.6 @ 2014-02-04
+2.6: 2014-02-04
    Fix for an infinite loop on failing to connect to IRC
 
-2.5 @ 2013-12-24
+2.5: 2013-12-24
    Bug fix - remove a deadlock we inherited from irclib.
 
-2.4 @ 2013-12-03
+2.4: 2013-12-03
    Bug fix release - some users reported failure to connect with 2.3.
    Also prevent a crash if Unicode shows up in the wrong place.
 
-2.3 @ 2013-11-30
+2.3: 2013-11-30
   -i option enables immediate sending of one line in foreground.
 
-2.2 @ 2013-11-29
+2.2: 2013-11-29
   Fixed Unicode processing - got busted in 2.0 when irclib was removed.
   Show Python traceback on higher debug levels.
 
-2.1 @ 2013-11-26
+2.1: 2013-11-26
   A performance improvement in the git repository hook.
   Documentation polishing.
 
-2.0 @ 2013-11-16
+2.0: 2013-11-16
   The dependency on irclib is gone.
   An email delivery method, suitable for use on SourceForge.
   irkerhook can now be used as a hg changegroup hook.
   Prevent misbehavior on UTF-8 in commit metadata.
   Fix a crash bug on invalid hostnames.
 
-1.20 @ 2013-05-17
+1.20: 2013-05-17
   Compatibility back to Python 2.4 (provided simplejson is present).
   Increased anti-flood delay to avoid trouble with freenode.
 
-1.19 @ 2013-05-06
+1.19: 2013-05-06
   Fixed a minor bug in argument processing
 
-1.18 @ 2013-04-16
+1.18: 2013-04-16
   Added -l option; irker can now be used as a channel monitor.
   Added -n and -p option: the nick can be forced and authenticated.
 
-1.17 @ 2013-02-03
+1.17: 2013-02-03
   Various minor fixes and bulletproofing.
 
-1.16 @ 2013-01-24
+1.16: 2013-01-24
   Deal gracefully with non-ASCII author names and '|' in the command line.
 
-1.15 @ 2012-12-08
+1.15: 2012-12-08
   Don't append an extra newline in the Subversion hook.
 
-1.14 @ 2012-11-26
+1.14: 2012-11-26
   irclib 5.0 and urlparse compatibility fixes.
 
-1.13 @ 2012-11-06
+1.13: 2012-11-06
   Fix for a very rare thread race found by AI0867.
   Work around a midesign in the IRC library.
 
-1.12 @ 2012-10-11
+1.12: 2012-10-11
   Emergency workaround for a Unicode-handling error buried deep in irclib.
   The IRC library at version 3.2 or later is required for this version!
   Only ship to freenode #commits by default.
 
-1.11 @ 2012-10-10
+1.11: 2012-10-10
   Code is now fully Unicode-safe.
   A 'cialike' option emulates the file-summary behavior on the old CIA service.
 
-1.10 @ 2012-10-09
+1.10: 2012-10-09
   Expire disconnected connections if they aren't needed or can't reconnect.
   Eventlet support removed - didn't play well with the library mutex.
 
-1.9 @ 2012-10-08
+1.9: 2012-10-08
   Proper mutex locks prevent an occasional thread crash on session timeout.
   There's now systemd installation support for irkerd.
 
-1.8 @ 2012-10-06
+1.8: 2012-10-06
   It's now possible to send to nick URLs.
   Cope gracefully if an IRC server dies or hangs during the nick handshake.
 
-1.7 @ 2012-10-05
+1.7: 2012-10-05
   Optional metadata filtering with a user-specified command.
   irkerd code is now armored against IRC library errors in the delivery threads.
 
-1.6 @ 2012-10-04
+1.6: 2012-10-04
   In 1.5 trying to appease pylint broke the Mercurial hook.
   Added credits for contributors in hacking.txt.
   Fix the aging out of connections when we hit a resource limit.
 
-1.5 @ 2012-10-03
+1.5: 2012-10-03
   Mercurial support.
   Shorten nick negotiation by choosing a random nick base from a large range.
   Make irkerd exit cleanly on control-C.
 
-1.4 @ 2012-10-02
+1.4: 2012-10-02
   Graceful handling of server disconnects and kicks.
   Distribution now inclues an installable irkerd plist for Mac OS/X.
   The color variable is no longer boolean; may be miRC or ANSI.
   The installation instructions for irkerhook.py have changed!
 
-1.3 @ 2012-10-01
+1.3: 2012-10-01
   Support for an irker.conf file to set irkerhook variables under Subversion.
   Color highlighting of notification fields can be enabled. 
   irkerhook.py now has its own manual page.
@@ -127,16 +127,16 @@ Repository head:
   irkerd now uses green threads, with much lower overhead.
   Fix a bug in handling of channel names with no prefix.
 
-1.2 @ 2012-09-30
+1.2: 2012-09-30
   All segments of a message with embedded newlines are now transmitted.
   Message reduction - irkerhook drops the filelist on excessively long ones.
   Shell quote hardening in irkerhook.py and some anti-DoS logic.
 
-1.1 @ 2012-09-28
+1.1: 2012-09-28
   Add a delay to avoid threads spinning on the empty-queue-check, eating CPU.
   Fix a bug in reporting of multi-file commits.
 
-1.0 @ 2012-09-27
+1.0: 2012-09-27
   First production version, somewhat rushed by the sudden death of cia.vc
   on 24 September.
 
