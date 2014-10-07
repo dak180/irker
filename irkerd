@@ -579,7 +579,7 @@ class Connection:
                             self.last_xmit = time.time()
                             self.last_ping = time.time()
                         except IRCServerConnectionError as e:
-                            LOG.error("irkerd: " + e)
+                            LOG.error("irkerd: %s" % e)
                             self.status = "expired"
                             break
                 elif self.status == "handshaking":
