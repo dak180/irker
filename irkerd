@@ -840,8 +840,10 @@ class Irker:
         "Log all messages when in watcher mode."
         if self.logfile:
             with open(self.logfile, "a") as logfp:
-                logfp.write("%03f|%s|%s\n" % \
-                             (time.time(), event.source, event.arguments[0]))
+                message = u"%03f|%s|%s\n" % \
+                          (time.time(), event.source, event.arguments[0])
+                logfp.write(message.encode('utf8'))
+
     def pending(self):
         "Do we have any pending message traffic?"
         return [k for (k, v) in self.servers.items() if v.pending()]
