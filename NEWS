@@ -1,6 +1,7 @@
 			irker history 
 
-Repository head:
+2.12: 2014-10-22
+  Catch erroneous UTF-8 or non-UTF-8 from servers.
   Also autodetect the right logging device under FreeBSD: /var/run/syslog
 
 2.11: 2014-06-20
