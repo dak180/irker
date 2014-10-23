@@ -842,7 +842,7 @@ class Irker:
             with open(self.logfile, "a") as logfp:
                 message = u"%03f|%s|%s\n" % \
                           (time.time(), event.source, event.arguments[0])
-                logfp.write(message.encode('utf8'))
+                logfp.write(message.encode('utf-8'))
 
     def pending(self):
         "Do we have any pending message traffic?"
