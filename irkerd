@@ -839,7 +839,7 @@ class Irker:
     def _handle_every_raw_message(self, _connection, event):
         "Log all messages when in watcher mode."
         if self.logfile:
-            with open(self.logfile, "a") as logfp:
+            with open(self.logfile, "ab") as logfp:
                 message = u"%03f|%s|%s\n" % \
                           (time.time(), event.source, event.arguments[0])
                 logfp.write(message.encode('utf-8'))
