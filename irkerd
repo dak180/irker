@@ -171,7 +171,11 @@ class IRCClient():
                     connmap = dict([(c.socket.fileno(), c) for c in connected])
                     (insocks, _o, _e) = select.select(sockets, [], [], timeout)
                     for s in insocks:
-                        connmap[s.fileno()].consume()
+                        try:
+                            connmap[s.fileno()].consume()
+                        except UnicodeDecodeError as e:
+                            LOG.warn('{0}: invalid encoding ({1})'.format(
+                                self, e))
                 else:
                     nextsleep = timeout
             time.sleep(nextsleep)
@@ -322,7 +326,7 @@ class IRCServerConnection():
         for line in self.buffer:
             if not isinstance(line, UNICODE_TYPE):
                 line = UNICODE_TYPE(line, 'utf-8')
-            LOG.debug("FROM: %s" % line)
+                LOG.debug("FROM: %s" % line)
 
             if not line:
                 continue
