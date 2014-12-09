@@ -20,10 +20,7 @@ def connect(server = DEFAULT_SERVER):
 def send(s, target, message):
     data = {"to": target, "privmsg" : message}
     #print(json.dumps(data))
-    try:
-        s.sendall(json.dumps(data))
-    except socket.error, e:
-        sys.stderr.write("irk: write to server failed: %r\n" % e)
+    s.sendall(json.dumps(data))
 
 def irk(target, message, server = DEFAULT_SERVER):
     s = connect(server)
@@ -44,8 +41,8 @@ def main():
 
     try:
         irk(target, message)
-    except socket.error, e:
-        sys.stderr.write("irk: no irkerd running: %r\n" % e)
+    except socket.error as e:
+        sys.stderr.write("irk: write to server failed: %r\n" % e)
         sys.exit(1)
 
 if __name__ == '__main__':
