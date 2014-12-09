@@ -12,6 +12,11 @@ import socket
 import sys
 import fileinput
 
+DEFAULT_SERVER = ("localhost", 6659)
+
+def connect(server = DEFAULT_SERVER):
+    return socket.create_connection(server)
+
 def send(s, target, message):
     data = {"to": target, "privmsg" : message}
     #print(json.dumps(data))
@@ -20,20 +25,28 @@ def send(s, target, message):
     except socket.error, e:
         sys.stderr.write("irk: write to server failed: %r\n" % e)
 
-try:
-    s = socket.create_connection(("localhost", 6659))
-except socket.error, e:
-    sys.stderr.write("irk: no irkerd running: %r\n" % e)
-    sys.exit(1)
+def irk(target, message, server = DEFAULT_SERVER):
+    s = connect(server)
+    if "irc:" not in target and "ircs:" not in target:
+        target = "irc://chat.freenode.net/{0}".format(target)
+    if message == '-':
+        for line in fileinput.input('-'):
+            send(s, target, line.rstrip('\n'))
+    else:
+        send(s, target, message)
+    s.close()
 
-target = sys.argv[1]
-if "irc:" not in target and "ircs:" not in target:
-    target = "irc://chat.freenode.net/{0}".format(target)
-message = " ".join(sys.argv[2:])
-message = message.decode('string_escape')
-if message == '-':
-    for line in fileinput.input('-'):
-        send(s, target, line.rstrip('\n'))
-else:
-    send(s, target, message)
-s.close()
+def main():
+    target = sys.argv[1]
+    message = " ".join(sys.argv[2:])
+    # XXX: why is this necessary?
+    message = message.decode('string_escape')
+
+    try:
+        irk(target, message)
+    except socket.error, e:
+        sys.stderr.write("irk: no irkerd running: %r\n" % e)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
