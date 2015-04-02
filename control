@@ -9,9 +9,11 @@ Description: An IRC client that runs as a daemon accepting notification requests
  to send commit notifications to project IRC channels.  A hook script 
  that works with git, hg, and svn is included in the distribution.
 
-XBS-Gitorious-URL: https://gitorious.org/irker
+XBS-Repository-URL: http://thyrsus.com/gitweb/?p=irker.git
 
-XBS-Ohloh-URL: http://www.ohloh.net/p/irker
+XBS-Code-From: git@thyrsus.com:irker
+
+XBS-Openhub-URL: http://www.openhub.net/p/irker
 
 XBS-Destinations: freecode
 
