@@ -11,11 +11,11 @@ Description: An IRC client that runs as a daemon accepting notification requests
 
 XBS-Repository-URL: http://thyrsus.com/gitweb/?p=irker.git
 
-XBS-Code-From: git@thyrsus.com:irker
+XBS-Clone-From: git@thyrsus.com:irker
 
 XBS-Openhub-URL: http://www.openhub.net/p/irker
 
-XBS-Destinations: freecode
+#XBS-Destinations: freecode
 
 Homepage: http://www.catb.org/~esr/irker
 
