@@ -18,6 +18,10 @@ XBS-HTML-Target: index.html
 
 XBS-Repository-URL: http://thyrsus.com/gitweb/?p=irker.git
 
+XBS-Developer-Clone: git@thyrsus.com:irker
+
+XBS-Anonymous-Clone: git://thyrsus.com/repositories/irker.git
+
 XBS-OpenHub-URL: http://www.openhub.net/p/irker
 
 XBS-IRC-Channel: irc://chat.freenode.net/#irker
