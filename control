@@ -3,23 +3,22 @@
 
 Package: irker
 
-Description: An IRC client that runs as a daemon accepting notification requests
- as JSON objects presented to a listening socket. It is meant to be
- used by hook scripts in version-control repositories, allowing them
- to send commit notifications to project IRC channels.  A hook script 
- that works with git, hg, and svn is included in the distribution.
+Description: An IRC client that runs as a daemon accepting notification requests.
+ You presnt them JSON objects presented to a listening socket. It is
+ meant to be used by hook scripts in version-control repositories,
+ allowing them to send commit notifications to project IRC channels.
+ A hook script that works with git, hg, and svn is included in the
+ distribution.
 
-XBS-Repository-URL: http://thyrsus.com/gitweb/?p=irker.git
-
-XBS-Clone-From: git@thyrsus.com:irker
-
-XBS-Openhub-URL: http://www.openhub.net/p/irker
-
-#XBS-Destinations: freecode
+#XBS-Destinations: freshcode
 
 Homepage: http://www.catb.org/~esr/irker
 
 XBS-HTML-Target: index.html
+
+XBS-Repository-URL: http://thyrsus.com/gitweb/?p=irker.git
+
+XBS-Openhub-URL: http://www.openhub.net/p/irker
 
 XBS-IRC-Channel: irc://chat.freenode.net/#irker
 

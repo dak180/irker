@@ -109,5 +109,10 @@ irker-$(VERS).md5:
 
 dist: irker-$(VERS).tar.gz irker-$(VERS).md5
 
-release: irker-$(VERS).tar.gz irker-$(VERS).md5 irkerd.html irk.html irkerhook.html install.html security.html hacking.html
+WEBDOCS = irkerd.html irk.html irkerhook.html install.html security.html hacking.html
+
+release: irker-$(VERS).tar.gz irker-$(VERS).md5 $(WEBDOCS)
 	shipper version=$(VERS) | sh -e -x
+
+refresh: $(WEBDOCS)
+	shipper -N -w version=$(VERS) | sh -e -x
