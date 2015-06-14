@@ -248,6 +248,8 @@ class IRCServerConnection():
                 ssl_version=protocol, ca_certs=cafile)
         else:
             ssl_context.verify_mode = ssl.CERT_REQUIRED
+            if certfile:
+                ssl_context.load_cert_chain(certfile)
             if cafile:
                 ssl_context.load_verify_locations(cafile=cafile)
             else:
