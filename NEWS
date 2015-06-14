@@ -1,5 +1,10 @@
 			irker history 
 
+2.13: 2015-06-14
+  SSL validation fix.
+  Hardening agains Unicode decode errors.
+  irk becomes a library so it can be re-used.
+
 2.12: 2014-10-22
   Catch erroneous UTF-8 or non-UTF-8 from servers.
   Also autodetect the right logging device under FreeBSD: /var/run/syslog
